@@ -3,7 +3,7 @@
 $host = 'localhost';
 $user = 'root';
 $password = '';
-$dbname = 'inventory_db';
+$dbname = 'bss';
 
 $conn = new mysqli($host, $user, $password, $dbname);
 if ($conn->connect_error) {
