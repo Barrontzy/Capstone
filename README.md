@@ -230,7 +230,7 @@ The system comes with pre-configured data:
 
 ## Troubleshooting
 
-### Common Issues
+### Common Issues  
 
 1. **Database Connection Error**
    - Check database credentials in `includes/db.php`
@@ -262,3 +262,7 @@ This project is developed for Batangas State University. All rights reserved.
 ---
 
 **BSU Inventory Management System** - Streamlining equipment management for educational institutions. 
+
+
+
+hahah
