@@ -97,22 +97,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 // Get users list with login records
-$users = $conn->query("
-    SELECT u.*, 
-           COUNT(DISTINCT e.id) as equipment_count,
-           COUNT(DISTINCT t.id) as task_count,
-           COUNT(DISTINCT mr.id) as maintenance_count,
-           COUNT(DISTINCT ul.id) as login_count,
-           MAX(ul.login_time) as last_login
-    FROM users u
-    LEFT JOIN equipment e ON u.id = e.assigned_to
-    LEFT JOIN tasks t ON u.id = t.assigned_to
-    LEFT JOIN maintenance_records mr ON u.id = mr.technician_id
-    LEFT JOIN user_logins ul ON u.id = ul.user_id
-    GROUP BY u.id
-    ORDER BY u.created_at DESC
-");
-?>
+// $users = $conn->query("
+//     SELECT u.*, 
+//            COUNT(DISTINCT e.id) as equipment_count,
+//            COUNT(DISTINCT t.id) as task_count,
+//            COUNT(DISTINCT mr.id) as maintenance_count,
+//            COUNT(DISTINCT ul.id) as login_count,
+//            MAX(ul.login_time) as last_login
+//     FROM users u
+//     LEFT JOIN equipment e ON u.id = e.assigned_to
+//     LEFT JOIN tasks t ON u.id = t.assigned_to
+//     LEFT JOIN maintenance_records mr ON u.id = mr.technician_id
+//     LEFT JOIN user_logins ul ON u.id = ul.user_id
+//     GROUP BY u.id
+//     ORDER BY u.created_at DESC
+// ");
+// ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -298,7 +298,7 @@ $users = $conn->query("
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php while ($user = $users->fetch_assoc()): ?>
+                                    <!-- <?php while ($user = $users->fetch_assoc()): ?> -->
                                         <tr>
                                             <td>
                                                 <div class="d-flex align-items-center">
