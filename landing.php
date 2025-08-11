@@ -317,7 +317,7 @@ if (isset($_SESSION['user_id'])) {
         <!-- Logo and Title Section -->
         <div class="logo-section">
             <div class="logo">
-                <i class="fas fa-university"></i>
+                <img src="Ict logs.png"alt="University Icon" width="150" height="150" marginleft="20px " marginright="20px" margin-bottom="30px">
             </div>
             <h1 class="system-title">BSU Inventory System</h1>
             <p class="system-subtitle">Batangas State University</p>
