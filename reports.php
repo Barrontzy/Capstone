@@ -2,6 +2,79 @@
 require_once 'includes/session.php';
 require_once 'includes/db.php';
 
+define('FPDF_FONTPATH', __DIR__ . '/includes/fpdf/font/');
+require_once __DIR__ . '/includes/fpdf/fpdf.php';
+
+class PDF extends FPDF {
+    protected $widths;
+    protected $aligns;
+
+    function SetWidths($w) {
+        $this->widths = $w;
+    }
+
+    function SetAligns($a) {
+        $this->aligns = $a;
+    }
+
+    function Row($data) {
+        $nb = 0;
+        for ($i = 0; $i < count($data); $i++) {
+            $nb = max($nb, $this->NbLines($this->widths[$i], $data[$i]));
+        }
+        $h = 10 * $nb; // row height
+        $this->CheckPageBreak($h);
+        for ($i = 0; $i < count($data); $i++) {
+            $w = $this->widths[$i];
+            $a = isset($this->aligns[$i]) ? $this->aligns[$i] : 'C';
+            $x = $this->GetX();
+            $y = $this->GetY();
+            $this->Rect($x, $y, $w, $h);
+            $this->MultiCell($w, 10, $data[$i], 0, $a);
+            $this->SetXY($x + $w, $y);
+        }
+        $this->Ln($h);
+    }
+
+    function CheckPageBreak($h) {
+        if ($this->GetY() + $h > $this->PageBreakTrigger) {
+            $this->AddPage($this->CurOrientation);
+        }
+    }
+
+    function NbLines($w, $txt) {
+        $cw = &$this->CurrentFont['cw'];
+        if ($w == 0) $w = $this->w - $this->rMargin - $this->x;
+        $wmax = ($w - 2 * $this->cMargin) * 1000 / $this->FontSize;
+        $s = str_replace("\r", '', $txt);
+        $nb = strlen($s);
+        if ($nb > 0 && $s[$nb - 1] == "\n") $nb--;
+        $sep = -1;
+        $i = 0;
+        $j = 0;
+        $l = 0;
+        $nl = 1;
+        while ($i < $nb) {
+            $c = $s[$i];
+            if ($c == "\n") {
+                $i++; $sep = -1; $j = $i; $l = 0; $nl++; continue;
+            }
+            if ($c == ' ') $sep = $i;
+            $l += $cw[$c];
+            if ($l > $wmax) {
+                if ($sep == -1) {
+                    if ($i == $j) $i++;
+                } else $i = $sep + 1;
+                $sep = -1;
+                $j = $i;
+                $l = 0;
+                $nl++;
+            } else $i++;
+        }
+        return $nl;
+    }
+}
+
 // Check if user is logged in
 requireLogin();
 
@@ -71,7 +144,10 @@ function generateInventoryReport($conn, $date_from, $date_to, $department_id, $e
     }
     
     $query = "
-        SELECT e.*, ec.name as category_name, d.name as department_name, u.full_name as assigned_user
+        SELECT e.*, 
+               ec.name as category_name, 
+               d.name as department_name, 
+               u.full_name as assigned_user
         FROM equipment e
         LEFT JOIN equipment_categories ec ON e.category_id = ec.id
         LEFT JOIN departments d ON e.department_id = d.id
@@ -86,37 +162,67 @@ function generateInventoryReport($conn, $date_from, $date_to, $department_id, $e
     }
     $stmt->execute();
     $result = $stmt->get_result();
-    
-    // Generate CSV
-    $filename = "inventory_report_" . date('Y-m-d_H-i-s') . ".csv";
-    header('Content-Type: text/csv');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
-    
-    $output = fopen('php://output', 'w');
-    fputcsv($output, ['ID', 'Name', 'Category', 'Department', 'Serial Number', 'Model', 'Brand', 'Status', 'Location', 'Acquisition Date', 'Cost', 'Assigned To', 'Created Date']);
-    
-    while ($row = $result->fetch_assoc()) {
-        fputcsv($output, [
-            $row['id'],
-            $row['name'],
-            $row['category_name'],
-            $row['department_name'],
-            $row['serial_number'],
-            $row['model'],
-            $row['brand'],
-            $row['status'],
-            $row['location'],
-            $row['acquisition_date'],
-            $row['acquisition_cost'],
-            $row['assigned_user'],
-            $row['created_at']
-        ]);
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
+
+    // Create PDF (same format as other reports)
+    $pdf = new PDF(); // <-- Extended PDF with Row/SetWidths
+    $pdf->AddPage();
+    $pdf->SetFont('Arial', '', 10);
+
+    // Header Row
+    $pdf->Cell(25, 20, '', 1, 0, 'C'); 
+    $pdf->Image('assets/logo/bsutneu.png', $pdf->GetX() - 24, $pdf->GetY(), 23, 20);
+    $pdf->Cell(80, 20, 'Reference No.: BatStateU-FO-ICT-06', 1, 0, 'C');
+    $pdf->Cell(55, 20, 'Eff. Date: January 3, 2023', 1, 0, 'C');
+    $pdf->Cell(30, 20, 'Rev. No.: 00', 1, 1, 'C');
+
+    // Title
+    $pdf->SetFont('Arial', 'B', 14);
+    $pdf->Cell(190, 15, 'Inventory Report', 1, 1, 'C');
+
+    // Subheader
+    $pdf->SetFont('Arial', '', 12);
+    $pdf->Cell(190, 15, 'INFORMATION AND COMMUNICATIONS TECHNOLOGY SERVICES {CAMPUS}', 1, 1, 'C');
+
+    // Table Header
+    $pdf->SetFont('Arial', 'B', 9);
+    $pdf->SetWidths([10, 20, 16, 21, 19, 18, 15, 12, 17, 17, 25]);
+    $pdf->Row([
+        'ID', 'Name', 'Category', 'Department', 'Serial No.', 
+        'Model', 'Brand', 'Status', 'Location', 
+        'Acq. Date', 'Cost'
+    ]);
+
+    // Table Rows
+    $pdf->SetFont('Arial', '', 8);
+    if (!empty($rows)) {
+        foreach ($rows as $row) {
+            $pdf->Row([
+                $row['id'],
+                $row['name'],
+                $row['category_name'] ?: 'N/A',
+                $row['department_name'] ?: 'N/A',
+                $row['serial_number'],
+                $row['model'],
+                $row['brand'],
+                $row['status'],
+                $row['location'],
+                $row['acquisition_date'],
+                $row['acquisition_cost'] ? 'Php ' . number_format($row['acquisition_cost'], 2) : '₱0.00'
+            ]);
+        }
+    } else {
+        for ($i = 0; $i < 12; $i++) {
+            $pdf->Row(['', '', '', '', '', '', '', '', '', '', '']);
+        }
     }
-    fclose($output);
-    exit();
+
+    $pdf->Output('I', 'inventory_report_' . date('Y-m-d_H-i-s') . '.pdf');
 }
 
+
 function generateFinancialReport($conn, $date_from, $date_to, $department_id) {
+    // Build WHERE clause
     $where_conditions = [];
     $params = [];
     $types = '';
@@ -141,9 +247,11 @@ function generateFinancialReport($conn, $date_from, $date_to, $department_id) {
     if (!empty($where_conditions)) {
         $where_clause = 'WHERE ' . implode(' AND ', $where_conditions);
     }
-    
+
+    // Query
     $query = "
-        SELECT d.name as department_name, ec.name as category_name,
+        SELECT d.name as department_name, 
+               ec.name as category_name,
                COUNT(e.id) as equipment_count,
                SUM(e.acquisition_cost) as total_cost,
                AVG(e.acquisition_cost) as avg_cost
@@ -161,26 +269,55 @@ function generateFinancialReport($conn, $date_from, $date_to, $department_id) {
     }
     $stmt->execute();
     $result = $stmt->get_result();
-    
-    $filename = "financial_report_" . date('Y-m-d_H-i-s') . ".csv";
-    header('Content-Type: text/csv');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
-    
-    $output = fopen('php://output', 'w');
-    fputcsv($output, ['Department', 'Category', 'Equipment Count', 'Total Cost', 'Average Cost']);
-    
-    while ($row = $result->fetch_assoc()) {
-        fputcsv($output, [
-            $row['department_name'],
-            $row['category_name'],
-            $row['equipment_count'],
-            $row['total_cost'],
-            $row['avg_cost']
-        ]);
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
+
+    // Create PDF (same format as Department Report)
+    $pdf = new PDF(); // <-- Use extended PDF with Row/SetWidths for uniformity
+    $pdf->AddPage();
+    $pdf->SetFont('Arial', '', 10);
+
+    // Header Row 
+    $pdf->Cell(25, 20, '', 1, 0, 'C'); 
+    $pdf->Image('assets/logo/bsutneu.png', $pdf->GetX() - 24, $pdf->GetY(), 23, 20);
+    $pdf->Cell(80, 20, 'Reference No.: BatStateU-FO-ICT-06', 1, 0, 'C');
+    $pdf->Cell(55, 20, 'Eff. Date: January 3, 2023', 1, 0, 'C');
+    $pdf->Cell(30, 20, 'Rev. No.: 00', 1, 1, 'C');
+
+    // Title
+    $pdf->SetFont('Arial', 'B', 14);
+    $pdf->Cell(190, 15, 'Financial Report of Equipment', 1, 1, 'C');
+
+    // Subheader
+    $pdf->SetFont('Arial', '', 12);
+    $pdf->Cell(190, 15, 'INFORMATION AND COMMUNICATIONS TECHNOLOGY SERVICES {CAMPUS}', 1, 1, 'C');
+
+    // Table Header (using same Row method)
+    $pdf->SetFont('Arial', 'B', 11);
+    $pdf->SetWidths([60, 30, 20, 40, 40]);
+    $pdf->Row(['Department', 'Category', 'Count', 'Total Cost', 'Avg Cost']);
+
+    // Table Rows
+    $pdf->SetFont('Arial', '', 10);
+    if (!empty($rows)) {
+        foreach ($rows as $r) {
+            $pdf->Row([
+                $r['department_name'] ?: 'N/A',
+                $r['category_name'] ?: 'N/A',
+                $r['equipment_count'] ?: 0,
+                $r['total_cost'] ? 'Php ' . number_format($r['total_cost'], 2) : 'Php 0.00',
+                $r['avg_cost'] ? 'Php ' . number_format($r['avg_cost'], 2) : 'Php 0.00'
+            ]);
+        }
+    } else {
+        for ($i = 0; $i < 12; $i++) {
+            $pdf->Row(['', '', '', '', '']);
+        }
     }
-    fclose($output);
-    exit();
+
+    $pdf->Output('I', 'financial_report_' . date('Y-m-d_H-i-s') . '.pdf');
 }
+
+
 
 function generateDepartmentReport($conn, $date_from, $date_to) {
     $query = "
@@ -195,35 +332,64 @@ function generateDepartmentReport($conn, $date_from, $date_to) {
         GROUP BY d.id
         ORDER BY d.name
     ";
-    
+
     $result = $conn->query($query);
-    
-    $filename = "department_analysis_" . date('Y-m-d_H-i-s') . ".csv";
-    header('Content-Type: text/csv');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
-    
-    $output = fopen('php://output', 'w');
-    fputcsv($output, ['Department', 'Total Equipment', 'Active', 'Under Maintenance', 'Disposed', 'Total Value']);
-    
-    while ($row = $result->fetch_assoc()) {
-        fputcsv($output, [
-            $row['department_name'],
-            $row['total_equipment'],
-            $row['active_equipment'],
-            $row['maintenance_equipment'],
-            $row['disposed_equipment'],
-            $row['total_value']
-        ]);
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
+
+    // Create PDF
+    $pdf = new PDF(); // using extended PDF with Row/SetWidths
+    $pdf->AddPage();
+    $pdf->SetFont('Arial', '', 10);
+
+    // Header Row 
+    $pdf->Cell(25, 20, '', 1, 0, 'C'); 
+    $pdf->Image('assets/logo/bsutneu.png', $pdf->GetX() - 24, $pdf->GetY(), 23, 20);
+    $pdf->Cell(80, 20, 'Reference No.: BatStateU-FO-ICT-06', 1, 0, 'C');
+    $pdf->Cell(55, 20, 'Eff. Date: January 3, 2023', 1, 0, 'C');
+    $pdf->Cell(30, 20, 'Rev. No.: 00', 1, 1, 'C');
+
+    // Title
+    $pdf->SetFont('Arial', 'B', 14);
+    $pdf->Cell(190, 15, 'Department Equipment Analysis Report', 1, 1, 'C');
+
+    // Subheader
+    $pdf->SetFont('Arial', '', 12);
+    $pdf->Cell(190, 15, 'INFORMATION AND COMMUNICATIONS TECHNOLOGY SERVICES {CAMPUS}', 1, 1, 'C');
+
+    // Table Header
+    $pdf->SetFont('Arial', 'B', 11);
+    $pdf->SetWidths([80, 20, 20, 20, 20, 30]);
+    $pdf->Row(['Department', 'Total', 'Active', 'Maint.', 'Disposed', 'Total Value']);
+
+    // Table Rows
+    $pdf->SetFont('Arial', '', 10);
+    if (!empty($rows)) {
+        foreach ($rows as $r) {
+            $pdf->Row([
+                $r['department_name'] ?: 'N/A',
+                $r['total_equipment'] ?: 0,
+                $r['active_equipment'] ?: 0,
+                $r['maintenance_equipment'] ?: 0,
+                $r['disposed_equipment'] ?: 0,
+                $r['total_value'] ? 'Php ' . number_format($r['total_value'], 2) : 'Php 0.00'
+            ]);
+        }
+    } else {
+        for ($i = 0; $i < 12; $i++) {
+            $pdf->Row(['', '', '', '', '', '']);
+        }
     }
-    fclose($output);
-    exit();
+
+    $pdf->Output('I', 'department_analysis_' . date('Y-m-d_H-i-s') . '.pdf');
 }
+
+
 
 function generateMaintenanceReport($conn, $date_from, $date_to, $department_id) {
     $where_conditions = [];
     $params = [];
     $types = '';
-    
+
     if ($date_from) {
         $where_conditions[] = "mr.start_date >= ?";
         $params[] = $date_from;
@@ -239,12 +405,9 @@ function generateMaintenanceReport($conn, $date_from, $date_to, $department_id) 
         $params[] = $department_id;
         $types .= 'i';
     }
-    
-    $where_clause = '';
-    if (!empty($where_conditions)) {
-        $where_clause = 'WHERE ' . implode(' AND ', $where_conditions);
-    }
-    
+
+    $where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
+
     $query = "
         SELECT mr.*, e.name as equipment_name, e.serial_number,
                d.name as department_name, u.full_name as technician_name
@@ -255,107 +418,179 @@ function generateMaintenanceReport($conn, $date_from, $date_to, $department_id) 
         $where_clause
         ORDER BY mr.start_date DESC
     ";
-    
+
     $stmt = $conn->prepare($query);
     if (!empty($params)) {
         $stmt->bind_param($types, ...$params);
     }
     $stmt->execute();
     $result = $stmt->get_result();
-    
-    $filename = "maintenance_report_" . date('Y-m-d_H-i-s') . ".csv";
-    header('Content-Type: text/csv');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
-    
-    $output = fopen('php://output', 'w');
-    fputcsv($output, ['Equipment', 'Department', 'Type', 'Technician', 'Status', 'Start Date', 'End Date', 'Cost', 'Description']);
-    
-    while ($row = $result->fetch_assoc()) {
-        fputcsv($output, [
-            $row['equipment_name'] . ' (' . $row['serial_number'] . ')',
-            $row['department_name'],
-            $row['maintenance_type'],
-            $row['technician_name'],
-            $row['status'],
-            $row['start_date'],
-            $row['end_date'],
-            $row['cost'],
-            $row['description']
-        ]);
+
+    $equipment_no = '';
+    if ($row = $result->fetch_assoc()) {
+        $equipment_no = $row['serial_number'];
+        $rows = array_merge([$row], $result->fetch_all(MYSQLI_ASSOC));
+    } else {
+        $rows = [];
     }
-    fclose($output);
-    exit();
+
+    // Create PDF
+    $pdf = new PDF(); // use extended PDF with Row/SetWidths
+    $pdf->AddPage();
+    $pdf->SetFont('Arial', '', 10);
+
+    // Header Row
+    $pdf->Cell(25, 20, '', 1, 0, 'C');
+    $pdf->Image('assets/logo/bsutneu.png', $pdf->GetX() - 24, $pdf->GetY(), 23, 20);
+    $pdf->Cell(80, 20, 'Reference No.: BatStateU-FO-ICT-06', 1, 0, 'C');
+    $pdf->Cell(55, 20, 'Eff. Date: January 3, 2023', 1, 0, 'C');
+    $pdf->Cell(30, 20, 'Rev. No.: 00', 1, 1, 'C');
+
+    // Title
+    $pdf->SetFont('Arial', 'B', 14);
+    $pdf->Cell(190, 15, 'Preventive Maintenance of ICT-Related Equipment Index Card', 1, 1, 'C');
+
+    // Subheader
+    $pdf->SetFont('Arial', '', 12);
+    $pdf->Cell(190, 15, 'INFORMATION AND COMMUNICATIONS TECHNOLOGY SERVICES {CAMPUS}', 1, 1, 'C');
+
+    // Equipment No.
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(190, 15, 'Equipment No.: ' . ($equipment_no ?: '____________________'), 1, 1, 'R');
+
+    // Table Header
+    $pdf->SetFont('Arial', 'B', 11);
+    $pdf->SetWidths([40, 110, 40]);
+    $pdf->Row(['Date', 'Repair/Maintenance Task', 'Performed by']);
+
+    // Table Rows
+    $pdf->SetFont('Arial', '', 10);
+    if (!empty($rows)) {
+        foreach ($rows as $r) {
+            $pdf->Row([
+                $r['start_date'] ?: 'N/A',
+                $r['description'] ?: 'N/A',
+                $r['technician_name'] ?: 'N/A'
+            ]);
+        }
+    } else {
+        for ($i = 0; $i < 12; $i++) {
+            $pdf->Row(['', '', '']);
+        }
+    }
+
+    $pdf->Output('I', 'maintenance_card.pdf');
 }
 
+
+
 function generateIncompleteReport($conn, $department_id) {
-    $where_clause = '';
+    $where_conditions = [];
     $params = [];
     $types = '';
-    
+
     if ($department_id) {
-        $where_clause = 'WHERE e.department_id = ?';
+        $where_conditions[] = "e.department_id = ?";
         $params[] = $department_id;
         $types .= 'i';
     }
-    
+
+    // Missing fields condition
+    $missing_fields_condition = "
+        e.serial_number IS NULL 
+        OR e.model IS NULL 
+        OR e.brand IS NULL 
+        OR e.acquisition_date IS NULL 
+        OR e.acquisition_cost IS NULL
+    ";
+
+    $where_clause = !empty($where_conditions)
+        ? 'WHERE (' . implode(' AND ', $where_conditions) . ') AND (' . $missing_fields_condition . ')'
+        : 'WHERE ' . $missing_fields_condition;
+
+    // Query
     $query = "
         SELECT e.*, ec.name as category_name, d.name as department_name
         FROM equipment e
         LEFT JOIN equipment_categories ec ON e.category_id = ec.id
         LEFT JOIN departments d ON e.department_id = d.id
         $where_clause
-        WHERE e.serial_number IS NULL 
-           OR e.model IS NULL 
-           OR e.brand IS NULL 
-           OR e.acquisition_date IS NULL 
-           OR e.acquisition_cost IS NULL
         ORDER BY e.created_at DESC
     ";
-    
+
     $stmt = $conn->prepare($query);
     if (!empty($params)) {
         $stmt->bind_param($types, ...$params);
     }
     $stmt->execute();
     $result = $stmt->get_result();
-    
-    $filename = "incomplete_items_" . date('Y-m-d_H-i-s') . ".csv";
-    header('Content-Type: text/csv');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
-    
-    $output = fopen('php://output', 'w');
-    fputcsv($output, ['ID', 'Name', 'Category', 'Department', 'Serial Number', 'Model', 'Brand', 'Acquisition Date', 'Cost', 'Missing Fields']);
-    
-    while ($row = $result->fetch_assoc()) {
-        $missing_fields = [];
-        if (!$row['serial_number']) $missing_fields[] = 'Serial Number';
-        if (!$row['model']) $missing_fields[] = 'Model';
-        if (!$row['brand']) $missing_fields[] = 'Brand';
-        if (!$row['acquisition_date']) $missing_fields[] = 'Acquisition Date';
-        if (!$row['acquisition_cost']) $missing_fields[] = 'Cost';
-        
-        fputcsv($output, [
-            $row['id'],
-            $row['name'],
-            $row['category_name'],
-            $row['department_name'],
-            $row['serial_number'] ?: 'N/A',
-            $row['model'] ?: 'N/A',
-            $row['brand'] ?: 'N/A',
-            $row['acquisition_date'] ?: 'N/A',
-            $row['acquisition_cost'] ?: 'N/A',
-            implode(', ', $missing_fields)
-        ]);
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
+
+    // Create PDF
+    $pdf = new PDF(); // <-- use your extended PDF class
+    $pdf->AddPage();
+    $pdf->SetFont('Arial', '', 10);
+
+    // Header Row
+    $pdf->Cell(25, 20, '', 1, 0, 'C');
+    $pdf->Image('assets/logo/bsutneu.png', $pdf->GetX() - 24, $pdf->GetY(), 23, 20);
+    $pdf->Cell(80, 20, 'Reference No.: BatStateU-FO-ICT-06', 1, 0, 'C');
+    $pdf->Cell(55, 20, 'Eff. Date: January 3, 2023', 1, 0, 'C');
+    $pdf->Cell(30, 20, 'Rev. No.: 00', 1, 1, 'C');
+
+    // Title
+    $pdf->SetFont('Arial', 'B', 14);
+    $pdf->Cell(190, 15, 'Incomplete Equipment Records Report', 1, 1, 'C');
+
+    // Subheader
+    $pdf->SetFont('Arial', '', 12);
+    $pdf->Cell(190, 15, 'INFORMATION AND COMMUNICATIONS TECHNOLOGY SERVICES {CAMPUS}', 1, 1, 'C');
+
+    // Table Header
+    $pdf->SetFont('Arial', 'B', 11);
+    $pdf->SetWidths([10, 15, 20, 25, 18, 20, 17, 25, 20, 20]); // column widths
+    $pdf->Row(['ID', 'Name', 'Category', 'Department', 'Serial No.', 'Model', 'Brand', 'Acquisition Date', 'Cost', 'Missing Fields']);
+
+    // Table Rows
+    $pdf->SetFont('Arial', '', 10);
+    if (!empty($rows)) {
+        foreach ($rows as $r) {
+            $missing_fields = [];
+            if (!$r['serial_number']) $missing_fields[] = 'Serial Number';
+            if (!$r['model']) $missing_fields[] = 'Model';
+            if (!$r['brand']) $missing_fields[] = 'Brand';
+            if (!$r['acquisition_date']) $missing_fields[] = 'Acquisition Date';
+            if (!$r['acquisition_cost']) $missing_fields[] = 'Cost';
+
+            $pdf->Row([
+                $r['id'],
+                $r['name'],
+                $r['category_name'],
+                $r['department_name'],
+                $r['serial_number'] ?: 'N/A',
+                $r['model'] ?: 'N/A',
+                $r['brand'] ?: 'N/A',
+                $r['acquisition_date'] ?: 'N/A',
+                $r['acquisition_cost'] ? 'Php ' . number_format($r['acquisition_cost'], 2) : 'N/A',
+                implode(', ', $missing_fields)
+            ]);
+        }
+    } else {
+        for ($i = 0; $i < 12; $i++) {
+            $pdf->Row(['', '', '', '', '', '', '', '', '', '']);
+        }
     }
-    fclose($output);
-    exit();
+
+    $pdf->Output('I', 'incomplete_equipment_report.pdf');
 }
+
+
 
 function generateAcquisitionReport($conn, $date_from, $date_to, $department_id) {
     $where_conditions = [];
     $params = [];
     $types = '';
-    
+
     if ($date_from) {
         $where_conditions[] = "e.acquisition_date >= ?";
         $params[] = $date_from;
@@ -371,12 +606,9 @@ function generateAcquisitionReport($conn, $date_from, $date_to, $department_id) 
         $params[] = $department_id;
         $types .= 'i';
     }
-    
-    $where_clause = '';
-    if (!empty($where_conditions)) {
-        $where_clause = 'WHERE ' . implode(' AND ', $where_conditions);
-    }
-    
+
+    $where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
+
     $query = "
         SELECT e.*, ec.name as category_name, d.name as department_name
         FROM equipment e
@@ -385,34 +617,62 @@ function generateAcquisitionReport($conn, $date_from, $date_to, $department_id) 
         $where_clause
         ORDER BY e.acquisition_date DESC
     ";
-    
+
     $stmt = $conn->prepare($query);
     if (!empty($params)) {
         $stmt->bind_param($types, ...$params);
     }
     $stmt->execute();
     $result = $stmt->get_result();
-    
-    $filename = "acquisition_timeline_" . date('Y-m-d_H-i-s') . ".csv";
-    header('Content-Type: text/csv');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
-    
-    $output = fopen('php://output', 'w');
-    fputcsv($output, ['Date', 'Equipment', 'Category', 'Department', 'Serial Number', 'Cost']);
-    
-    while ($row = $result->fetch_assoc()) {
-        fputcsv($output, [
-            $row['acquisition_date'],
-            $row['name'],
-            $row['category_name'],
-            $row['department_name'],
-            $row['serial_number'],
-            $row['acquisition_cost']
-        ]);
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
+
+    // Create PDF
+    $pdf = new PDF();
+    $pdf->AddPage();
+    $pdf->SetFont('Arial', '', 10);
+
+    // Header Row
+    $pdf->Cell(25, 20, '', 1, 0, 'C'); 
+    $pdf->Image('assets/logo/bsutneu.png', $pdf->GetX() - 24, $pdf->GetY(), 23, 20);
+    $pdf->Cell(80, 20, 'Reference No.: BatStateU-FO-ICT-06', 1, 0, 'C');
+    $pdf->Cell(55, 20, 'Eff. Date: January 3, 2023', 1, 0, 'C');
+    $pdf->Cell(30, 20, 'Rev. No.: 00', 1, 1, 'C');
+
+    // Title
+    $pdf->SetFont('Arial', 'B', 14);
+    $pdf->Cell(190, 15, 'Equipment Acquisition Report', 1, 1, 'C');
+
+    // Subheader
+    $pdf->SetFont('Arial', '', 12);
+    $pdf->Cell(190, 15, 'INFORMATION AND COMMUNICATIONS TECHNOLOGY SERVICES {CAMPUS}', 1, 1, 'C');
+
+    // Table Header
+    $pdf->SetFont('Arial', 'B', 11);
+    $pdf->SetWidths([25, 40, 30, 30, 30, 35]); // column widths
+    $pdf->Row(['Date', 'Equipment', 'Category', 'Department', 'Serial No.', 'Cost']);
+
+    // Table Rows
+    $pdf->SetFont('Arial', '', 10);
+    if (!empty($rows)) {
+        foreach ($rows as $r) {
+            $pdf->Row([
+                $r['acquisition_date'] ?: 'N/A',
+                $r['name'],
+                $r['category_name'],
+                $r['department_name'],
+                $r['serial_number'] ?: 'N/A',
+                $r['acquisition_cost'] ? 'Php ' . number_format($r['acquisition_cost'], 2) : 'N/A'
+            ]);
+        }
+    } else {
+        for ($i = 0; $i < 12; $i++) {
+            $pdf->Row(['', '', '', '', '', '']);
+        }
     }
-    fclose($output);
-    exit();
+
+    $pdf->Output('I', 'acquisition_equipment_report.pdf');
 }
+
 
 // Get departments and categories for filters
 $departments = $conn->query("SELECT * FROM departments ORDER BY name");
