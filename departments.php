@@ -49,8 +49,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $id = $_POST['id'];
                 
                 // Check if department has equipment
-                $stmt = $conn->prepare("SELECT COUNT(*) as count FROM equipment WHERE department_id = ?");
-                $stmt->bind_param("i", $id);
+                $stmt = $conn->prepare("
+                    SELECT 
+                        (SELECT COUNT(*) FROM desktop WHERE department_office = (SELECT name FROM departments WHERE id = ?)) +
+                        (SELECT COUNT(*) FROM laptops WHERE department = (SELECT name FROM departments WHERE id = ?)) +
+                        (SELECT COUNT(*) FROM printers WHERE department = (SELECT name FROM departments WHERE id = ?)) +
+                        (SELECT COUNT(*) FROM accesspoint WHERE department = (SELECT name FROM departments WHERE id = ?)) +
+                        (SELECT COUNT(*) FROM switch WHERE department = (SELECT name FROM departments WHERE id = ?)) +
+                        (SELECT COUNT(*) FROM telephone WHERE department = (SELECT name FROM departments WHERE id = ?))
+                        AS count
+                ");
+                $stmt->bind_param("iiiiii", $id, $id, $id, $id, $id, $id);
                 $stmt->execute();
                 $result = $stmt->get_result();
                 $count = $result->fetch_assoc()['count'];
@@ -73,12 +82,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// Get departments list
+// ✅ Get departments with equipment count
 $departments = $conn->query("
-    SELECT d.*, COUNT(e.id) as equipment_count
+    SELECT d.id, d.name, d.building, d.location, d.created_at,
+           (
+                (SELECT COUNT(*) FROM desktop WHERE department_office = d.name) +
+                (SELECT COUNT(*) FROM laptops WHERE department = d.name) +
+                (SELECT COUNT(*) FROM printers WHERE department = d.name) +
+                (SELECT COUNT(*) FROM accesspoint WHERE department = d.name) +
+                (SELECT COUNT(*) FROM switch WHERE department = d.name) +
+                (SELECT COUNT(*) FROM telephone WHERE department = d.name)
+           ) AS equipment_count
     FROM departments d
-    LEFT JOIN equipment e ON d.id = e.department_id
-    GROUP BY d.id
     ORDER BY d.name
 ");
 ?>
@@ -169,41 +184,13 @@ $departments = $conn->query("
             <div class="col-md-3 col-lg-2 sidebar">
                 <div class="d-flex flex-column flex-shrink-0 p-3">
                     <ul class="nav nav-pills flex-column mb-auto">
-                        <li class="nav-item">
-                            <a href="dashboard.php" class="nav-link">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="equipment.php" class="nav-link">
-                                <i class="fas fa-laptop"></i> Equipment
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="departments.php" class="nav-link active">
-                                <i class="fas fa-building"></i> Departments
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="maintenance.php" class="nav-link">
-                                <i class="fas fa-tools"></i> Maintenance
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="tasks.php" class="nav-link">
-                                <i class="fas fa-tasks"></i> Tasks
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="reports.php" class="nav-link">
-                                <i class="fas fa-chart-bar"></i> Reports
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="users.php" class="nav-link">
-                                <i class="fas fa-users"></i> Users
-                            </a>
-                        </li>
+                        <li class="nav-item"><a href="dashboard.php" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li class="nav-item"><a href="equipment.php" class="nav-link"><i class="fas fa-laptop"></i> Equipment</a></li>
+                        <li class="nav-item"><a href="departments.php" class="nav-link active"><i class="fas fa-building"></i> Departments</a></li>
+                        <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
+                        <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
+                        <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                        <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
                     </ul>
                 </div>
             </div>
@@ -249,15 +236,11 @@ $departments = $conn->query("
                                 <tbody>
                                     <?php while ($dept = $departments->fetch_assoc()): ?>
                                         <tr>
-                                            <td>
-                                                <strong><?php echo htmlspecialchars($dept['name']); ?></strong>
-                                            </td>
+                                            <td><strong><?php echo htmlspecialchars($dept['name']); ?></strong></td>
                                             <td><?php echo htmlspecialchars($dept['building']); ?></td>
                                             <td><?php echo htmlspecialchars($dept['location']); ?></td>
                                             <td>
-                                                <span class="badge bg-info">
-                                                    <?php echo $dept['equipment_count']; ?> equipment
-                                                </span>
+                                                <span class="badge bg-info"><?php echo $dept['equipment_count']; ?> equipment</span>
                                             </td>
                                             <td><?php echo date('M d, Y', strtotime($dept['created_at'])); ?></td>
                                             <td>
@@ -372,4 +355,4 @@ $departments = $conn->query("
         }
     </script>
 </body>
-</html> 
+</html>
