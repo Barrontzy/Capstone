@@ -138,6 +138,25 @@ $maintenance_alerts = array_slice($maintenance_alerts, 0, 5);
     </style>
 </head>
 <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="dashboard.php">
+          <i class="fas fa-university"></i> BSU Inventory System
+        </a>
+        <div class="navbar-nav ms-auto">
+          <!-- Profile Button -->
+          <a href="profile.php" class="btn btn-light me-2">
+            <i class="fas fa-user-circle"></i> Profile
+          </a>
+          <!-- Logout Button -->
+          <a href="logout.php" class="btn btn-outline-light">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </div>
+      </div>
+    </nav>
+
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
