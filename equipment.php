@@ -17,19 +17,127 @@ $searchQuery = $search ? "WHERE asset_tag LIKE '%$search%' OR assigned_person LI
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f8f9fa; }
-    .card { border-radius: 15px; }
-    .sidebar { background: white; min-height: 100vh; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
-    .sidebar .nav-link { color: #343a40; margin: 5px 0; border-radius: 8px; }
-    .sidebar .nav-link.active,
-    .sidebar .nav-link:hover { background: #dc3545; color: white; }
-    .main-content { padding: 20px; }
+    :root {
+        --primary-color: #dc3545;
+        --secondary-color: #343a40;
+    }
+    .navbar {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    }
+    .sidebar {
+        background: white;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        min-height: calc(100vh - 76px);
+    }
+    .sidebar .nav-link {
+        color: var(--secondary-color);
+        padding: 12px 20px;
+        border-radius: 8px;
+        margin: 2px 10px;
+        transition: all 0.3s ease;
+    }
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    .main-content {
+        padding: 20px;
+    }
+    .card { 
+        border-radius: 15px; 
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
     .clickable-row { cursor: pointer; }
+    
+    /* Custom Tab Styling */
+    .nav-tabs {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .nav-tabs .nav-link {
+        background-color: #f8f9fa;
+        border: 2px solid #dee2e6;
+        border-radius: 8px 8px 0 0;
+        margin-right: 5px;
+        padding: 12px 20px;
+        color: var(--secondary-color);
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border-bottom: none;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    }
+    
+    .nav-tabs .nav-link.active {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        border-bottom-color: white;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .nav-tabs .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: white;
+        z-index: 2;
+    }
+    
+    .tab-content {
+        background: white;
+        border: 2px solid var(--primary-color);
+        border-top: none;
+        border-radius: 0 0 15px 15px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        margin-top: -1px;
+    }
+    
+    .tab-content .tab-pane {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Equipment type icons */
+    .nav-tabs .nav-link i {
+        margin-right: 8px;
+        font-size: 1.1em;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .nav-tabs .nav-link {
+            padding: 8px 12px;
+            font-size: 0.9em;
+        }
+        
+        .nav-tabs .nav-link i {
+            margin-right: 4px;
+            font-size: 1em;
+        }
+    }
   </style>
 </head>
 <body>
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+<nav class="navbar navbar-expand-lg navbar-dark">
   <div class="container-fluid">
     <a class="navbar-brand" href="dashboard.php">
       <i class="fas fa-university"></i> BSU Inventory System
@@ -52,16 +160,18 @@ $searchQuery = $search ? "WHERE asset_tag LIKE '%$search%' OR assigned_person LI
 <div class="container-fluid">
   <div class="row">
     <!-- Sidebar -->
-    <div class="col-md-3 col-lg-2 sidebar p-3">
-      <ul class="nav flex-column">
-        <li class="nav-item"><a href="dashboard.php" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-        <li class="nav-item"><a href="equipment.php" class="nav-link active"><i class="fas fa-laptop"></i> Equipment</a></li>
-        <li class="nav-item"><a href="departments.php" class="nav-link"><i class="fas fa-building"></i> Departments</a></li>
-        <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
-        <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
-        <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
-        <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
-      </ul>
+    <div class="col-md-3 col-lg-2 sidebar">
+      <div class="d-flex flex-column flex-shrink-0 p-3">
+        <ul class="nav nav-pills flex-column mb-auto">
+          <li class="nav-item"><a href="dashboard.php" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+          <li class="nav-item"><a href="equipment.php" class="nav-link active"><i class="fas fa-laptop"></i> Equipment</a></li>
+          <li class="nav-item"><a href="departments.php" class="nav-link"><i class="fas fa-building"></i> Departments</a></li>
+          <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
+          <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
+          <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
+          <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
+        </ul>
+      </div>
     </div>
 
     <!-- Main Content -->
@@ -80,18 +190,42 @@ $searchQuery = $search ? "WHERE asset_tag LIKE '%$search%' OR assigned_person LI
 
       <!-- Tabs -->
       <ul class="nav nav-tabs" role="tablist">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#desktops">Desktops</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#laptops">Laptops</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#printers">Printers</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#accesspoints">Access Points</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#switches">Switches</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#telephones">Telephones</button></li>
+        <li class="nav-item">
+          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#desktops">
+            <i class="fas fa-desktop"></i> Desktops
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#laptops">
+            <i class="fas fa-laptop"></i> Laptops
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#printers">
+            <i class="fas fa-print"></i> Printers
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#accesspoints">
+            <i class="fas fa-wifi"></i> Access Points
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#switches">
+            <i class="fas fa-network-wired"></i> Switches
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#telephones">
+            <i class="fas fa-phone"></i> Telephones
+          </button>
+        </li>
       </ul>
 
-      <div class="tab-content border bg-white p-3 rounded-bottom shadow-sm">
+      <div class="tab-content">
         <!-- Desktop -->
         <div class="tab-pane fade show active" id="desktops">
-          <h5>🖥️ Desktop Inventory</h5>
+          <h5><i class="fas fa-desktop text-danger"></i> Desktop Inventory</h5>
           <table class="table table-hover">
             <thead><tr><th>Asset Tag</th><th>User</th><th>Location</th><th>Processor</th><th>OS</th></tr></thead>
             <tbody>
@@ -126,7 +260,7 @@ $searchQuery = $search ? "WHERE asset_tag LIKE '%$search%' OR assigned_person LI
 
         <!-- Laptops -->
         <div class="tab-pane fade" id="laptops">
-          <h5>💻 Laptop Inventory</h5>
+          <h5><i class="fas fa-laptop text-danger"></i> Laptop Inventory</h5>
           <table class="table table-hover">
             <thead><tr><th>Asset Tag</th><th>User</th><th>Location</th><th>Hardware</th><th>Software</th></tr></thead>
             <tbody>
@@ -158,7 +292,7 @@ $searchQuery = $search ? "WHERE asset_tag LIKE '%$search%' OR assigned_person LI
 
         <!-- Printers -->
         <div class="tab-pane fade" id="printers">
-          <h5>🖨️ Printer Inventory</h5>
+          <h5><i class="fas fa-print text-danger"></i> Printer Inventory</h5>
           <table class="table table-hover">
             <thead><tr><th>Asset Tag</th><th>User</th><th>Location</th><th>Remarks</th></tr></thead>
             <tbody>
@@ -189,7 +323,7 @@ $searchQuery = $search ? "WHERE asset_tag LIKE '%$search%' OR assigned_person LI
 
         <!-- Access Points -->
         <div class="tab-pane fade" id="accesspoints">
-          <h5>📡 Access Point Inventory</h5>
+          <h5><i class="fas fa-wifi text-danger"></i> Access Point Inventory</h5>
           <table class="table table-hover">
             <thead><tr><th>Asset Tag</th><th>User</th><th>Location</th><th>Remarks</th></tr></thead>
             <tbody>
@@ -220,7 +354,7 @@ $searchQuery = $search ? "WHERE asset_tag LIKE '%$search%' OR assigned_person LI
 
         <!-- Switches -->
         <div class="tab-pane fade" id="switches">
-          <h5>🔀 Switch Inventory</h5>
+          <h5><i class="fas fa-network-wired text-danger"></i> Switch Inventory</h5>
           <table class="table table-hover">
             <thead><tr><th>Asset Tag</th><th>User</th><th>Location</th><th>Remarks</th></tr></thead>
             <tbody>
@@ -251,7 +385,7 @@ $searchQuery = $search ? "WHERE asset_tag LIKE '%$search%' OR assigned_person LI
 
         <!-- Telephones -->
         <div class="tab-pane fade" id="telephones">
-          <h5>☎️ Telephone Inventory</h5>
+          <h5><i class="fas fa-phone text-danger"></i> Telephone Inventory</h5>
           <table class="table table-hover">
             <thead><tr><th>Asset Tag</th><th>User</th><th>Location</th><th>Remarks</th></tr></thead>
             <tbody>

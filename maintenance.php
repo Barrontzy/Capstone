@@ -14,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         switch ($_POST['action']) {
             case 'add':
                 $equipment_id = $_POST['equipment_id'];
-                $equipment_type = $_POST['equipment_type'];
                 $technician_id = $_POST['technician_id'];
                 $maintenance_type = $_POST['maintenance_type'];
                 $description = trim($_POST['description']);
@@ -23,9 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $end_date = $_POST['end_date'];
                 
                 $stmt = $conn->prepare("INSERT INTO maintenance_records 
-                    (equipment_id, equipment_type, technician_id, maintenance_type, description, cost, start_date, end_date, status) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'scheduled')");
-                $stmt->bind_param("isissdss", $equipment_id, $equipment_type, $technician_id, $maintenance_type, $description, $cost, $start_date, $end_date);
+                    (equipment_id, technician_id, maintenance_type, description, cost, start_date, end_date, status) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 'scheduled')");
+                $stmt->bind_param("iissdss", $equipment_id, $technician_id, $maintenance_type, $description, $cost, $start_date, $end_date);
                 
                 if ($stmt->execute()) {
                     $message = 'Maintenance record added successfully!';
@@ -38,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             case 'update':
                 $id = $_POST['id'];
                 $equipment_id = $_POST['equipment_id'];
-                $equipment_type = $_POST['equipment_type'];
                 $technician_id = $_POST['technician_id'];
                 $maintenance_type = $_POST['maintenance_type'];
                 $description = trim($_POST['description']);
@@ -48,9 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $status = $_POST['status'];
                 
                 $stmt = $conn->prepare("UPDATE maintenance_records 
-                    SET equipment_id = ?, equipment_type = ?, technician_id = ?, maintenance_type = ?, description = ?, cost = ?, start_date = ?, end_date = ?, status = ? 
+                    SET equipment_id = ?, technician_id = ?, maintenance_type = ?, description = ?, cost = ?, start_date = ?, end_date = ?, status = ? 
                     WHERE id = ?");
-                $stmt->bind_param("isissdsssi", $equipment_id, $equipment_type, $technician_id, $maintenance_type, $description, $cost, $start_date, $end_date, $status, $id);
+                $stmt->bind_param("iissdsssi", $equipment_id, $technician_id, $maintenance_type, $description, $cost, $start_date, $end_date, $status, $id);
                 
                 if ($stmt->execute()) {
                     $message = 'Maintenance record updated successfully!';
@@ -77,48 +75,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// Get maintenance records
+// Get maintenance records with equipment and department information
 $maintenance_records = $conn->query("
-    SELECT mr.*, u.full_name AS technician_name,
-        CASE mr.equipment_type
-            WHEN 'desktop' THEN (SELECT model FROM desktop WHERE id = mr.equipment_id)
-            WHEN 'laptops' THEN (SELECT hardware_specifications FROM laptops WHERE id = mr.equipment_id)
-            WHEN 'printers' THEN (SELECT hardware_specifications FROM printers WHERE id = mr.equipment_id)
-            WHEN 'accesspoint' THEN (SELECT hardware_specifications FROM accesspoint WHERE id = mr.equipment_id)
-            WHEN 'switch' THEN (SELECT hardware_specifications FROM switch WHERE id = mr.equipment_id)
-            WHEN 'telephone' THEN (SELECT hardware_specifications FROM telephone WHERE id = mr.equipment_id)
-        END AS equipment_name,
-        CASE mr.equipment_type
-            WHEN 'desktop' THEN (SELECT department_office FROM desktop WHERE id = mr.equipment_id)
-            WHEN 'laptops' THEN (SELECT department FROM laptops WHERE id = mr.equipment_id)
-            WHEN 'printers' THEN (SELECT department FROM printers WHERE id = mr.equipment_id)
-            WHEN 'accesspoint' THEN (SELECT department FROM accesspoint WHERE id = mr.equipment_id)
-            WHEN 'switch' THEN (SELECT department FROM switch WHERE id = mr.equipment_id)
-            WHEN 'telephone' THEN (SELECT department FROM telephone WHERE id = mr.equipment_id)
-        END AS department_name
+    SELECT mr.*, 
+           u.full_name AS technician_name,
+           e.name AS equipment_name,
+           e.model AS equipment_model,
+           e.brand AS equipment_brand,
+           ec.name AS equipment_category,
+           d.name AS department_name
     FROM maintenance_records mr
     LEFT JOIN users u ON mr.technician_id = u.id
+    LEFT JOIN equipment e ON mr.equipment_id = e.id
+    LEFT JOIN equipment_categories ec ON e.category_id = ec.id
+    LEFT JOIN departments d ON e.department_id = d.id
     ORDER BY mr.created_at DESC
 ");
 
 // Get equipment list for dropdown
-$equipment_list = [];
-$tables = [
-    'desktop'     => 'model',
-    'laptops'     => 'hardware_specifications',
-    'printers'    => 'hardware_specifications',
-    'accesspoint' => 'hardware_specifications',
-    'switch'      => 'hardware_specifications',
-    'telephone'   => 'hardware_specifications'
-];
-
-foreach ($tables as $table => $col) {
-    $result = $conn->query("SELECT id, $col AS label FROM $table");
-    while ($row = $result->fetch_assoc()) {
-        $row['type'] = $table;
-        $equipment_list[] = $row;
-    }
-}
+$equipment_list = $conn->query("
+    SELECT e.id, e.name, e.model, e.brand, ec.name AS category_name
+    FROM equipment e
+    LEFT JOIN equipment_categories ec ON e.category_id = ec.id
+    WHERE e.status = 'active'
+    ORDER BY e.name
+");
 
 // Get technicians
 $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'technician' ORDER BY full_name");
@@ -240,6 +221,7 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
                                 <thead>
                                     <tr>
                                         <th>Equipment</th>
+                                        <th>Category</th>
                                         <th>Department</th>
                                         <th>Type</th>
                                         <th>Technician</th>
@@ -247,19 +229,45 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
                                         <th>Start Date</th>
                                         <th>End Date</th>
                                         <th>Cost</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php while ($record = $maintenance_records->fetch_assoc()): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($record['equipment_name']); ?></td>
+                                            <td>
+                                                <strong><?php echo htmlspecialchars($record['equipment_name']); ?></strong>
+                                                <?php if ($record['equipment_model']): ?>
+                                                    <br><small class="text-muted"><?php echo htmlspecialchars($record['equipment_model']); ?></small>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($record['equipment_category']); ?></td>
                                             <td><?php echo htmlspecialchars($record['department_name']); ?></td>
                                             <td><span class="badge bg-info"><?php echo ucfirst($record['maintenance_type']); ?></span></td>
                                             <td><?php echo htmlspecialchars($record['technician_name']); ?></td>
-                                            <td><span class="badge bg-warning"><?php echo ucfirst($record['status']); ?></span></td>
+                                            <td>
+                                                <?php
+                                                $status_class = '';
+                                                switch($record['status']) {
+                                                    case 'scheduled': $status_class = 'bg-secondary'; break;
+                                                    case 'in_progress': $status_class = 'bg-warning'; break;
+                                                    case 'completed': $status_class = 'bg-success'; break;
+                                                    case 'cancelled': $status_class = 'bg-danger'; break;
+                                                }
+                                                ?>
+                                                <span class="badge <?php echo $status_class; ?>"><?php echo ucfirst($record['status']); ?></span>
+                                            </td>
                                             <td><?php echo $record['start_date']; ?></td>
                                             <td><?php echo $record['end_date']; ?></td>
                                             <td>₱<?php echo number_format($record['cost'], 2); ?></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary" onclick="editMaintenance(<?php echo $record['id']; ?>)">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteMaintenance(<?php echo $record['id']; ?>)">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
                                         </tr>
                                     <?php endwhile; ?>
                                 </tbody>
@@ -275,6 +283,10 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
     <div class="modal fade" id="addMaintenanceModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Schedule Maintenance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
                 <form method="POST">
                     <input type="hidden" name="action" value="add">
                     <div class="modal-body">
@@ -283,13 +295,16 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
                                 <label class="form-label">Equipment</label>
                                 <select class="form-control" name="equipment_id" required>
                                     <option value="">Select Equipment</option>
-                                    <?php foreach ($equipment_list as $equipment): ?>
-                                        <option value="<?php echo $equipment['id']; ?>" data-type="<?php echo $equipment['type']; ?>">
-                                            [<?php echo ucfirst($equipment['type']); ?>] <?php echo htmlspecialchars($equipment['label']); ?>
+                                    <?php while ($equipment = $equipment_list->fetch_assoc()): ?>
+                                        <option value="<?php echo $equipment['id']; ?>">
+                                            <?php echo htmlspecialchars($equipment['name']); ?>
+                                            <?php if ($equipment['model']): ?>
+                                                - <?php echo htmlspecialchars($equipment['model']); ?>
+                                            <?php endif; ?>
+                                            (<?php echo htmlspecialchars($equipment['category_name']); ?>)
                                         </option>
-                                    <?php endforeach; ?>
+                                    <?php endwhile; ?>
                                 </select>
-                                <input type="hidden" name="equipment_type" id="equipment_type">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Technician</label>
@@ -330,8 +345,8 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
                     </div>
                 </form>
             </div>
@@ -339,10 +354,23 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
     </div>
 
     <script>
-    document.querySelector('select[name="equipment_id"]').addEventListener('change', function() {
-        let type = this.options[this.selectedIndex].getAttribute('data-type');
-        document.getElementById('equipment_type').value = type;
-    });
+    function editMaintenance(id) {
+        // TODO: Implement edit functionality
+        alert('Edit functionality not implemented yet');
+    }
+    
+    function deleteMaintenance(id) {
+        if (confirm('Are you sure you want to delete this maintenance record?')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.innerHTML = `
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="id" value="${id}">
+            `;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

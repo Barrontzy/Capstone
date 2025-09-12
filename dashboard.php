@@ -124,57 +124,91 @@ $maintenance_alerts = array_slice($maintenance_alerts, 0, 5);
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background-color: #f8f9fa; }
+        :root {
+            --primary-color: #dc3545;
+            --secondary-color: #343a40;
+        }
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
         .sidebar {
-            background: #fff; min-height: 100vh; padding-top: 20px;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            min-height: calc(100vh - 76px);
+        }
+        .sidebar .nav-link {
+            color: var(--secondary-color);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 2px 10px;
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .main-content {
+            padding: 20px;
         }
         .stats-card {
-            background: white; border-radius: 15px; padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center;
+            background: white; 
+            border-radius: 15px; 
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+            text-align: center;
         }
-        .chart-container { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .chart-container { 
+            background: white; 
+            border-radius: 15px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
         #categoryChart { max-height: 250px; }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="dashboard.php">
-          <i class="fas fa-university"></i> BSU Inventory System
-        </a>
-        <div class="navbar-nav ms-auto">
-          <!-- Profile Button -->
-          <a href="profile.php" class="btn btn-light me-2">
-            <i class="fas fa-user-circle"></i> Profile
-          </a>
-          <!-- Logout Button -->
-          <a href="logout.php" class="btn btn-outline-light">
-            <i class="fas fa-sign-out-alt"></i> Logout
-          </a>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.php">
+                <i class="fas fa-university"></i> BSU Inventory System
+            </a>
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user"></i> <?php echo $_SESSION['user_name']; ?>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="profile.php"><i class="fas fa-user-circle"></i> Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
-      </div>
     </nav>
 
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-2 sidebar">
-                <h5 class="px-3 mb-3"><i class="fas fa-university"></i> Inventory</h5>
-                <ul class="nav flex-column">
-                    <li class="nav-item"><a href="dashboard.php" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li class="nav-item"><a href="equipment.php" class="nav-link"><i class="fas fa-laptop"></i> Equipment</a></li>
-                    <li class="nav-item"><a href="departments.php" class="nav-link"><i class="fas fa-building"></i> Departments</a></li>
-                    <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
-                    <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
-                    <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                    <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
-                </ul>
+            <div class="col-md-3 col-lg-2 sidebar">
+                <div class="d-flex flex-column flex-shrink-0 p-3">
+                    <ul class="nav nav-pills flex-column mb-auto">
+                        <li class="nav-item"><a href="dashboard.php" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li class="nav-item"><a href="equipment.php" class="nav-link"><i class="fas fa-laptop"></i> Equipment</a></li>
+                        <li class="nav-item"><a href="departments.php" class="nav-link"><i class="fas fa-building"></i> Departments</a></li>
+                        <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
+                        <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
+                        <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                        <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
+                    </ul>
+                </div>
             </div>
 
             <!-- Main Content -->
-            <div class="col-md-10 p-4">
+            <div class="col-md-9 col-lg-10 main-content">
                 <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
                 <div class="row mb-4">
                     <div class="col-md-3"><div class="stats-card"><h3><?php echo $stats['total_equipment']; ?></h3><p>Total Equipment</p></div></div>
@@ -255,5 +289,6 @@ $maintenance_alerts = array_slice($maintenance_alerts, 0, 5);
             options: { responsive: true, scales: { y: { beginAtZero: true } } }
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
