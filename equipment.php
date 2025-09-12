@@ -114,8 +114,9 @@ $telephone_where = buildWhere($search, $status, 'remarks');
   <style>
     body { background-color: #f8f9fa; }
     .sidebar { background: white; min-height: 100vh; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
-    .sidebar .nav-link { color: #343a40; margin: 5px 0; border-radius: 8px; }
-    .sidebar .nav-link.active, .sidebar .nav-link:hover { background: #dc3545; color: white; }
+.sidebar .nav-link { color: #343a40; margin: 5px 0; border-radius: 8px; background: transparent !important; }
+.sidebar .nav-link:not(.active) { background: transparent !important; color: #343a40; }
+.sidebar .nav-link.active, .sidebar .nav-link:hover { background: #dc3545 !important; color: #fff !important; }
     .main-content { padding: 20px; }
     .clickable-row { cursor: pointer; }
     .modal-lg { max-width: 900px; }
@@ -194,7 +195,7 @@ $telephone_where = buildWhere($search, $status, 'remarks');
 </head>
 <body>
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+<nav class="navbar navbar-expand-lg navbar-dark" style="border-bottom:2px solid #2f3338; background: linear-gradient(135deg, #dc3545 0%, #343a40 100%);">
   <div class="container-fluid">
     <a class="navbar-brand" href="dashboard.php"><i class="fas fa-un"></i> 
       <img src="Ict logs.png" alt="BSU Logo" class="logo-icon"> BSU Inventory System
@@ -208,16 +209,18 @@ $telephone_where = buildWhere($search, $status, 'remarks');
 <div class="container-fluid">
   <div class="row">
     <!-- Sidebar -->
-    <div class="col-md-3 col-lg-2 sidebar p-3">
-      <ul class="nav flex-column">
-        <li class="nav-item"><a href="dashboard.php" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-        <li class="nav-item"><a href="equipment.php" class="nav-link active"><i class="fas fa-laptop"></i> Equipment</a></li>
-        <li class="nav-item"><a href="departments.php" class="nav-link"><i class="fas fa-building"></i> Departments</a></li>
-        <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
-        <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
-        <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
-        <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
-      </ul>
+    <div class="col-md-3 col-lg-2 sidebar">
+      <div class="d-flex flex-column flex-shrink-0 p-3">
+        <ul class="nav nav-pills flex-column mb-auto">
+          <li class="nav-item"><a href="dashboard.php" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+          <li class="nav-item"><a href="equipment.php" class="nav-link active"><i class="fas fa-laptop"></i> Equipment</a></li>
+          <li class="nav-item"><a href="departments.php" class="nav-link"><i class="fas fa-building"></i> Departments</a></li>
+          <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
+          <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
+          <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
+          <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
+        </ul>
+      </div>
     </div>
 
     <!-- Main Content -->
