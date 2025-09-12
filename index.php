@@ -112,7 +112,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h2><i class="fas fa-university"></i> BSU</h2>
+            <h2><img src="photo.jpg" alt="Styled Photo" style="border: 2px solid black; border-radius: 10px;" width="200">
+i> BSU</h2>
             <p class="mb-0">Inventory Management System</p>
         </div>
         <div class="login-body">
@@ -138,7 +139,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <input type="password" class="form-control" id="password" name="password" required>
                     </div>
                 </div>
-                
+                <div class="text-center mb-3">
+                    <div class="g-recaptcha d-inline-block" data-sitekey="6LcfFscrAAAAAF_fa8-Wogo2eMJj026s_aeT89H8"></div>
+                </div>
                 <button type="submit" class="btn btn-primary btn-login">
                     <i class="fas fa-sign-in-alt"></i> Login
                 </button>
@@ -152,5 +155,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
-</html> 
+</html>
