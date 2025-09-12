@@ -119,13 +119,39 @@ $telephone_where = buildWhere($search, $status, 'remarks');
     .main-content { padding: 20px; }
     .clickable-row { cursor: pointer; }
     .modal-lg { max-width: 900px; }
+
+    #categoryChart { max-height: 250px; }
+
+        .navbar-brand { display: flex; align-items: center; gap: 8px; }
+
+        .logo-icon {
+            height: 24px;
+            width: auto;
+            display: inline-block;
+            vertical-align: middle;
+}
+
+
+        .navbar { height: 56px; padding-top: 0; padding-bottom: 0; }
+        .navbar .container-fluid { height: 56px; align-items: center; }
+
+        .navbar-brand { display: flex; align-items: center; gap: 8px; padding: 0; }
+
+
+        .logo-icon {
+            height: 40px;
+            width: auto;
+            display: inline-block;
+            vertical-align: middle;
+}
   </style>
 </head>
 <body>
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
   <div class="container-fluid">
-    <a class="navbar-brand" href="dashboard.php"><i class="fas fa-university"></i> BSU Inventory System</a>
+    <a class="navbar-brand" href="dashboard.php"><i class="fas fa-un"></i> 
+      <img src="Ict logs.png" alt="BSU Logo" class="logo-icon"> BSU Inventory System
     <div class="navbar-nav ms-auto">
       <a href="profile.php" class="btn btn-light me-2"><i class="fas fa-user-circle"></i> Profile</a>
       <a href="logout.php" class="btn btn-outline-light"><i class="fas fa-sign-out-alt"></i> Logout</a>

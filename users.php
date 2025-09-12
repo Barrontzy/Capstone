@@ -178,14 +178,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .user-card:hover {
             transform: translateY(-2px);
         }
+        #categoryChart { max-height: 250px; }
+
+        .navbar-brand { display: flex; align-items: center; gap: 8px; }
+
+        .logo-icon {
+            height: 24px;
+            width: auto;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+
+        .navbar { height: 56px; padding-top: 0; padding-bottom: 0; }
+        .navbar .container-fluid { height: 56px; align-items: center; }
+
+        .navbar-brand { display: flex; align-items: center; gap: 8px; padding: 0; }
+
+
+        .logo-icon {
+            height: 40px;
+            width: auto;
+            display: inline-block;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
+   <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="dashboard.php">
-                <i class="fas fa-university"></i> BSU Inventory System
+                <img src="Ict logs.png" alt="BSU Logo" class="logo-icon"> BSU Inventory System
             </a>
             <div class="navbar-nav ms-auto">
                 <div class="nav-item dropdown">
