@@ -144,6 +144,52 @@ $telephone_where = buildWhere($search, $status, 'remarks');
             display: inline-block;
             vertical-align: middle;
 }
+.btn-success {
+  background-color: #dc3545;   /* your color */
+  border-color: #dc3545;
+}
+.btn-success:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+/* Custom Tab Styling */
+.nav-tabs { border-bottom: none; margin-bottom: 0; }
+.nav-tabs .nav-link {
+  background-color: #f8f9fa;
+  border: 2px solid #dee2e6;
+  border-radius: 8px 8px 0 0;
+  margin-right: 6px;
+  padding: 10px 16px;
+  color: #343a40;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border-bottom: none;
+}
+.nav-tabs .nav-link:hover {
+  background-color: #dc3545;
+  color: #fff;
+  border-color: #dc3545;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220,53,69,0.25);
+}
+.nav-tabs .nav-link.active {
+  background-color: #dc3545;
+  color: #fff;
+  border-color: #dc3545;
+  position: relative;
+  z-index: 1;
+}
+/* Content connects to active tab */
+.tab-content {
+  background: #fff;
+  border: 2px solid #dc3545;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  margin-top: -1px;
+}
   </style>
 </head>
 <body>
