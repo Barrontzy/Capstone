@@ -69,9 +69,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         .login-header {
             background: #dc3545;
-            color: white;
-            padding: 30px;
-            text-align: center;
+            color: #fff;
+            /* control the red area height with either padding or a fixed height */
+            /* Option A (responsive): */ padding: 20px 24px; min-height: 220px;
+            /* Option B (fixed height):  height: 220px; */
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px; /* you already added this */
+        }
+
+        /* control the logo size (change height to adjust) */
+        .login-header .logo-icon {
+            height: 160px; /* adjust 140–180px to match your screenshot */
+            width: auto;
+            display: block;
         }
         .login-body {
             padding: 40px;
@@ -112,8 +127,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h2><img src="photo.jpg" alt="Styled Photo" style="border: 2px solid black; border-radius: 10px;" width="200">
-i> BSU</h2>
+            <img src="Ict logs.png" alt="BSU Logo" class="logo-icon">
+            <h2>BSU</h2>
             <p class="mb-0">Inventory Management System</p>
         </div>
         <div class="login-body">
@@ -149,7 +164,7 @@ i> BSU</h2>
             
             <div class="register-link">
                 <p>Don't have an account? <a href="register.php">Register here</a></p>
-                <p class="mt-2"><a href="landing.php" class="text-muted"><i class="fas fa-arrow-left"></i> Back to Home</a></p>
+                <p class="mt-2"><a href="forgot_password.php" class="text-muted"><i class="fas fa-key"></i> Forgot your password?</a></p>
             </div>
         </div>
     </div>
@@ -157,4 +172,10 @@ i> BSU</h2>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
-</html>
+</html> 
+
+
+
+
+
+
