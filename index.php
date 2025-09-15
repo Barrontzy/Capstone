@@ -2,44 +2,10 @@
 require_once 'includes/session.php';
 require_once 'includes/db.php';
 
-// Redirect if already logged in
+// Check if user is already logged in
 if (isset($_SESSION['user_id'])) {
     header('Location: dashboard.php');
     exit();
-}
-
-$error = '';
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
-    
-    if (empty($email) || empty($password)) {
-        $error = 'Please fill in all fields';
-    } else {
-        $stmt = $conn->prepare("SELECT id, full_name, email, role, password FROM users WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        if ($result->num_rows == 1) {
-            $user = $result->fetch_assoc();
-            if (password_verify($password, $user['password'])) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['user_name'] = $user['full_name'];
-                $_SESSION['user_email'] = $user['email'];
-                $_SESSION['user_role'] = $user['role'];
-                
-                header('Location: dashboard.php');
-                exit();
-            } else {
-                $error = 'Invalid password';
-            }
-        } else {
-            $error = 'User not found';
-        }
-        $stmt->close();
-    }
 }
 ?>
 
@@ -48,134 +14,404 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BSU Inventory Management System - Login</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>BSU Inventory Management System</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            background: linear-gradient(135deg, #dc3545 0%, #343a40 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .login-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden;
-            width: 100%;
-            max-width: 400px;
-        }
-        .login-header {
-            background: #dc3545;
-            color: #fff;
-            /* control the red area height with either padding or a fixed height */
-            /* Option A (responsive): */ padding: 20px 24px; min-height: 220px;
-            /* Option B (fixed height):  height: 220px; */
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .loading-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px; /* you already added this */
+            align-items: center;
+            z-index: 1000;
         }
 
-        /* control the logo size (change height to adjust) */
-        .login-header .logo-icon {
-            height: 160px; /* adjust 140–180px to match your screenshot */
-            width: auto;
-            display: block;
-        }
-        .login-body {
-            padding: 40px;
-        }
-        .form-control {
-            border-radius: 10px;
-            border: 2px solid #e9ecef;
-            padding: 12px 15px;
-        }
-        .form-control:focus {
-            border-color: #dc3545;
-            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-        }
-        .btn-login {
-            background: #dc3545;
-            border: none;
-            border-radius: 10px;
-            padding: 12px;
-            font-weight: 600;
-            width: 100%;
-        }
-        .btn-login:hover {
-            background: #c82333;
-        }
-        .register-link {
+        .logo-section {
             text-align: center;
-            margin-top: 20px;
+            margin-bottom: 40px;
+            animation: fadeInUp 1s ease-out;
         }
-        .register-link a {
-            color: #dc3545;
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 30px rgba(220, 53, 69, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .logo i {
+            font-size: 50px;
+            color: white;
+        }
+
+        .system-title {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .system-subtitle {
+            color: #cccccc;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .loading-bar {
+            width: 300px;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #dc3545, #ff6b6b);
+            border-radius: 3px;
+            width: 0%;
+            animation: loading 3s ease-in-out;
+            position: relative;
+        }
+
+        .loading-progress::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        .loading-text {
+            color: #cccccc;
+            font-size: 1rem;
+            margin-bottom: 40px;
+            animation: fadeIn 2s ease-out;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            animation: fadeInUp 1.5s ease-out;
+        }
+
+        .btn-landing {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
             text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .register-link a:hover {
-            text-decoration: underline;
+
+        .btn-primary-landing {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-primary-landing:hover {
+            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+            color: white;
+        }
+
+        .btn-secondary-landing {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary-landing:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 60px;
+            max-width: 800px;
+            animation: fadeInUp 2s ease-out;
+        }
+
+        .feature-card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(220, 53, 69, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .feature-description {
+            color: #cccccc;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(220, 53, 69, 0.3);
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .system-title {
+                font-size: 2rem;
+            }
+            
+            .system-subtitle {
+                font-size: 1rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+                margin-top: 40px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-header">
-            <img src="Ict logs.png" alt="BSU Logo" class="logo-icon">
-            <h2>BSU</h2>
-            <p class="mb-0">Inventory Management System</p>
+    <!-- Particles Background -->
+    <div class="particles">
+        <?php for($i = 0; $i < 20; $i++): ?>
+            <div class="particle" style="
+                left: <?php echo rand(0, 100); ?>%;
+                animation-delay: <?php echo rand(0, 6); ?>s;
+                animation-duration: <?php echo rand(4, 8); ?>s;
+            "></div>
+        <?php endfor; ?>
+    </div>
+
+    <div class="loading-container">
+        <!-- Logo and Title Section -->
+        <div class="logo-section">
+            <div class="logo">
+                <img src="Ict logs.png"alt="University Icon" width="150" height="150" marginleft="20px " marginright="20px" margin-bottom="30px">
+            </div>
+            <h1 class="system-title">BSU Inventory System</h1>
+            <p class="system-subtitle">Batangas State University</p>
         </div>
-        <div class="login-body">
-            <?php if ($error): ?>
-                <div class="alert alert-danger" role="alert">
-                    <i class="fas fa-exclamation-triangle"></i> <?php echo $error; ?>
+
+        <!-- Loading Animation -->
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
+        </div>
+        <p class="loading-text">Initializing system...</p>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+                                                                       <a href="landing.php" class="btn-landing btn-primary-landing">
+                <i class="fas fa-sign-in-alt"></i>
+                Login
+            </a>
+                                                                       <a href="register.php" class="btn-landing btn-secondary-landing">
+                <i class="fas fa-user-plus"></i>
+                Register
+            </a>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-laptop"></i>
                 </div>
-            <?php endif; ?>
+                <h3 class="feature-title">Equipment Management</h3>
+                <p class="feature-description">Track and manage all equipment with detailed information and QR codes</p>
+            </div>
             
-            <form method="POST" action="">
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email Address</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                    </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-tools"></i>
                 </div>
-                
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                </div>
-                <div class="text-center mb-3">
-                    <div class="g-recaptcha d-inline-block" data-sitekey="6LcfFscrAAAAAF_fa8-Wogo2eMJj026s_aeT89H8"></div>
-                </div>
-                <button type="submit" class="btn btn-primary btn-login">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </button>
-            </form>
+                <h3 class="feature-title">Maintenance Tracking</h3>
+                <p class="feature-description">Schedule and monitor maintenance activities with cost tracking</p>
+            </div>
             
-            <div class="register-link">
-                <p>Don't have an account? <a href="register.php">Register here</a></p>
-                <p class="mt-2"><a href="forgot_password.php" class="text-muted"><i class="fas fa-key"></i> Forgot your password?</a></p>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3 class="feature-title">Analytics & Reports</h3>
+                <p class="feature-description">Generate comprehensive reports and view real-time analytics</p>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+        // Simulate loading process
+        setTimeout(() => {
+            document.querySelector('.loading-text').textContent = 'System ready...';
+        }, 1500);
+
+        setTimeout(() => {
+            document.querySelector('.loading-text').textContent = 'Welcome to BSU Inventory Management System';
+        }, 3000);
+
+        // Add click effects to buttons
+        document.querySelectorAll('.btn-landing').forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Add ripple effect
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.classList.add('ripple');
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Add hover effects to feature cards
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
 </body>
 </html> 
-
-
-
-
-
-

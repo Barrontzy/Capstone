@@ -203,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </form>
             
             <div class="login-link">
-                <p>Already have an account? <a href="index.php">Login here</a></p>
+                <p>Already have an account? <a href="landing.php">Login here</a></p>
                 <p class="mt-2"><a href="landing.php" class="text-muted"><i class="fas fa-arrow-left"></i> Back to Home</a></p>
             </div>
         </div>

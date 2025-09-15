@@ -108,14 +108,39 @@ $maintenance_alerts = array_slice($maintenance_alerts, 0, 5);
     .stats-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
     .chart-container { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
     .navbar { background: linear-gradient(135deg, #dc3545 0%, #343a40 100%) !important; border-bottom: 2px solid #2f3338; }
+    
+    #categoryChart { max-height: 250px; }
+
+        .navbar-brand { display: flex; align-items: center; gap: 8px; }
+
+        .logo-icon {
+            height: 24px;         
+            width: auto;
+            display: inline-block;
+            vertical-align: middle;
+}
+
+       
+        .navbar { height: 56px; padding-top: 0; padding-bottom: 0; }
+        .navbar .container-fluid { height: 56px; align-items: center; }
+
+        .navbar-brand { display: flex; align-items: center; gap: 8px; padding: 0; }
+
+     
+        .logo-icon {
+            height: 40px;          
+            width: auto;
+            display: inline-block;
+            vertical-align: middle;
+}
   </style>
 </head>
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
     <div class="container-fluid">
-      <a class="navbar-brand" href="dashboard.php"><i class="fas fa-university"></i> BSU Inventory System</a>
-      <div class="navbar-nav ms-auto">
+    <img src="Ict logs.png" alt="BSU Logo" class="logo-icon"> BSU Inventory System
+    <div class="navbar-nav ms-auto">      <div class="navbar-nav ms-auto">
         <a href="profile.php" class="btn btn-light me-2"><i class="fas fa-user-circle"></i> Profile</a>
         <a href="logout.php" class="btn btn-outline-light"><i class="fas fa-sign-out-alt"></i> Logout</a>
       </div>
