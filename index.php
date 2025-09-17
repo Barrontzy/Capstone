@@ -308,8 +308,8 @@ if (isset($_SESSION['user_id'])) {
             <div class="particle" style="
                 left: <?php echo rand(0, 100); ?>%;
                 animation-delay: <?php echo rand(0, 6); ?>s;
-                animation-duration: <?php echo rand(4, 8); ?>s;
-            "></div>
+                animation-duration: <?php echo rand(4, 8); ?>s;">
+            </div>
         <?php endfor; ?>
     </div>
 
@@ -331,11 +331,11 @@ if (isset($_SESSION['user_id'])) {
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-                                                                       <a href="landing.php" class="btn-landing btn-primary-landing">
+            <a href="landing.php" class="btn-landing btn-primary-landing">
                 <i class="fas fa-sign-in-alt"></i>
                 Login
             </a>
-                                                                       <a href="register.php" class="btn-landing btn-secondary-landing">
+            <a href="register.php" class="btn-landing btn-secondary-landing">
                 <i class="fas fa-user-plus"></i>
                 Register
             </a>
