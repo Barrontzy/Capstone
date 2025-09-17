@@ -1,6 +1,10 @@
 <?php
 require_once 'includes/session.php';
 require_once 'includes/db.php';
+include 'PDFS/PreventiveMaintenancePlan/preventiveForm.php';
+include 'PDFS/AnnouncementGreetings/announcementForm.php';
+include 'PDFS/WebsitePosting/webpostingForm.php';
+include 'PDFS/SystemRequest/systemReqsForm.php';
 
 define('FPDF_FONTPATH', __DIR__ . '/includes/fpdf/font/');
 require_once __DIR__ . '/includes/fpdf/fpdf.php';
@@ -913,6 +917,62 @@ $categories = $conn->query("SELECT * FROM equipment_categories ORDER BY name");
                             </div>
                         </div>
                     </div>
+
+                    <div class="col-md-4 mb-4">
+                        <div class="card report-card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calendar-alt fa-3x text-secondary mb-3"></i>
+                                <h5 class="card-title">Preventive Maintenance Plan</h5>
+                                <p class="card-text">--------</p>
+
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#preventiveModal">
+                                Generate Preventive Maintenance Plan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <div class="card report-card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calendar-alt fa-3x text-secondary mb-3"></i>
+                                <h5 class="card-title">Announcement / Greetings Request</h5>
+                                <p class="card-text">--------</p>
+
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#announcementModal">
+                                Generate Announcement / Greetings Request
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <div class="card report-card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calendar-alt fa-3x text-secondary mb-3"></i>
+                                <h5 class="card-title">Website Posting Request</h5>
+                                <p class="card-text">--------</p>
+
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#webPostingModal">
+                                Generate Announcement / Greetings Request
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <div class="card report-card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calendar-alt fa-3x text-secondary mb-3"></i>
+                                <h5 class="card-title">System Request</h5>
+                                <p class="card-text">--------</p>
+
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#systemReqsModal">
+                                Generate System Request
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -989,7 +1049,7 @@ $categories = $conn->query("SELECT * FROM equipment_categories ORDER BY name");
                 'department': 'Department Analysis Report',
                 'maintenance': 'Maintenance & Status Report',
                 'incomplete': 'Incomplete Items Report',
-                'acquisition': 'Acquisition Timeline Report'
+                'acquisition': 'Acquisition Timeline Report',
             };
             
             document.getElementById('reportModalTitle').innerHTML = '<i class="fas fa-chart-bar"></i> ' + titles[reportType];

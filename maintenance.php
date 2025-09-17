@@ -77,28 +77,80 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 // Get maintenance records with equipment and department information
 $maintenance_records = $conn->query("
-    SELECT mr.*, 
-           u.full_name AS technician_name,
-           e.name AS equipment_name,
-           e.model AS equipment_model,
-           e.brand AS equipment_brand,
-           ec.name AS equipment_category,
-           d.name AS department_name
+    SELECT mr.id,
+           mr.technician_name,
+           mr.equipment_type,
+           mr.maintenance_type,
+           mr.status,
+           mr.start_date,
+           mr.end_date,
+           mr.cost,
+           mr.created_at,
+           CASE mr.equipment_type
+               WHEN 'desktop' THEN (SELECT model FROM desktop WHERE id = mr.equipment_id)
+               WHEN 'laptops' THEN (SELECT hardware_specifications FROM laptops WHERE id = mr.equipment_id)
+               WHEN 'printers' THEN (SELECT hardware_specifications FROM printers WHERE id = mr.equipment_id)
+               WHEN 'accesspoint' THEN (SELECT hardware_specifications FROM accesspoint WHERE id = mr.equipment_id)
+               WHEN 'switch' THEN (SELECT hardware_specifications FROM switch WHERE id = mr.equipment_id)
+               WHEN 'telephone' THEN (SELECT hardware_specifications FROM telephone WHERE id = mr.equipment_id)
+           END AS equipment_name,
+           CASE mr.equipment_type
+               WHEN 'desktop' THEN (SELECT department_office FROM desktop WHERE id = mr.equipment_id)
+               WHEN 'laptops' THEN (SELECT department FROM laptops WHERE id = mr.equipment_id)
+               WHEN 'printers' THEN (SELECT department FROM printers WHERE id = mr.equipment_id)
+               WHEN 'accesspoint' THEN (SELECT department FROM accesspoint WHERE id = mr.equipment_id)
+               WHEN 'switch' THEN (SELECT department FROM switch WHERE id = mr.equipment_id)
+               WHEN 'telephone' THEN (SELECT department FROM telephone WHERE id = mr.equipment_id)
+           END AS department_name,
+           CASE mr.equipment_type
+               WHEN 'desktop' THEN 'Desktop'
+               WHEN 'laptops' THEN 'Laptop'
+               WHEN 'printers' THEN 'Printer'
+               WHEN 'accesspoint' THEN 'Access Point'
+               WHEN 'switch' THEN 'Switch'
+               WHEN 'telephone' THEN 'Telephone'
+           END AS equipment_category
     FROM maintenance_records mr
-    LEFT JOIN users u ON mr.technician_id = u.id
-    LEFT JOIN equipment e ON mr.equipment_id = e.id
-    LEFT JOIN equipment_categories ec ON e.category_id = ec.id
-    LEFT JOIN departments d ON e.department_id = d.id
     ORDER BY mr.created_at DESC
 ");
 
 // Get equipment list for dropdown
 $equipment_list = $conn->query("
-    SELECT e.id, e.name, e.model, e.brand, ec.name AS category_name
-    FROM equipment e
-    LEFT JOIN equipment_categories ec ON e.category_id = ec.id
-    WHERE e.status = 'active'
-    ORDER BY e.name
+    SELECT id, model AS name, 'Desktop' AS category_name
+    FROM desktop
+    WHERE remarks LIKE '%Working%'
+    
+    UNION ALL
+    
+    SELECT id, hardware_specifications AS name, 'Laptop' AS category_name
+    FROM laptops
+    WHERE remarks LIKE '%Working%'
+    
+    UNION ALL
+    
+    SELECT id, hardware_specifications AS name, 'Printer' AS category_name
+    FROM printers
+    WHERE remarks LIKE '%Working%'
+    
+    UNION ALL
+    
+    SELECT id, hardware_specifications AS name, 'Access Point' AS category_name
+    FROM accesspoint
+    WHERE remarks LIKE '%Working%'
+    
+    UNION ALL
+    
+    SELECT id, hardware_specifications AS name, 'Switch' AS category_name
+    FROM switch
+    WHERE remarks LIKE '%Working%'
+    
+    UNION ALL
+    
+    SELECT id, hardware_specifications AS name, 'Telephone' AS category_name
+    FROM telephone
+    WHERE remarks LIKE '%Working%'
+    
+    ORDER BY name
 ");
 
 // Get technicians
@@ -251,39 +303,14 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
                                 <tbody>
                                     <?php while ($record = $maintenance_records->fetch_assoc()): ?>
                                         <tr>
-                                            <td>
-                                                <strong><?php echo htmlspecialchars($record['equipment_name']); ?></strong>
-                                                <?php if ($record['equipment_model']): ?>
-                                                    <br><small class="text-muted"><?php echo htmlspecialchars($record['equipment_model']); ?></small>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td><?php echo htmlspecialchars($record['equipment_category']); ?></td>
+                                            <td><?php echo htmlspecialchars($record['equipment_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($record['equipment_type']); ?></td>
                                             <td><?php echo htmlspecialchars($record['department_name']); ?></td>
-                                            <td><span class="badge bg-info"><?php echo ucfirst($record['maintenance_type']); ?></span></td>
                                             <td><?php echo htmlspecialchars($record['technician_name']); ?></td>
-                                            <td>
-                                                <?php
-                                                $status_class = '';
-                                                switch($record['status']) {
-                                                    case 'scheduled': $status_class = 'bg-secondary'; break;
-                                                    case 'in_progress': $status_class = 'bg-warning'; break;
-                                                    case 'completed': $status_class = 'bg-success'; break;
-                                                    case 'cancelled': $status_class = 'bg-danger'; break;
-                                                }
-                                                ?>
-                                                <span class="badge <?php echo $status_class; ?>"><?php echo ucfirst($record['status']); ?></span>
-                                            </td>
+                                            <td><?php echo htmlspecialchars($record['status']); ?></td>
                                             <td><?php echo $record['start_date']; ?></td>
                                             <td><?php echo $record['end_date']; ?></td>
                                             <td>₱<?php echo number_format($record['cost'], 2); ?></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary" onclick="editMaintenance(<?php echo $record['id']; ?>)">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteMaintenance(<?php echo $record['id']; ?>)">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </td>
                                         </tr>
                                     <?php endwhile; ?>
                                 </tbody>
