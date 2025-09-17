@@ -3,7 +3,7 @@
 $host = 'localhost';
 $user = 'root';
 $password = '';
-$dbname = 'bss';
+$dbname = 'bss_old';
 
 $conn = new mysqli($host, $user, $password, $dbname);
 if ($conn->connect_error) {
