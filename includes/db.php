@@ -3,9 +3,25 @@
 $host = 'localhost';
 $user = 'root';
 $password = '';
-$dbname = 'bss_old';
+$dbname = 'bss';
 
-$conn = new mysqli($host, $user, $password, $dbname);
-if ($conn->connect_error) {
-    die('Database connection failed: ' . $conn->connect_error);
-} 
+// Try to connect directly to the target database first
+$mysqli = @new mysqli($host, $user, $password, $dbname);
+
+// If database is unknown (errno 1049), create it then reconnect
+if ($mysqli instanceof mysqli && $mysqli->connect_errno === 1049) {
+    $bootstrap = @new mysqli($host, $user, $password);
+    if ($bootstrap->connect_error) {
+        die('Database bootstrap connection failed: ' . $bootstrap->connect_error);
+    }
+    $bootstrap->query("CREATE DATABASE IF NOT EXISTS `" . $bootstrap->real_escape_string($dbname) . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
+    $bootstrap->close();
+    $mysqli = new mysqli($host, $user, $password, $dbname);
+}
+
+if ($mysqli->connect_error) {
+    die('Database connection failed: ' . $mysqli->connect_error);
+}
+
+// Expose a single $conn variable as the rest of the app expects
+$conn = $mysqli; 
