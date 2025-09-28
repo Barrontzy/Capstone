@@ -3,7 +3,7 @@
 <div class="modal fade" id="webpostingModal" tabindex="-1" aria-labelledby="webpostingModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
-      <form method="POST" action="PDFS/WebsitePosting/webpostingPDF.php">
+      <form method="POST" action="PDFS/WebsitePosting/webpostingPDF.php" target="_blank">
         
         <!-- Modal Header -->
         <div class="modal-header">

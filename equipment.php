@@ -33,6 +33,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $hard_drive = $conn->real_escape_string($_POST['hard_drive'] ?? '');
     $operating_system = $conn->real_escape_string($_POST['operating_system'] ?? '');
 
+
+	include 'logger.php';
+	logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], "Equipment", "Added an equipment. Category Type:". $type);
+
+
     // Insert based on type
     if ($type === 'desktop') {
         // Adjust columns if your desktop table has different column names
@@ -107,121 +112,52 @@ $telephone_where = buildWhere($search, $status, 'remarks');
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Equipment Management - BSU Inventory System</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <style>
-    body { background-color: #f8f9fa; }
-    .sidebar { background: white; min-height: 100vh; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
-.sidebar .nav-link { color: #343a40; margin: 5px 0; border-radius: 8px; background: transparent !important; }
-.sidebar .nav-link:not(.active) { background: transparent !important; color: #343a40; }
-.sidebar .nav-link.active, .sidebar .nav-link:hover { background: #dc3545 !important; color: #fff !important; }
-    .main-content { padding: 20px; }
-    .clickable-row { cursor: pointer; }
-    .modal-lg { max-width: 900px; }
-
-    #categoryChart { max-height: 250px; }
-
-        .navbar-brand { display: flex; align-items: center; gap: 8px; }
-
-        .logo-icon {
-            height: 24px;
-            width: auto;
-            display: inline-block;
-            vertical-align: middle;
-}
-
-
-        .navbar { height: 56px; padding-top: 0; padding-bottom: 0; }
-        .navbar .container-fluid { height: 56px; align-items: center; }
-
-        .navbar-brand { display: flex; align-items: center; gap: 8px; padding: 0; }
-
-
-        .logo-icon {
-            height: 40px;
-            width: auto;
-            display: inline-block;
-            vertical-align: middle;
-}
-.btn-success {
-  background-color: #dc3545;   /* your color */
-  border-color: #dc3545;
-}
-.btn-success:hover {
-  background-color: #dc3545;
-  border-color: #dc3545;
-}
-
-/* Custom Tab Styling */
-.nav-tabs { border-bottom: none; margin-bottom: 0; }
-.nav-tabs .nav-link {
-  background-color: #f8f9fa;
-  border: 2px solid #dee2e6;
-  border-radius: 8px 8px 0 0;
-  margin-right: 6px;
-  padding: 10px 16px;
-  color: #343a40;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  border-bottom: none;
-}
-.nav-tabs .nav-link:hover {
-  background-color: #dc3545;
-  color: #fff;
-  border-color: #dc3545;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(220,53,69,0.25);
-}
-.nav-tabs .nav-link.active {
-  background-color: #dc3545;
-  color: #fff;
-  border-color: #dc3545;
-  position: relative;
-  z-index: 1;
-}
-/* Content connects to active tab */
-.tab-content {
-  background: #fff;
-  border: 2px solid #dc3545;
-  border-top: none;
-  border-radius: 0 0 12px 12px;
-  padding: 20px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-  margin-top: -1px;
-}
-  </style>
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users - BSU Inventory Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <style>
+         :root { --primary-color: #dc3545; --secondary-color: #343a40; }
+        .navbar { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); }
+        .sidebar { background: white; min-height: calc(100vh - 56px); box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+        .sidebar .nav-link { color: var(--secondary-color); margin: 4px 10px; border-radius: 8px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: var(--primary-color); color: #fff; }
+        .main-content { padding: 20px; }
+        .card { border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+    </style>
 <body>
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark" style="border-bottom:2px solid #2f3338; background: linear-gradient(135deg, #dc3545 0%, #343a40 100%);">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="dashboard.php"><i class="fas fa-un"></i> 
-      <img src="Ict logs.png" alt="BSU Logo" class="logo-icon"> BSU Inventory System
-    <div class="navbar-nav ms-auto">
-      <a href="profile.php" class="btn btn-light me-2"><i class="fas fa-user-circle"></i> Profile</a>
-      <a href="logout.php" class="btn btn-outline-light"><i class="fas fa-sign-out-alt"></i> Logout</a>
-    </div>
-  </div>
-</nav>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.php">
+                <img src="Ict logs.png" alt="Logo" style="height:40px;"> BSU Inventory System
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a href="profile.php" class="btn btn-light me-2"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="logout.php" class="btn btn-outline-light"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
 
-<div class="container-fluid">
-  <div class="row">
-    <!-- Sidebar -->
-    <div class="col-md-3 col-lg-2 sidebar">
-      <div class="d-flex flex-column flex-shrink-0 p-3">
-        <ul class="nav nav-pills flex-column mb-auto">
-          <li class="nav-item"><a href="dashboard.php" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-          <li class="nav-item"><a href="equipment.php" class="nav-link active"><i class="fas fa-laptop"></i> Equipment</a></li>
-          <li class="nav-item"><a href="departments.php" class="nav-link"><i class="fas fa-building"></i> Departments</a></li>
-          <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
-          <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
-          <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
-          <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
-        </ul>
-      </div>
-    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-3">
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item"><a href="dashboard.php" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li class="nav-item"><a href="equipment.php" class="nav-link active"><i class="fas fa-laptop"></i> Equipment</a></li>
+                    <li class="nav-item"><a href="departments.php" class="nav-link"><i class="fas fa-building"></i> Departments</a></li>
+                    <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
+                    <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
+                    <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                    <li class="nav-item"><a href="system_logs.php" class="nav-link"><i class="fas fa-clipboard-list"></i> System Logs</a></li>
+                    <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
+                    <li class="nav-item"><a href="admin_accounts.php" class="nav-link "><i class="fas fa-user-shield"></i> Admin Accounts</a></li>
+                </ul>
+            </div>
+
 
     <!-- Main Content -->
     <div class="col-md-9 col-lg-10 main-content">
@@ -272,25 +208,26 @@ $telephone_where = buildWhere($search, $status, 'remarks');
             while ($row = $res->fetch_assoc()):
             ?>
               <tr class="clickable-row"
-                  data-type="desktop"
-                  data-asset="<?php echo htmlspecialchars($row['asset_tag']); ?>"
-                  data-user="<?php echo htmlspecialchars($row['assigned_person']); ?>"
-                  data-location="<?php echo htmlspecialchars($row['location']); ?>"
-                  data-processor="<?php echo htmlspecialchars($row['processor'] ?? ''); ?>"
-                  data-ram="<?php echo htmlspecialchars($row['ram'] ?? ''); ?>"
-                  data-gpu="<?php echo htmlspecialchars($row['gpu'] ?? ''); ?>"
-                  data-hdd="<?php echo htmlspecialchars($row['hard_drive'] ?? ''); ?>"
-                  data-os="<?php echo htmlspecialchars($row['operating_system'] ?? ''); ?>"
-                  data-date="<?php echo htmlspecialchars($row['date_acquired'] ?? ''); ?>"
-                  data-itemno="<?php echo htmlspecialchars($row['inventory_item_no'] ?? ''); ?>"
-                  data-price="<?php echo htmlspecialchars($row['unit_price'] ?? ''); ?>"
-                  data-remarks="<?php echo htmlspecialchars($row['remarks'] ?? ''); ?>">
-                <td><?php echo htmlspecialchars($row['asset_tag']); ?></td>
-                <td><?php echo htmlspecialchars($row['assigned_person']); ?></td>
-                <td><?php echo htmlspecialchars($row['location']); ?></td>
-                <td><?php echo htmlspecialchars($row['processor'] ?? ''); ?></td>
-                <td><?php echo htmlspecialchars($row['operating_system'] ?? ''); ?></td>
-              </tr>
+      data-type="desktop"
+      data-asset="<?php echo htmlspecialchars($row['asset_tag']); ?>"
+      data-user="<?php echo htmlspecialchars($row['assigned_person']); ?>"
+      data-location="<?php echo htmlspecialchars($row['location']); ?>"
+      data-processor="<?php echo htmlspecialchars($row['processor'] ?? ''); ?>"
+      data-ram="<?php echo htmlspecialchars($row['ram'] ?? ''); ?>"
+      data-gpu="<?php echo htmlspecialchars($row['gpu'] ?? ''); ?>"
+      data-hdd="<?php echo htmlspecialchars($row['hard_drive'] ?? ''); ?>"
+      data-os="<?php echo htmlspecialchars($row['operating_system'] ?? ''); ?>"
+      data-date="<?php echo htmlspecialchars($row['date_acquired'] ?? ''); ?>"
+      data-itemno="<?php echo htmlspecialchars($row['inventory_item_no'] ?? ''); ?>"
+      data-price="<?php echo htmlspecialchars($row['unit_price'] ?? ''); ?>"
+      data-remarks="<?php echo htmlspecialchars($row['remarks'] ?? ''); ?>">
+    <td><?php echo htmlspecialchars($row['asset_tag']); ?></td>
+    <td><?php echo htmlspecialchars($row['assigned_person']); ?></td>
+    <td><?php echo htmlspecialchars($row['location']); ?></td>
+    <td><?php echo htmlspecialchars($row['processor'] ?? ''); ?></td>
+    <td><?php echo htmlspecialchars($row['operating_system'] ?? ''); ?></td>
+    
+  </tr>
             <?php endwhile; ?>
             </tbody>
           </table>
@@ -481,20 +418,32 @@ $telephone_where = buildWhere($search, $status, 'remarks');
       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     </div>
     <div class="modal-body">
-      <ul class="list-group">
-        <li class="list-group-item"><strong>Asset Tag:</strong> <span id="d_asset"></span></li>
-        <li class="list-group-item"><strong>Assigned Person:</strong> <span id="d_user"></span></li>
-        <li class="list-group-item"><strong>Location:</strong> <span id="d_location"></span></li>
-        <li class="list-group-item"><strong>Processor:</strong> <span id="d_processor"></span></li>
-        <li class="list-group-item"><strong>RAM:</strong> <span id="d_ram"></span></li>
-        <li class="list-group-item"><strong>GPU:</strong> <span id="d_gpu"></span></li>
-        <li class="list-group-item"><strong>Hard Drive:</strong> <span id="d_hdd"></span></li>
-        <li class="list-group-item"><strong>OS:</strong> <span id="d_os"></span></li>
-        <li class="list-group-item"><strong>Date Acquired:</strong> <span id="d_date"></span></li>
-        <li class="list-group-item"><strong>Inventory Item No:</strong> <span id="d_itemno"></span></li>
-        <li class="list-group-item"><strong>Unit Price:</strong> ₱<span id="d_price"></span></li>
-        <li class="list-group-item"><strong>Remarks:</strong> <span id="d_remarks"></span></li>
-      </ul>
+      <div class="row">
+        <!-- Left: Information -->
+        <div class="col-md-8">
+          <ul class="list-group">
+            <li class="list-group-item"><strong>Asset Tag:</strong> <span id="d_asset"></span></li>
+            <li class="list-group-item"><strong>Assigned Person:</strong> <span id="d_user"></span></li>
+            <li class="list-group-item"><strong>Location:</strong> <span id="d_location"></span></li>
+            <li class="list-group-item"><strong>Processor:</strong> <span id="d_processor"></span></li>
+            <li class="list-group-item"><strong>RAM:</strong> <span id="d_ram"></span></li>
+            <li class="list-group-item"><strong>GPU:</strong> <span id="d_gpu"></span></li>
+            <li class="list-group-item"><strong>Hard Drive:</strong> <span id="d_hdd"></span></li>
+            <li class="list-group-item"><strong>OS:</strong> <span id="d_os"></span></li>
+            <li class="list-group-item"><strong>Date Acquired:</strong> <span id="d_date"></span></li>
+            <li class="list-group-item"><strong>Inventory Item No:</strong> <span id="d_itemno"></span></li>
+            <li class="list-group-item"><strong>Unit Price:</strong> ₱<span id="d_price"></span></li>
+            <li class="list-group-item"><strong>Remarks:</strong> <span id="d_remarks"></span></li>
+          </ul>
+        </div>
+        <!-- Right: QR Code -->
+        <div class="col-md-4 text-center">
+		<center>
+          <div id="desktop_qrcode"></div>
+          <p class="mt-2 text-muted">Scan QR for details</p>
+		  </center>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-primary" onclick="editFromModal()">Edit</button>
@@ -504,7 +453,6 @@ $telephone_where = buildWhere($search, $status, 'remarks');
   </div></div>
 </div>
 
-<!-- Generic Equipment Modal -->
 <div class="modal fade" id="equipModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg"><div class="modal-content">
     <div class="modal-header">
@@ -512,17 +460,27 @@ $telephone_where = buildWhere($search, $status, 'remarks');
       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     </div>
     <div class="modal-body">
-      <ul class="list-group">
-        <li class="list-group-item"><strong>Equipment:</strong> <span id="e_equipment"></span></li>
-        <li class="list-group-item"><strong>Asset Tag:</strong> <span id="e_asset"></span></li>
-        <li class="list-group-item"><strong>Assigned Person:</strong> <span id="e_user"></span></li>
-        <li class="list-group-item"><strong>Location:</strong> <span id="e_location"></span></li>
-        <li class="list-group-item"><strong>Specifications:</strong> <span id="e_specs"></span></li>
-        <li class="list-group-item"><strong>Date Acquired:</strong> <span id="e_date"></span></li>
-        <li class="list-group-item"><strong>Inventory Item No:</strong> <span id="e_itemno"></span></li>
-        <li class="list-group-item"><strong>Unit Price:</strong> ₱<span id="e_price"></span></li>
-        <li class="list-group-item"><strong>Remarks:</strong> <span id="e_remarks"></span></li>
-      </ul>
+      <div class="row">
+        <!-- Left column: info -->
+        <div class="col-md-8">
+          <ul class="list-group">
+            <li class="list-group-item"><strong>Equipment:</strong> <span id="e_equipment"></span></li>
+            <li class="list-group-item"><strong>Asset Tag:</strong> <span id="e_asset"></span></li>
+            <li class="list-group-item"><strong>Assigned Person:</strong> <span id="e_user"></span></li>
+            <li class="list-group-item"><strong>Location:</strong> <span id="e_location"></span></li>
+            <li class="list-group-item"><strong>Specifications:</strong> <span id="e_specs"></span></li>
+            <li class="list-group-item"><strong>Date Acquired:</strong> <span id="e_date"></span></li>
+            <li class="list-group-item"><strong>Inventory Item No:</strong> <span id="e_itemno"></span></li>
+            <li class="list-group-item"><strong>Unit Price:</strong> ₱<span id="e_price"></span></li>
+            <li class="list-group-item"><strong>Remarks:</strong> <span id="e_remarks"></span></li>
+          </ul>
+        </div>
+        <!-- Right column: QR Code -->
+        <div class="col-md-4 text-center">
+          <div id="equip_qrcode"></div>
+          <p class="mt-2 text-muted">Scan QR for details</p>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-primary" onclick="editFromModal()">Edit</button>
@@ -531,6 +489,7 @@ $telephone_where = buildWhere($search, $status, 'remarks');
     </div>
   </div></div>
 </div>
+
 
 <!-- Add Equipment Modal (dynamic fields) -->
 <div class="modal fade" id="addEquipmentModal" tabindex="-1" aria-hidden="true">
@@ -732,6 +691,103 @@ function deleteFromModal() {
     form.submit();
   }
 }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.clickable-row').forEach(function(row) {
+    row.addEventListener('click', function() {
+      currentAssetTag = row.dataset.asset;
+      currentType = row.dataset.type || row.dataset.equipment;
+
+      // ✅ Build compact JSON payload (include only useful fields)
+     // ✅ Build payload for QR code
+const qrPayload = {
+  type: currentType || "Unknown",
+  asset_tag: row.dataset.asset || "N/A",
+  assigned_person: row.dataset.user || "N/A",
+  location: row.dataset.location || "N/A",
+  processor: row.dataset.processor || "",
+  ram: row.dataset.ram || "",
+  gpu: row.dataset.gpu || "",
+  hard_drive: row.dataset.hdd || "",
+  os: row.dataset.os || "",
+  specs: row.dataset.specs || "",
+  date_acquired: row.dataset.date || "",
+  inventory_item_no: row.dataset.itemno || "",
+  unit_price: row.dataset.price || "",
+  remarks: row.dataset.remarks || ""
+};
+
+// ✅ Convert to JSON string
+const qrText = JSON.stringify(qrPayload);
+
+// 🔍 Debugging (check in console)
+console.log("Generated QR Payload:", qrText);
+
+// ✅ Always clear previous QR then generate new one
+document.getElementById("equip_qrcode").innerHTML = "";
+new QRCode(document.getElementById("equip_qrcode"), {
+  text: qrText,  // <-- USE STRING not object
+  width: 180,
+  height: 180
+});
+
+document.getElementById("desktop_qrcode").innerHTML = "";
+new QRCode(document.getElementById("desktop_qrcode"), {
+  text: qrText,
+  width: 180,
+  height: 180
+});
+
+
+      if (row.dataset.type === 'desktop') {
+        // Use only the ID/Asset Tag
+			const qrText = row.dataset.asset || "N/A";
+
+			// Clear previous QR code
+			document.getElementById("desktop_qrcode").innerHTML = "";
+			new QRCode(document.getElementById("desktop_qrcode"), {
+			  text: qrText,
+			  width: 180,
+			  height: 180
+			});
+
+			document.getElementById("equip_qrcode").innerHTML = "";
+			new QRCode(document.getElementById("equip_qrcode"), {
+			  text: qrText,
+			  width: 180,
+			  height: 180
+			});
+
+
+        new bootstrap.Modal(document.getElementById('desktopModal')).show();
+      } else {
+        // Fill generic fields
+     			const qrText = row.dataset.asset || "N/A";
+
+			// Clear previous QR code
+			document.getElementById("desktop_qrcode").innerHTML = "";
+			new QRCode(document.getElementById("desktop_qrcode"), {
+			  text: qrText,
+			  width: 180,
+			  height: 180
+			});
+
+			document.getElementById("equip_qrcode").innerHTML = "";
+			new QRCode(document.getElementById("equip_qrcode"), {
+			  text: qrText,
+			  width: 180,
+			  height: 180
+			});
+
+      }
+    });
+  });
+});
+
+
+
 </script>
 
 </body>

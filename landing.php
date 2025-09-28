@@ -29,7 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['user_name'] = $user['full_name'];
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_role'] = $user['role'];
-                
+				include 'logger.php';
+				logAdminAction($user['id'], $user['full_name'], "Login", "Admin logged in");
                 header('Location: dashboard.php');
                 exit();
             } else {
@@ -162,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </button>
             </form>
             
-            <div class="register-link">
+            <div class="register-link" style="display:none">
                 <p>Don't have an account? <a href="register.php">Register here</a></p>
                 <p class="mt-2"><a href="forgot_password.php" class="text-muted"><i class="fas fa-key"></i> Forgot your password?</a></p>
             </div>

@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . '/../../includes/fpdf/fpdf.php';
+require_once '../../includes/session.php';
+require_once '../../includes/db.php';
 
+	include '../../logger.php';
+	logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], "Generated Report", "SYSTEM REQUEST FORM");
 class PDF extends FPDF {
     function Header() {
         // Logo

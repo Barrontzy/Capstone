@@ -3,6 +3,12 @@ require_once __DIR__ . '/../../includes/fpdf/fpdf.php';
 
 $items = $_POST['items'] ?? [];
 
+require_once '../../includes/session.php';
+require_once '../../includes/db.php';
+
+	include '../../logger.php';
+	logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], "Generated Report", "PREVENTIVE MAINTENANCE PLAN");
+
 class PDF extends FPDF {
     function Header() {
         // Header
@@ -118,5 +124,5 @@ $pdf->Rect(10+$colWidth, $yStart2, $colWidth, $blockHeight);
 $pdf->SetXY(10+$colWidth, $yStart2+5);
 $pdf->MultiCell($colWidth, 6, "Remarks:", 0, 'L');
 
-$pdf->Output('I','Preventive_Maintenance_Plan.pdf');
+$pdf->Output('D','Preventive_Maintenance_Plan.pdf');
 ?>

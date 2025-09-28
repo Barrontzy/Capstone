@@ -3,7 +3,7 @@
 <div class="modal fade" id="preventiveModal" tabindex="-1" aria-labelledby="preventiveModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
-      <form method="POST" action="PDFS/PreventiveMaintenancePlan/preventivePDF.php">
+      <form method="POST" action="PDFS/PreventiveMaintenancePlan/preventivePDF.php" target="_blank">
         <div class="modal-header">
           <h5 class="modal-title" id="preventiveModalLabel">Preventive Maintenance Plan</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

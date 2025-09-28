@@ -22,6 +22,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         
         if ($stmt->execute()) {
             $success = 'Report added successfully!';
+			
+			
+		include 'logger.php';
+include 'logger.php';
+		logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], "User", "Added Report");   
         } else {
             $error = 'Failed to add report.';
         }
@@ -32,19 +37,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
 }
 
 // Get tasks assigned to this technician
-$tasks = $conn->query("
-    SELECT t.*, u.full_name as assigned_by_name,
-           (SELECT COUNT(*) FROM task_reports WHERE task_id = t.id) as report_count
-    FROM tasks t
-    LEFT JOIN users u ON t.assigned_by = u.id
-    WHERE t.assigned_to = $user_id
-    ORDER BY t.priority DESC, t.created_at DESC
-");
+
+				
+
 
 $page_title = 'My Tasks';
 require_once 'header.php';
 ?>
 
+<?php require_once 'footer.php'; ?> 
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -239,5 +240,3 @@ document.getElementById('addReportModal').addEventListener('show.bs.modal', func
     padding: 4px 8px;
 }
 </style>
-
-<?php require_once 'footer.php'; ?> 

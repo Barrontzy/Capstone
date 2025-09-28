@@ -20,20 +20,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $cost = $_POST['cost'];
                 $start_date = $_POST['start_date'];
                 $end_date = $_POST['end_date'];
-                
+
                 $stmt = $conn->prepare("INSERT INTO maintenance_records 
-                    (equipment_id, technician_id, maintenance_type, description, cost, start_date, end_date, status) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, 'scheduled')");
-                $stmt->bind_param("iissdss", $equipment_id, $technician_id, $maintenance_type, $description, $cost, $start_date, $end_date);
-                
-                if ($stmt->execute()) {
-                    $message = 'Maintenance record added successfully!';
-                } else {
-                    $error = 'Failed to add maintenance record.';
-                }
+    (equipment_id, technician_id, maintenance_type, description, cost, start_date, end_date, status, created_at) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+
+$status = 'scheduled'; 
+
+$stmt->bind_param("iissdsss", 
+    $equipment_id, 
+    $technician_id, 
+    $maintenance_type, 
+    $description, 
+    $cost, 
+    $start_date, 
+    $end_date, 
+    $status
+);
+
+if ($stmt->execute()) {
+    $message = 'Maintenance record added successfully!';
+} else {
+    $error = 'Failed to add maintenance record.';
+}
+
                 $stmt->close();
                 break;
-                
+
             case 'update':
                 $id = $_POST['id'];
                 $equipment_id = $_POST['equipment_id'];
@@ -44,12 +57,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $start_date = $_POST['start_date'];
                 $end_date = $_POST['end_date'];
                 $status = $_POST['status'];
-                
+
                 $stmt = $conn->prepare("UPDATE maintenance_records 
                     SET equipment_id = ?, technician_id = ?, maintenance_type = ?, description = ?, cost = ?, start_date = ?, end_date = ?, status = ? 
                     WHERE id = ?");
                 $stmt->bind_param("iissdsssi", $equipment_id, $technician_id, $maintenance_type, $description, $cost, $start_date, $end_date, $status, $id);
-                
+
                 if ($stmt->execute()) {
                     $message = 'Maintenance record updated successfully!';
                 } else {
@@ -57,13 +70,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
                 $stmt->close();
                 break;
-                
+
             case 'delete':
                 $id = $_POST['id'];
-                
                 $stmt = $conn->prepare("DELETE FROM maintenance_records WHERE id = ?");
                 $stmt->bind_param("i", $id);
-                
+
                 if ($stmt->execute()) {
                     $message = 'Maintenance record deleted successfully!';
                 } else {
@@ -75,88 +87,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// Get maintenance records with equipment and department information
+// Get maintenance records
 $maintenance_records = $conn->query("
-    SELECT mr.id,
-           mr.technician_name,
-           mr.equipment_type,
-           mr.maintenance_type,
-           mr.status,
-           mr.start_date,
-           mr.end_date,
-           mr.cost,
-           mr.created_at,
-           CASE mr.equipment_type
-               WHEN 'desktop' THEN (SELECT model FROM desktop WHERE id = mr.equipment_id)
-               WHEN 'laptops' THEN (SELECT hardware_specifications FROM laptops WHERE id = mr.equipment_id)
-               WHEN 'printers' THEN (SELECT hardware_specifications FROM printers WHERE id = mr.equipment_id)
-               WHEN 'accesspoint' THEN (SELECT hardware_specifications FROM accesspoint WHERE id = mr.equipment_id)
-               WHEN 'switch' THEN (SELECT hardware_specifications FROM switch WHERE id = mr.equipment_id)
-               WHEN 'telephone' THEN (SELECT hardware_specifications FROM telephone WHERE id = mr.equipment_id)
-           END AS equipment_name,
-           CASE mr.equipment_type
-               WHEN 'desktop' THEN (SELECT department_office FROM desktop WHERE id = mr.equipment_id)
-               WHEN 'laptops' THEN (SELECT department FROM laptops WHERE id = mr.equipment_id)
-               WHEN 'printers' THEN (SELECT department FROM printers WHERE id = mr.equipment_id)
-               WHEN 'accesspoint' THEN (SELECT department FROM accesspoint WHERE id = mr.equipment_id)
-               WHEN 'switch' THEN (SELECT department FROM switch WHERE id = mr.equipment_id)
-               WHEN 'telephone' THEN (SELECT department FROM telephone WHERE id = mr.equipment_id)
-           END AS department_name,
-           CASE mr.equipment_type
-               WHEN 'desktop' THEN 'Desktop'
-               WHEN 'laptops' THEN 'Laptop'
-               WHEN 'printers' THEN 'Printer'
-               WHEN 'accesspoint' THEN 'Access Point'
-               WHEN 'switch' THEN 'Switch'
-               WHEN 'telephone' THEN 'Telephone'
-           END AS equipment_category
+    SELECT mr.*, u.full_name AS technician_name
     FROM maintenance_records mr
+    LEFT JOIN users u ON mr.technician_id = u.id
     ORDER BY mr.created_at DESC
 ");
 
-// Get equipment list for dropdown
-$equipment_list = $conn->query("
-    SELECT id, model AS name, 'Desktop' AS category_name
-    FROM desktop
-    WHERE remarks LIKE '%Working%'
-    
-    UNION ALL
-    
-    SELECT id, hardware_specifications AS name, 'Laptop' AS category_name
-    FROM laptops
-    WHERE remarks LIKE '%Working%'
-    
-    UNION ALL
-    
-    SELECT id, hardware_specifications AS name, 'Printer' AS category_name
-    FROM printers
-    WHERE remarks LIKE '%Working%'
-    
-    UNION ALL
-    
-    SELECT id, hardware_specifications AS name, 'Access Point' AS category_name
-    FROM accesspoint
-    WHERE remarks LIKE '%Working%'
-    
-    UNION ALL
-    
-    SELECT id, hardware_specifications AS name, 'Switch' AS category_name
-    FROM switch
-    WHERE remarks LIKE '%Working%'
-    
-    UNION ALL
-    
-    SELECT id, hardware_specifications AS name, 'Telephone' AS category_name
-    FROM telephone
-    WHERE remarks LIKE '%Working%'
-    
-    ORDER BY name
-");
-
-// Get technicians
+// For dropdowns (equipments list is assumed to be stored elsewhere or in maintenance_records only)
+$equipment_list = $conn->query("SELECT DISTINCT id, CONCAT('Equipment #', id) AS name FROM maintenance_records ORDER BY id DESC");
 $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'technician' ORDER BY full_name");
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -166,80 +108,21 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #dc3545;
-            --secondary-color: #343a40;
-        }
-        .navbar {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-        }
-        .sidebar {
-            background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            min-height: calc(100vh - 76px);
-        }
-        .sidebar .nav-link {
-            color: var(--secondary-color);
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin: 2px 10px;
-            transition: all 0.3s ease;
-        }
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        .main-content {
-            padding: 20px;
-        }
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        .btn-primary:hover {
-            background-color: #c82333;
-            border-color: #c82333;
-        }
-        .status-badge {
-            font-size: 0.8em;
-        }
-        #categoryChart { max-height: 250px; }
-
-        .navbar-brand { display: flex; align-items: center; gap: 8px; }
-
-        .logo-icon {
-            height: 24px;
-            width: auto;
-            display: inline-block;
-            vertical-align: middle;
-}
-
-
-        .navbar { height: 56px; padding-top: 0; padding-bottom: 0; }
-        .navbar .container-fluid { height: 56px; align-items: center; }
-
-        .navbar-brand { display: flex; align-items: center; gap: 8px; padding: 0; }
-
-
-        .logo-icon {
-            height: 40px;
-            width: auto;
-            display: inline-block;
-            vertical-align: middle;
-}
+         :root { --primary-color: #dc3545; --secondary-color: #343a40; }
+        .navbar { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); }
+        .sidebar { background: white; min-height: calc(100vh - 56px); box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+        .sidebar .nav-link { color: var(--secondary-color); margin: 4px 10px; border-radius: 8px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: var(--primary-color); color: #fff; }
+        .main-content { padding: 20px; }
+        .card { border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="dashboard.php">
-                <img src="Ict logs.png" alt="BSU Logo" class="logo-icon"> BSU Inventory System
+                <img src="Ict logs.png" alt="Logo" style="height:40px;"> BSU Inventory System
             </a>
             <div class="navbar-nav ms-auto">
                 <a href="profile.php" class="btn btn-light me-2"><i class="fas fa-user-circle"></i> Profile</a>
@@ -251,18 +134,18 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar">
-                <div class="d-flex flex-column flex-shrink-0 p-3">
-                    <ul class="nav nav-pills flex-column mb-auto">
-                        <li class="nav-item"><a href="dashboard.php" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                        <li class="nav-item"><a href="equipment.php" class="nav-link"><i class="fas fa-laptop"></i> Equipment</a></li>
-                        <li class="nav-item"><a href="departments.php" class="nav-link"><i class="fas fa-building"></i> Departments</a></li>
-                        <li class="nav-item"><a href="maintenance.php" class="nav-link active"><i class="fas fa-tools"></i> Maintenance</a></li>
-                        <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
-                        <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                        <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
-                    </ul>
-                </div>
+            <div class="col-md-3 col-lg-2 sidebar p-3">
+                <ul class="nav nav-pills flex-column">
+                     <li class="nav-item"><a href="dashboard.php" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li class="nav-item"><a href="equipment.php" class="nav-link"><i class="fas fa-laptop"></i> Equipment</a></li>
+                    <li class="nav-item"><a href="departments.php" class="nav-link "><i class="fas fa-building"></i> Departments</a></li>
+                    <li class="nav-item"><a href="maintenance.php" class="nav-link active"><i class="fas fa-tools"></i> Maintenance</a></li>
+                    <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
+                    <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                    <li class="nav-item"><a href="system_logs.php" class="nav-link"><i class="fas fa-clipboard-list"></i> System Logs</a></li>
+                    <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
+                    <li class="nav-item"><a href="admin_accounts.php" class="nav-link "><i class="fas fa-user-shield"></i> Admin Accounts</a></li>
+                </ul>
             </div>
 
             <!-- Main Content -->
@@ -285,32 +168,34 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
                 <div class="card">
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-hover">
+						<table id="maintenanceTable" class="table table-striped table-bordered">
+                            
                                 <thead>
                                     <tr>
+                                        <th>ID</th>
                                         <th>Equipment</th>
-                                        <th>Category</th>
-                                        <th>Department</th>
-                                        <th>Type</th>
                                         <th>Technician</th>
+                                        <th>Type</th>
                                         <th>Status</th>
                                         <th>Start Date</th>
                                         <th>End Date</th>
                                         <th>Cost</th>
-                                        <th>Actions</th>
+                                        <th>Remarks</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php while ($record = $maintenance_records->fetch_assoc()): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($record['equipment_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($record['equipment_type']); ?></td>
-                                            <td><?php echo htmlspecialchars($record['department_name']); ?></td>
+                                            <td><?php echo $record['id']; ?></td>
+                                            <td><?php echo htmlspecialchars($record['equipment_id']); ?></td>
                                             <td><?php echo htmlspecialchars($record['technician_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($record['maintenance_type']); ?></td>
                                             <td><?php echo htmlspecialchars($record['status']); ?></td>
                                             <td><?php echo $record['start_date']; ?></td>
                                             <td><?php echo $record['end_date']; ?></td>
                                             <td>₱<?php echo number_format($record['cost'], 2); ?></td>
+                                            <td><?php echo $record['remarks']; ?></td>
+                                            
                                         </tr>
                                     <?php endwhile; ?>
                                 </tbody>
@@ -333,36 +218,22 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
                 <form method="POST">
                     <input type="hidden" name="action" value="add">
                     <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Equipment</label>
-                                <select class="form-control" name="equipment_id" required>
-                                    <option value="">Select Equipment</option>
-                                    <?php while ($equipment = $equipment_list->fetch_assoc()): ?>
-                                        <option value="<?php echo $equipment['id']; ?>">
-                                            <?php echo htmlspecialchars($equipment['name']); ?>
-                                            <?php if ($equipment['model']): ?>
-                                                - <?php echo htmlspecialchars($equipment['model']); ?>
-                                            <?php endif; ?>
-                                            (<?php echo htmlspecialchars($equipment['category_name']); ?>)
-                                        </option>
-                                    <?php endwhile; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Technician</label>
-                                <select class="form-control" name="technician_id" required>
-                                    <option value="">Select Technician</option>
-                                    <?php while ($tech = $technicians->fetch_assoc()): ?>
-                                        <option value="<?php echo $tech['id']; ?>"><?php echo $tech['full_name']; ?></option>
-                                    <?php endwhile; ?>
-                                </select>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">Equipment ID</label>
+                            <input type="number" class="form-control" name="equipment_id" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Technician</label>
+                            <select class="form-control" name="technician_id" required>
+                                <option value="">Select Technician</option>
+                                <?php while ($tech = $technicians->fetch_assoc()): ?>
+                                    <option value="<?php echo $tech['id']; ?>"><?php echo $tech['full_name']; ?></option>
+                                <?php endwhile; ?>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Maintenance Type</label>
                             <select class="form-control" name="maintenance_type" required>
-                                <option value="">Select Type</option>
                                 <option value="preventive">Preventive</option>
                                 <option value="corrective">Corrective</option>
                                 <option value="upgrade">Upgrade</option>
@@ -397,11 +268,6 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
     </div>
 
     <script>
-    function editMaintenance(id) {
-        // TODO: Implement edit functionality
-        alert('Edit functionality not implemented yet');
-    }
-    
     function deleteMaintenance(id) {
         if (confirm('Are you sure you want to delete this maintenance record?')) {
             const form = document.createElement('form');
@@ -416,5 +282,36 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
     }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#maintenanceTable').DataTable({
+        dom: '<"d-flex justify-content-between align-items-center mb-3"Bf>rtip',
+        buttons: [
+            { extend: 'excelHtml5', className: 'btn btn-success', text: '<i class="fas fa-file-excel"></i> Excel' },
+            { extend: 'pdfHtml5', className: 'btn btn-danger', text: '<i class="fas fa-file-pdf"></i> PDF' },
+            { extend: 'print', className: 'btn btn-secondary', text: '<i class="fas fa-print"></i> Print' }
+        ],
+        order: [[1, 'desc']]
+    });
+});
+</script>
+
+<style>
+.dataTables_filter {
+    text-align: right !important;
+}
+</style>
+
 </body>
 </html>
