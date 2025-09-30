@@ -4,8 +4,8 @@ require_once '../includes/session.php';
 require_once '../includes/db.php';
 
 // Check if user is logged in and is a technician
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'technician') {
-    header('Location: login.php');
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ../landing.php');
     exit();
 }
 

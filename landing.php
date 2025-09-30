@@ -1,10 +1,15 @@
 <?php
+session_start();
 require_once 'includes/session.php';
 require_once 'includes/db.php';
 
 // Redirect if already logged in
 if (isset($_SESSION['user_id'])) {
-    header('Location: dashboard.php');
+    if($_SESSION['role'] == 'admin'){
+        header('Location: dashboard.php');
+    } elseif($_SESSION['role'] == 'technician'){
+        header('Location: technician/index.php');
+    }
     exit();
 }
 
@@ -30,8 +35,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_role'] = $user['role'];
 				include 'logger.php';
-				logAdminAction($user['id'], $user['full_name'], "Login", "Admin logged in");
-                header('Location: dashboard.php');
+                
+                if($user['role'] == 'admin'){
+                    logAdminAction($user['id'], $user['full_name'], "Login", "Admin logged in");
+                    header('Location: dashboard.php');
+                } elseif($user['role'] == 'technician'){
+                    header('Location: technician/index.php');
+                }
+                // switch ($user['role']) {
+                //     case 'admin':
+                //         header('Location: dashboard.php');
+                //         break;
+                //     case 'technician':
+                //         header('Location: technician/index.php');
+                //     break;
+                // }
                 exit();
             } else {
                 $error = 'Invalid password';

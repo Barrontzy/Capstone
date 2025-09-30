@@ -4,9 +4,14 @@ require_once '../includes/session.php';
 require_once '../includes/db.php';
 
 // Check if user is already logged in
-if (isset($_SESSION['user_id'])) {
-    header('Location: index.php');
-    exit();
+if (isLoggedIn()) {
+    if($_SESSION['role'] == 'admin'){
+        header('Location: dashboard.php');
+        exit();
+    } elseif($_SESSION['role'] == 'technician'){
+        header('Location: technician/index.php');
+        exit();
+    }
 }
 
 $error = '';
