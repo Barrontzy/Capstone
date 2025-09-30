@@ -94,75 +94,57 @@ $maintenance_alerts = array_slice($maintenance_alerts, 0, 5);
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard - BSU Inventory System</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users - BSU Inventory Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+	
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body { background-color: #f8f9fa; }
-    .sidebar { background: white; min-height: 100vh; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
-    .sidebar .nav-link { color: #343a40; margin: 5px 0; border-radius: 8px; background: transparent !important; }
-    .sidebar .nav-link:not(.active) { background: transparent !important; color: #343a40; }
-    .sidebar .nav-link.active, .sidebar .nav-link:hover { background: #dc3545 !important; color: #fff !important; }
-    .stats-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    <style>
+         :root { --primary-color: #dc3545; --secondary-color: #343a40; }
+        .navbar { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); }
+        .sidebar { background: white; min-height: calc(100vh - 56px); box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+        .sidebar .nav-link { color: var(--secondary-color); margin: 4px 10px; border-radius: 8px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: var(--primary-color); color: #fff; }
+        .main-content { padding: 20px; }
+        .card { border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+		 .stats-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
     .chart-container { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
-    .navbar { background: linear-gradient(135deg, #dc3545 0%, #343a40 100%) !important; border-bottom: 2px solid #2f3338; }
     
     #categoryChart { max-height: 250px; }
-
-        .navbar-brand { display: flex; align-items: center; gap: 8px; }
-
-        .logo-icon {
-            height: 24px;         
-            width: auto;
-            display: inline-block;
-            vertical-align: middle;
-}
-
-       
-        .navbar { height: 56px; padding-top: 0; padding-bottom: 0; }
-        .navbar .container-fluid { height: 56px; align-items: center; }
-
-        .navbar-brand { display: flex; align-items: center; gap: 8px; padding: 0; }
-
-     
-        .logo-icon {
-            height: 40px;          
-            width: auto;
-            display: inline-block;
-            vertical-align: middle;
-}
-  </style>
-</head>
+    </style>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-    <div class="container-fluid">
-    <img src="Ict logs.png" alt="BSU Logo" class="logo-icon"> BSU Inventory System
-    <div class="navbar-nav ms-auto">      <div class="navbar-nav ms-auto">
-        <a href="profile.php" class="btn btn-light me-2"><i class="fas fa-user-circle"></i> Profile</a>
-        <a href="logout.php" class="btn btn-outline-light"><i class="fas fa-sign-out-alt"></i> Logout</a>
-      </div>
-    </div>
-  </nav>
-
-  <div class="container-fluid">
-    <div class="row">
-      <!-- Sidebar -->
-      <div class="col-md-3 col-lg-2 sidebar">
-        <div class="d-flex flex-column flex-shrink-0 p-3">
-          <ul class="nav nav-pills flex-column mb-auto">
-            <li class="nav-item"><a href="dashboard.php" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-            <li class="nav-item"><a href="equipment.php" class="nav-link"><i class="fas fa-laptop"></i> Equipment</a></li>
-            <li class="nav-item"><a href="departments.php" class="nav-link"><i class="fas fa-building"></i> Departments</a></li>
-            <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
-            <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
-            <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
-            <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
-          </ul>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.php">
+                <img src="Ict logs.png" alt="Logo" style="height:40px;"> BSU Inventory System
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a href="profile.php" class="btn btn-light me-2"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="logout.php" class="btn btn-outline-light"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
         </div>
-      </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-3">
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item"><a href="dashboard.php" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li class="nav-item"><a href="equipment.php" class="nav-link"><i class="fas fa-laptop"></i> Equipment</a></li>
+                    <li class="nav-item"><a href="departments.php" class="nav-link"><i class="fas fa-building"></i> Departments</a></li>
+                    <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
+                    <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
+                    <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                    <li class="nav-item"><a href="system_logs.php" class="nav-link"><i class="fas fa-clipboard-list"></i> System Logs</a></li>
+                    <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
+                    <li class="nav-item"><a href="admin_accounts.php" class="nav-link "><i class="fas fa-user-shield"></i> Admin Accounts</a></li>
+                </ul>
+            </div>
 
       <!-- Main Content -->
       <div class="col-md-10 p-4">

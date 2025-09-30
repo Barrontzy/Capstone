@@ -32,21 +32,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['user_name'] = $user['full_name'];
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_role'] = $user['role'];
-                
+				
+				
+				include 'logger.php';
+				logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], "User", "User logged in");   
+				
+				
                 // Log login activity
                 $login_time = date('Y-m-d H:i:s');
                 $ip_address = $_SERVER['REMOTE_ADDR'];
                 $user_agent = $_SERVER['HTTP_USER_AGENT'];
+             
                 
-                $log_stmt = $conn->prepare("
-                    INSERT INTO activity_log (user_id, action, ip_address, user_agent)
-                    VALUES (?, 'Technician Login', ?, ?)
-                ");
-                $log_stmt->bind_param("iss", $user['id'], $ip_address, $user_agent);
-                $log_stmt->execute();
-                
-                header('Location: index.php');
-                exit();
+              header('Location: index.php');
+               exit();
             } else {
                 $error = 'Invalid password.';
             }

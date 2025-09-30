@@ -19,19 +19,14 @@ require_once 'header.php';
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-tasks"></i> Task Management</h2>
+                <h2><i class="fas fa-tasks"></i> Task & Maintenance Board</h2>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
-                        <i class="fas fa-plus"></i> Add Task
-                    </button>
                     <button class="btn btn-outline-primary" onclick="refreshTasks()">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
-                        <label class="form-check-label" for="autoRefresh">
-                            Auto Refresh
-                        </label>
+                        <label class="form-check-label" for="autoRefresh">Auto Refresh</label>
                     </div>
                 </div>
             </div>
@@ -39,7 +34,7 @@ require_once 'header.php';
             <div id="alert-container"></div>
 
             <div class="row">
-                <!-- Pending Tasks -->
+                <!-- Pending -->
                 <div class="col-md-4">
                     <div class="card kanban-column">
                         <div class="card-header bg-warning text-dark">
@@ -49,14 +44,12 @@ require_once 'header.php';
                             </h5>
                         </div>
                         <div class="card-body">
-                            <div class="task-list" data-status="pending" id="pending-tasks">
-                                <!-- Tasks will be loaded dynamically -->
-                            </div>
+                            <div class="task-list" data-status="pending" id="pending-tasks"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- In Progress Tasks -->
+                <!-- In Progress -->
                 <div class="col-md-4">
                     <div class="card kanban-column">
                         <div class="card-header bg-info text-white">
@@ -66,14 +59,12 @@ require_once 'header.php';
                             </h5>
                         </div>
                         <div class="card-body">
-                            <div class="task-list" data-status="in_progress" id="in-progress-tasks">
-                                <!-- Tasks will be loaded dynamically -->
-                            </div>
+                            <div class="task-list" data-status="in_progress" id="in-progress-tasks"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Completed Tasks -->
+                <!-- Completed -->
                 <div class="col-md-4">
                     <div class="card kanban-column">
                         <div class="card-header bg-success text-white">
@@ -83,9 +74,7 @@ require_once 'header.php';
                             </h5>
                         </div>
                         <div class="card-body">
-                            <div class="task-list" data-status="completed" id="completed-tasks">
-                                <!-- Tasks will be loaded dynamically -->
-                            </div>
+                            <div class="task-list" data-status="completed" id="completed-tasks"></div>
                         </div>
                     </div>
                 </div>
@@ -94,187 +83,99 @@ require_once 'header.php';
     </div>
 </div>
 
-<!-- Add Task Modal -->
-<div class="modal fade" id="addTaskModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-plus"></i> Add New Task</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="addTaskForm">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Task Title</label>
-                        <input type="text" class="form-control" name="title" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-control" name="description" rows="3" required></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Priority</label>
-                            <select class="form-control" name="priority" required>
-                                <option value="low">Low</option>
-                                <option value="medium" selected>Medium</option>
-                                <option value="high">High</option>
-                                <option value="urgent">Urgent</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Due Date</label>
-                            <input type="date" class="form-control" name="due_date" required>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Create Task</button>
-                </div>
-            </form>
-        </div>
+<!-- Single Complete Modal for both Tasks & Maintenance -->
+<div class="modal fade" id="completeModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-comment"></i> Complete Item - Add Remarks</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="completeForm">
+          <input type="hidden" name="item_id" id="completeItemId">
+          <input type="hidden" name="item_type" id="completeItemType"> <!-- task / maintenance -->
+          <div class="mb-3">
+            <label class="form-label">Remarks</label>
+            <textarea class="form-control" name="remarks" id="completeRemarks" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-check"></i> Confirm Complete
+          </button>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
 let autoRefreshInterval;
 let currentUserId = <?php echo $user_id; ?>;
 
-// Initialize the dashboard
 document.addEventListener('DOMContentLoaded', function() {
-    loadAllTasks();
+    loadAllItems();
     startAutoRefresh();
-    
-    // Handle auto refresh toggle
+
     document.getElementById('autoRefresh').addEventListener('change', function() {
-        if (this.checked) {
-            startAutoRefresh();
-        } else {
-            stopAutoRefresh();
-        }
+        this.checked ? startAutoRefresh() : stopAutoRefresh();
     });
-    
-    // Handle task creation form
-    document.getElementById('addTaskForm').addEventListener('submit', function(e) {
+
+    // Handle Complete Modal submit
+    document.getElementById('completeForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        createTask();
+        const id = document.getElementById('completeItemId').value;
+        const type = document.getElementById('completeItemType').value;
+        const remarks = document.getElementById('completeRemarks').value.trim();
+        if (!remarks) { alert("Please enter remarks."); return; }
+        if (type === 'task') {
+            sendTaskStatusUpdate(id, 'completed', remarks);
+        } else {
+            sendMaintenanceStatusUpdate(id, 'completed', remarks);
+        }
+        bootstrap.Modal.getInstance(document.getElementById('completeModal')).hide();
     });
 });
 
-function createTask() {
-    const formData = new FormData(document.getElementById('addTaskForm'));
-    const taskData = {
-        action: 'create_task',
-        title: formData.get('title'),
-        description: formData.get('description'),
-        priority: formData.get('priority'),
-        due_date: formData.get('due_date'),
-        assigned_to: currentUserId,
-        assigned_by: currentUserId
-    };
-    
-    fetch('api/task_webhook.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(taskData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showAlert('Task created successfully!', 'success');
-            document.getElementById('addTaskForm').reset();
-            bootstrap.Modal.getInstance(document.getElementById('addTaskModal')).hide();
-            loadAllTasks(); // Refresh tasks
-        } else {
-            showAlert('Failed to create task: ' + data.message, 'danger');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showAlert('Error creating task', 'danger');
+// Refreshing
+function startAutoRefresh() { autoRefreshInterval = setInterval(loadAllItems, 10000); }
+function stopAutoRefresh() { clearInterval(autoRefreshInterval); }
+function loadAllItems() {
+    ['pending','in_progress','completed'].forEach(status => {
+        loadTasksByStatus(status);
+        loadMaintenanceByStatus(status);
     });
 }
 
-function startAutoRefresh() {
-    autoRefreshInterval = setInterval(loadAllTasks, 10000); // Refresh every 10 seconds
-}
-
-function stopAutoRefresh() {
-    if (autoRefreshInterval) {
-        clearInterval(autoRefreshInterval);
-    }
-}
-
-function loadAllTasks() {
-    loadTasksByStatus('pending');
-    loadTasksByStatus('in_progress');
-    loadTasksByStatus('completed');
-}
-
+// ---------------- TASKS ----------------
 function loadTasksByStatus(status) {
     fetch('api/task_webhook.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            action: 'get_tasks',
-            status: status,
-            user_id: currentUserId
-        })
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({action: 'get_tasks', status: status, user_id: currentUserId})
     })
-    .then(response => response.json())
+    .then(res => res.json())
     .then(data => {
         if (data.success) {
             renderTasks(status, data.data);
             updateTaskCount(status, data.data.length);
-        } else {
-            console.error('Error loading tasks:', data.message);
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
     });
 }
 
 function renderTasks(status, tasks) {
-    const container = document.getElementById(`${status.replace('_', '-')}-tasks`);
-    container.innerHTML = '';
-    
-    if (tasks.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-4">
-                <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
-                <p class="text-muted">No tasks in this status</p>
-            </div>
-        `;
-        return;
-    }
-    
-    tasks.forEach(task => {
-        const taskElement = createTaskElement(task);
-        container.appendChild(taskElement);
-    });
+    const container = document.getElementById(`${status.replace('_','-')}-tasks`);
+    container.innerHTML = tasks.map(task => createTaskElement(task)).join('');
 }
 
 function createTaskElement(task) {
-    const taskDiv = document.createElement('div');
-    taskDiv.className = `task-card ${task.status === 'completed' ? 'completed' : ''}`;
-    taskDiv.setAttribute('data-task-id', task.id);
-    
-    const priorityClass = `priority-${task.priority}`;
     const dueDate = new Date(task.due_date).toLocaleDateString();
     const createdDate = new Date(task.created_at).toLocaleDateString();
-    
-    taskDiv.innerHTML = `
+
+    return `
+    <div class="task-card ${task.status === 'completed' ? 'completed' : ''}">
         <div class="task-header">
             <h6 class="task-title">${escapeHtml(task.title)}</h6>
-            <span class="priority-badge ${priorityClass}">
-                ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-            </span>
+            <span class="priority-badge priority-${task.priority}">${task.priority}</span>
         </div>
         <p class="task-description">${escapeHtml(task.description)}</p>
         <div class="task-meta">
@@ -284,193 +185,165 @@ function createTaskElement(task) {
                 <i class="fas fa-clock"></i> Created: ${createdDate}
             </small>
         </div>
+        ${task.status === 'completed' && task.remarks ? `<div><strong>Remarks:</strong> ${escapeHtml(task.remarks)}</div>` : ''}
         ${task.status !== 'completed' ? `
             <div class="task-actions">
-                ${task.status === 'pending' ? `
-                    <button class="btn btn-sm btn-success" onclick="updateTaskStatus(${task.id}, 'in_progress')">
-                        <i class="fas fa-play"></i> Start
-                    </button>
-                ` : `
-                    <button class="btn btn-sm btn-success" onclick="updateTaskStatus(${task.id}, 'completed')">
-                        <i class="fas fa-check"></i> Complete
-                    </button>
-                `}
+                ${task.status === 'pending'
+                    ? `<button class="btn btn-sm btn-success" onclick="updateTaskStatus(${task.id}, 'in_progress')">Start</button>`
+                    : `<button class="btn btn-sm btn-success" onclick="openCompleteModal(${task.id}, 'task')">Complete</button>`}
+            </div>` : ''}
+    </div>`;
+}
+
+// ---------------- MAINTENANCE ----------------
+function loadMaintenanceByStatus(status) {
+    fetch('api/task_webhook.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({action: 'get_maintenance', user_id: currentUserId})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const records = data.data.filter(r => r.status === status);
+            renderMaintenance(status, records);
+            updateTaskCount(status,
+                parseInt(document.getElementById(`${status.replace('_','-')}-count`).textContent) + records.length
+            );
+        }
+    });
+}
+
+function renderMaintenance(status, records) {
+    const container = document.getElementById(`${status.replace('_','-')}-tasks`);
+    records.forEach(r => container.insertAdjacentHTML('beforeend', createMaintenanceElement(r)));
+}
+
+function createMaintenanceElement(record) {
+    const startDate = new Date(record.start_date).toLocaleDateString();
+    const endDate = new Date(record.end_date).toLocaleDateString();
+
+    return `
+    <div class="task-card ${record.status === 'completed' ? 'completed' : ''}" data-maintenance-id="${record.id}">
+        <div class="task-header">
+            <h6 class="task-title">🔧 ${escapeHtml(record.maintenance_type)}</h6>
+            <span class="priority-badge priority-medium">Maintenance</span>
+        </div>
+        <p class="task-description">${escapeHtml(record.description || '')}</p>
+        <div class="task-meta">
+            <small class="text-muted">
+                <i class="fas fa-user-cog"></i> ${escapeHtml(record.assigned_to_name)}<br>
+                <i class="fas fa-calendar"></i> ${startDate} → ${endDate}<br>
+                <i class="fas fa-coins"></i> ₱${record.cost || 0}
+            </small>
+        </div>
+        ${record.status !== 'completed' ? `
+            <div class="task-actions">
+                ${record.status === 'pending'
+                    ? `<button class="btn btn-sm btn-success" onclick="updateMaintenanceStatus(${record.id}, 'in_progress')"><i class="fas fa-play"></i> Start</button>`
+                    : `<button class="btn btn-sm btn-success" onclick="openCompleteModal(${record.id}, 'maintenance')"><i class="fas fa-check"></i> Complete</button>`}
             </div>
         ` : ''}
-    `;
-    
-    return taskDiv;
+    </div>`;
 }
 
-function updateTaskStatus(taskId, newStatus) {
-    if (confirm('Are you sure you want to update this task status?')) {
-        fetch('api/task_webhook.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'update_status',
-                task_id: taskId,
-                new_status: newStatus
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showAlert('Task status updated successfully!', 'success');
-                loadAllTasks(); // Refresh all tasks
-            } else {
-                showAlert('Failed to update task status: ' + data.message, 'danger');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('Error updating task status', 'danger');
-        });
+// ---------------- TASKS ----------------
+function updateTaskStatus(id, newStatus) {
+    if (newStatus === 'completed') {
+        openCompleteModal(id, 'task');
+    } else {
+        sendTaskStatusUpdate(id, newStatus);
     }
 }
 
-function updateTaskCount(status, count) {
-    const countElement = document.getElementById(`${status.replace('_', '-')}-count`);
-    if (countElement) {
-        countElement.textContent = count;
-    }
-}
-
-function refreshTasks() {
-    loadAllTasks();
-    showAlert('Tasks refreshed successfully!', 'info');
-}
-
-function showAlert(message, type) {
-    const alertContainer = document.getElementById('alert-container');
-    const alertId = 'alert-' + Date.now();
-    
-    const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show" id="${alertId}" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-    
-    alertContainer.innerHTML = alertHtml;
-    
-    // Auto-remove alert after 3 seconds
-    setTimeout(() => {
-        const alertElement = document.getElementById(alertId);
-        if (alertElement) {
-            alertElement.remove();
+function sendTaskStatusUpdate(id, status, remarks = '') {
+    fetch('api/task_webhook.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            action: 'update_status',
+            task_id: id,
+            new_status: status,
+            remarks: remarks
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Task updated!', 'success');
+            loadAllItems();
+        } else {
+            showAlert('Failed: ' + data.message, 'danger');
         }
-    }, 3000);
+    })
+    .catch(() => showAlert('Error updating task', 'danger'));
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+// ---------------- MAINTENANCE ----------------
+function updateMaintenanceStatus(maintenanceId, newStatus) {
+    if (newStatus === 'completed') {
+        document.getElementById('completeMaintenanceId').value = maintenanceId;
+        document.getElementById('maintenanceRemarks').value = '';
+        new bootstrap.Modal(document.getElementById('completeMaintenanceModal')).show();
+    } else {
+        if (confirm('Are you sure you want to update this maintenance status?')) {
+            sendMaintenanceStatusUpdate(maintenanceId, newStatus);
+        }
+    }
 }
+
+function sendMaintenanceStatusUpdate(id, status, remarks = '') {
+    fetch('api/task_webhook.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            action: 'update_maintenance_status',
+            maintenance_id: id,
+            new_status: status,
+            remarks: remarks
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Maintenance updated!', 'success');
+            loadAllItems();
+        } else {
+            showAlert('Failed: ' + data.message, 'danger');
+        }
+    })
+    .catch(() => showAlert('Error updating maintenance', 'danger'));
+}
+
+// ---------------- Helpers ----------------
+function openCompleteModal(id, type) {
+    document.getElementById('completeItemId').value = id;
+    document.getElementById('completeItemType').value = type;
+    document.getElementById('completeRemarks').value = '';
+    new bootstrap.Modal(document.getElementById('completeModal')).show();
+}
+function updateTaskCount(status,count){ document.getElementById(`${status.replace('_','-')}-count`).textContent=count; }
+function refreshTasks(){ loadAllItems(); showAlert("Refreshed","info"); }
+function showAlert(msg,type){
+    const id='alert-'+Date.now();
+    document.getElementById('alert-container').innerHTML=`
+        <div class="alert alert-${type} alert-dismissible fade show" id="${id}">
+        ${msg}<button class="btn-close" data-bs-dismiss="alert"></button></div>`;
+    setTimeout(()=>{const el=document.getElementById(id);if(el)el.remove();},3000);
+}
+function escapeHtml(txt){const div=document.createElement('div');div.textContent=txt;return div.innerHTML;}
 </script>
 
 <style>
-.kanban-column {
-    height: 70vh;
-    overflow-y: auto;
-}
-
-.task-list {
-    min-height: 200px;
-}
-
-.task-card {
-    background: white;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.task-card:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    transform: translateY(-2px);
-}
-
-.task-card.completed {
-    opacity: 0.7;
-    background-color: #f8f9fa;
-}
-
-.task-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 10px;
-}
-
-.task-title {
-    margin: 0;
-    font-weight: 600;
-    color: #333;
-    flex: 1;
-    margin-right: 10px;
-}
-
-.priority-badge {
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-
-.priority-low { background-color: #d4edda; color: #155724; }
-.priority-medium { background-color: #fff3cd; color: #856404; }
-.priority-high { background-color: #f8d7da; color: #721c24; }
-.priority-urgent { background-color: #f5c6cb; color: #721c24; }
-
-.task-description {
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 10px;
-    line-height: 1.4;
-}
-
-.task-meta {
-    margin-bottom: 10px;
-    font-size: 0.85rem;
-}
-
-.task-actions {
-    display: flex;
-    gap: 5px;
-}
-
-.task-actions .btn {
-    font-size: 0.8rem;
-    padding: 4px 8px;
-}
-
-#alert-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1050;
-    max-width: 400px;
-}
-
-.form-check-input:checked {
-    background-color: #dc3545;
-    border-color: #dc3545;
-}
-
-.form-check-input:focus {
-    border-color: #dc3545;
-    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
-}
+.kanban-column { height: 70vh; overflow-y:auto; }
+.task-card { background:#fff; border:1px solid #e9ecef; border-radius:8px;
+    padding:15px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,.1); }
+.task-card.completed { opacity:.8; background:#f8f9fa; }
+.task-header { display:flex; justify-content:space-between; }
+.priority-badge { padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:600; }
+.priority-low{background:#d4edda;color:#155724;} .priority-medium{background:#fff3cd;color:#856404;}
+.priority-high{background:#f8d7da;color:#721c24;} .priority-urgent{background:#f5c6cb;color:#721c24;}
+.task-actions .btn{font-size:0.8rem;padding:4px 8px;}
 </style>
 
-<?php require_once 'footer.php'; ?> 
+<?php require_once 'footer.php'; ?>

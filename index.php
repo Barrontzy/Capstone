@@ -335,7 +335,7 @@ if (isset($_SESSION['user_id'])) {
                 <i class="fas fa-sign-in-alt"></i>
                 Login
             </a>
-            <a href="register.php" class="btn-landing btn-secondary-landing">
+            <a href="register.php" class="btn-landing btn-secondary-landing" style="display:none">
                 <i class="fas fa-user-plus"></i>
                 Register
             </a>

@@ -3,7 +3,6 @@ session_start();
 require_once '../includes/session.php';
 require_once '../includes/db.php';
 
-// Check if user is logged in and is a technician
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'technician') {
     header('Location: login.php');
     exit();
@@ -11,51 +10,53 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'technician') {
 
 $user_id = $_SESSION['user_id'];
 
-// Get filter parameters
-$status_filter = isset($_GET['status']) ? $_GET['status'] : '';
-$date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
-$date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
+$status_filter = $_GET['status'] ?? '';
+$date_from     = $_GET['date_from'] ?? '';
+$date_to       = $_GET['date_to'] ?? '';
 
-// Build query for equipment history
-$where_conditions = ["e.assigned_to = $user_id"];
-$params = [];
+$where = ["h.user_id = ?"];
+$params = [$user_id];
+$types  = "i";
 
 if ($status_filter) {
-    $where_conditions[] = "e.status = ?";
+    $where[] = "h.action = ?";
     $params[] = $status_filter;
+    $types   .= "s";
 }
-
 if ($date_from) {
-    $where_conditions[] = "e.acquisition_date >= ?";
+    $where[] = "DATE(h.timestamp) >= ?";
     $params[] = $date_from;
+    $types   .= "s";
 }
-
 if ($date_to) {
-    $where_conditions[] = "e.acquisition_date <= ?";
+    $where[] = "DATE(h.timestamp) <= ?";
     $params[] = $date_to;
+    $types   .= "s";
 }
+$where_clause = implode(" AND ", $where);
+$sql = "
+    SELECT h.*, u.email,
+        COALESCE(
+            l.asset_tag, p.asset_tag, a.asset_tag, s.asset_tag, t.asset_tag, d.asset_tag
+        ) AS equipment_name
+    FROM history h
+    LEFT JOIN users u ON h.user_id = u.id
 
-$where_clause = implode(' AND ', $where_conditions);
+    -- Join each possible equipment table
+    LEFT JOIN laptops l ON (h.table_name = 'laptops' AND h.equipment_id = l.id)
+    LEFT JOIN printers p ON (h.table_name = 'printers' AND h.equipment_id = p.id)
+    LEFT JOIN accesspoint a ON (h.table_name = 'accesspoint' AND h.equipment_id = a.id)
+    LEFT JOIN switch s ON (h.table_name = 'switch' AND h.equipment_id = s.id)
+    LEFT JOIN telephone t ON (h.table_name = 'telephone' AND h.equipment_id = t.id)
+    LEFT JOIN desktop d ON (h.table_name = 'desktop' AND h.equipment_id = d.id)
 
-// Get equipment history
-$query = "
-    SELECT e.*, d.name as department_name, ec.name as category_name,
-           COUNT(mr.id) as maintenance_count,
-           MAX(mr.end_date) as last_maintenance
-    FROM equipment e
-    LEFT JOIN departments d ON e.department_id = d.id
-    LEFT JOIN equipment_categories ec ON e.category_id = ec.id
-    LEFT JOIN maintenance_records mr ON e.id = mr.equipment_id
     WHERE $where_clause
-    GROUP BY e.id
-    ORDER BY e.created_at DESC
+    ORDER BY h.timestamp DESC
 ";
 
-$stmt = $conn->prepare($query);
-if (!empty($params)) {
-    $types = str_repeat('s', count($params));
-    $stmt->bind_param($types, ...$params);
-}
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param($types, ...$params);
 $stmt->execute();
 $equipment_history = $stmt->get_result();
 
@@ -75,38 +76,31 @@ require_once 'header.php';
 
             <!-- Filters -->
             <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-filter"></i> Filters</h5>
-                </div>
+                <div class="card-header"><h5><i class="fas fa-filter"></i> Filters</h5></div>
                 <div class="card-body">
                     <form method="GET" class="row">
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">Status</label>
+                            <label class="form-label">Action</label>
                             <select name="status" class="form-control">
-                                <option value="">All Status</option>
-                                <option value="active" <?php echo $status_filter == 'active' ? 'selected' : ''; ?>>Active</option>
-                                <option value="maintenance" <?php echo $status_filter == 'maintenance' ? 'selected' : ''; ?>>Maintenance</option>
-                                <option value="disposed" <?php echo $status_filter == 'disposed' ? 'selected' : ''; ?>>Disposed</option>
-                                <option value="lost" <?php echo $status_filter == 'lost' ? 'selected' : ''; ?>>Lost</option>
+                                <option value="">All</option>
+                                <option value="qr_scan" <?= $status_filter=='qr_scan'?'selected':'' ?>>QR Scan</option>
+                                <option value="maintenance" <?= $status_filter=='maintenance'?'selected':'' ?>>Maintenance</option>
+                                <option value="update" <?= $status_filter=='update'?'selected':'' ?>>Update</option>
                             </select>
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Date From</label>
-                            <input type="date" name="date_from" class="form-control" value="<?php echo $date_from; ?>">
+                            <input type="date" name="date_from" class="form-control" value="<?= htmlspecialchars($date_from) ?>">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Date To</label>
-                            <input type="date" name="date_to" class="form-control" value="<?php echo $date_to; ?>">
+                            <input type="date" name="date_to" class="form-control" value="<?= htmlspecialchars($date_to) ?>">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">&nbsp;</label>
                             <div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-search"></i> Filter
-                                </button>
-                                <a href="history.php" class="btn btn-outline-secondary">
-                                    <i class="fas fa-times"></i> Clear
-                                </a>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Filter</button>
+                                <a href="history.php" class="btn btn-outline-secondary"><i class="fas fa-times"></i> Clear</a>
                             </div>
                         </div>
                     </form>
@@ -114,148 +108,119 @@ require_once 'header.php';
             </div>
 
             <!-- Equipment History Table -->
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-list"></i> Equipment List</h5>
-                </div>
-                <div class="card-body">
-                    <?php if ($equipment_history->num_rows > 0): ?>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Equipment</th>
-                                        <th>Category</th>
-                                        <th>Department</th>
-                                        <th>Status</th>
-                                        <th>Location</th>
-                                        <th>Maintenance</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php while ($equipment = $equipment_history->fetch_assoc()): ?>
-                                        <tr>
-                                            <td>
-                                                <div>
-                                                    <strong><?php echo htmlspecialchars($equipment['name']); ?></strong>
-                                                    <br>
-                                                    <small class="text-muted">
-                                                        SN: <?php echo htmlspecialchars($equipment['serial_number']); ?>
-                                                    </small>
-                                                </div>
-                                            </td>
-                                            <td><?php echo htmlspecialchars($equipment['category_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($equipment['department_name']); ?></td>
-                                            <td>
-                                                <span class="badge bg-<?php 
-                                                    echo $equipment['status'] == 'active' ? 'success' : 
-                                                        ($equipment['status'] == 'maintenance' ? 'warning' : 'danger'); 
-                                                ?>">
-                                                    <?php echo ucfirst($equipment['status']); ?>
-                                                </span>
-                                            </td>
-                                            <td><?php echo htmlspecialchars($equipment['location']); ?></td>
-                                            <td>
-                                                <small class="text-muted">
-                                                    Count: <?php echo $equipment['maintenance_count']; ?><br>
-                                                    <?php if ($equipment['last_maintenance']): ?>
-                                                        Last: <?php echo date('M d, Y', strtotime($equipment['last_maintenance'])); ?>
-                                                    <?php else: ?>
-                                                        Never
-                                                    <?php endif; ?>
-                                                </small>
-                                            </td>
-                                            <td>
-                                                <div class="btn-group" role="group">
-                                                    <a href="../view_equipment.php?id=<?php echo $equipment['id']; ?>" 
-                                                       class="btn btn-sm btn-outline-primary" title="View Details">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <button class="btn btn-sm btn-outline-info" 
-                                                            onclick="showMaintenanceHistory(<?php echo $equipment['id']; ?>)" 
-                                                            title="Maintenance History">
-                                                        <i class="fas fa-tools"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endwhile; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php else: ?>
-                        <div class="text-center py-5">
-                            <i class="fas fa-history fa-3x text-muted mb-3"></i>
-                            <h4 class="text-muted">No Equipment History</h4>
-                            <p class="text-muted">No equipment has been assigned to you yet.</p>
-                        </div>
-                    <?php endif; ?>
-                </div>
+          <div class="card">
+    <div class="card-header"><h5><i class="fas fa-list"></i> History Logs</h5></div>
+    <div class="card-body">
+        <?php if ($equipment_history->num_rows > 0): ?>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Equipment Name</th>
+                            <th>Table</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $i=1; while ($row = $equipment_history->fetch_assoc()): ?>
+                            <tr>
+                                <td><?= $i++; ?></td>
+                                <td>
+    <?= ucfirst(htmlspecialchars($row['table_name'])) ?>
+    - <?= htmlspecialchars($row['equipment_name'] ?? 'N/A'); ?>
+</td>
+
+                                <td><span class="badge bg-info"><?= htmlspecialchars($row['table_name']); ?></span></td>
+                                <td><?= date("M d, Y H:i", strtotime($row['timestamp'])); ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
             </div>
-        </div>
+        <?php else: ?>
+            <div class="text-center py-5">
+                <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No History Found</h4>
+                <p class="text-muted">No history records found for your filters.</p>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+<!-- User Tasks -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5><i class="fas fa-tasks"></i> My Tasks</h5>
+    </div>
+    <div class="card-body">
+        <?php
+        $stmt = $conn->prepare("SELECT * FROM tasks WHERE assigned_to = ? ORDER BY due_date ASC");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $tasks = $stmt->get_result();
+        ?>
+
+        <?php if ($tasks->num_rows > 0): ?>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Remarks</th>
+                            <th>Due Date</th>
+                            <th>Created</th>
+                            <th>Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $i=1; while ($task = $tasks->fetch_assoc()): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($task['title']); ?></td>
+                                <td><?= htmlspecialchars($task['description']); ?></td>
+                                <td>
+                                    <span class="badge bg-<?= $task['priority'] == 'high' ? 'danger' : ($task['priority'] == 'medium' ? 'warning' : 'secondary'); ?>">
+                                        <?= ucfirst($task['priority']); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-<?= $task['status'] == 'completed' ? 'success' : ($task['status'] == 'in_progress' ? 'info' : 'secondary'); ?>">
+                                        <?= ucfirst($task['status']); ?>
+                                    </span>
+                                </td>
+								<td><?= htmlspecialchars($task['remarks']); ?></td>
+                                <td><?= htmlspecialchars($task['due_date']); ?></td>
+                                <td><?= date("M d, Y H:i", strtotime($task['created_at'])); ?></td>
+                                <td><?= date("M d, Y H:i", strtotime($task['updated_at'])); ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else: ?>
+            <div class="text-center py-4">
+                <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No Tasks Assigned</h5>
+                <p class="text-muted">You don’t have any tasks assigned yet.</p>
+            </div>
+        <?php endif; ?>
+
+        <?php $stmt->close(); ?>
     </div>
 </div>
 
-<!-- Maintenance History Modal -->
-<div class="modal fade" id="maintenanceHistoryModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-tools"></i> Maintenance History</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="maintenanceHistoryContent">
-                <!-- Content will be loaded here -->
-            </div>
         </div>
     </div>
 </div>
 
 <script>
-function showMaintenanceHistory(equipmentId) {
-    // Load maintenance history via AJAX
-    fetch(`get_maintenance_history.php?equipment_id=${equipmentId}`)
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('maintenanceHistoryContent').innerHTML = html;
-            new bootstrap.Modal(document.getElementById('maintenanceHistoryModal')).show();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to load maintenance history.');
-        });
-}
-
 function exportHistory() {
-    // Get current filter parameters
     const params = new URLSearchParams(window.location.search);
     params.append('export', '1');
-    
-    // Create download link
-    const link = document.createElement('a');
-    link.href = `export_history.php?${params.toString()}`;
-    link.download = 'equipment_history.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    window.location.href = `export_history.php?${params.toString()}`;
 }
 </script>
 
-<style>
-.table th {
-    background-color: #f8f9fa;
-    border-top: none;
-    font-weight: 600;
-}
-
-.btn-group .btn {
-    margin-right: 2px;
-}
-
-.badge {
-    font-size: 0.75rem;
-}
-</style>
-
-<?php require_once 'footer.php'; ?> 
+<?php require_once 'footer.php'; ?>

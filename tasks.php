@@ -1,7 +1,12 @@
 <?php
 require_once 'includes/session.php';
 require_once 'includes/db.php';
+require __DIR__ . '/vendor/phpmailer/phpmailer/src/Exception.php';
+require __DIR__ . '/vendor/phpmailer/phpmailer/src/PHPMailer.php';
+require __DIR__ . '/vendor/phpmailer/phpmailer/src/SMTP.php';
 
+				use PHPMailer\PHPMailer\PHPMailer;
+				use PHPMailer\PHPMailer\Exception;
 // Check if user is logged in
 requireLogin();
 
@@ -13,21 +18,71 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
             case 'add':
-                $title = trim($_POST['title']);
-                $description = trim($_POST['description']);
-                $assigned_to = $_POST['assigned_to'];
-                $priority = $_POST['priority'];
-                $due_date = $_POST['due_date'];
-                
-                $stmt = $conn->prepare("INSERT INTO tasks (title, description, assigned_to, assigned_by, priority, due_date) VALUES (?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param("ssiiss", $title, $description, $assigned_to, $_SESSION['user_id'], $priority, $due_date);
-                
-                if ($stmt->execute()) {
-                    $message = 'Task assigned successfully!';
-                } else {
-                    $error = 'Failed to assign task.';
-                }
-                $stmt->close();
+				$title = trim($_POST['title']);
+				$description = trim($_POST['description']);
+				$assigned_to = $_POST['assigned_to']; 
+				$priority = $_POST['priority'];
+				$due_date = $_POST['due_date'];
+
+				include 'logger.php';
+				logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], "Task", "Assigned a task to user ID ".$assigned_to);
+
+				// --- insert Task ---
+				$stmt = $conn->prepare("INSERT INTO tasks (title, description, assigned_to, assigned_by, priority, due_date) 
+					VALUES (?, ?, ?, ?, ?, ?)");
+				$stmt->bind_param("ssiiss", $title, $description, $assigned_to, $_SESSION['user_id'], $priority, $due_date);
+
+				if ($stmt->execute()) {
+				$message = 'Task assigned successfully!';
+
+				$userStmt = $conn->prepare("SELECT email, full_name FROM users WHERE id = ?");
+				$userStmt->bind_param("i", $assigned_to);
+				$userStmt->execute();
+				$userStmt->bind_result($assigned_email, $assigned_name);
+				$userStmt->fetch();
+				$userStmt->close();
+
+				if ($assigned_email) {
+				require 'vendor/autoload.php';
+
+				$mail = new PHPMailer(true);
+
+				try {
+				$mail->isSMTP();
+				$mail->Host = 'smtp.gmail.com';
+				$mail->SMTPAuth = true;
+				$mail->Username = 'ictoffice0520@gmail.com';
+				$mail->Password = 'hkmp gplq zxsd otmy';
+				$mail->SMTPSecure = 'tls';
+				$mail->Port = 587;
+
+				$mail->setFrom('your_email@gmail.com', 'Task Manager');
+				$mail->addAddress($assigned_email, $assigned_name);
+
+				$mail->isHTML(true);
+				$mail->Subject = "New Task Assigned: $title";
+				$mail->Body    = "
+				<h3>Hello $assigned_name,</h3>
+				<p>You have been assigned a new task.</p>
+				<p><b>Title:</b> $title</p>
+				<p><b>Description:</b> $description</p>
+				<p><b>Priority:</b> $priority</p>
+				<p><b>Due Date:</b> $due_date</p>
+				<br>
+				<p>Assigned by: ".$_SESSION['user_name']."</p>
+				";
+
+				$mail->send();
+				} catch (Exception $e) {
+				error_log("Mailer Error: {$mail->ErrorInfo}");
+				}
+				}
+
+				} else {
+				$error = 'Failed to assign task.';
+				}
+				$stmt->close();
+
                 break;
                 
             case 'update':
@@ -38,7 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $priority = $_POST['priority'];
                 $status = $_POST['status'];
                 $due_date = $_POST['due_date'];
-                
+                include 'logger.php';
+				logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], "Task", "Updated a task to". $assigned_to);
                 $stmt = $conn->prepare("UPDATE tasks SET title = ?, description = ?, assigned_to = ?, priority = ?, status = ?, due_date = ? WHERE id = ?");
                 $stmt->bind_param("ssiissi", $title, $description, $assigned_to, $priority, $status, $due_date, $id);
                 
@@ -53,6 +109,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             case 'delete':
                 $id = $_POST['id'];
                 
+                include 'logger.php';
+				logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], "Task", "Deleted a task.");
                 $stmt = $conn->prepare("DELETE FROM tasks WHERE id = ?");
                 $stmt->bind_param("i", $id);
                 
@@ -123,116 +181,31 @@ $tasks_result = $stmt->get_result();
 // Get users for assignment
 $users = $conn->query("SELECT id, full_name, role FROM users ORDER BY full_name");
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tasks - BSU Inventory Management System</title>
+    <title>Users - BSU Inventory Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #dc3545;
-            --secondary-color: #343a40;
-        }
-        
-        .navbar {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-        }
-        
-        .sidebar {
-            background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            min-height: calc(100vh - 76px);
-        }
-        
-        .sidebar .nav-link {
-            color: var(--secondary-color);
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin: 2px 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        .main-content {
-            padding: 20px;
-        }
-        
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-        
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        
-        .btn-primary:hover {
-            background-color: #c82333;
-            border-color: #c82333;
-        }
-        
-        .priority-urgent { color: #dc3545; }
-        .priority-high { color: #fd7e14; }
-        .priority-medium { color: #ffc107; }
-        .priority-low { color: #198754; }
-        
-        .task-card {
-            transition: transform 0.3s ease;
-        }
-        
-        .task-card:hover {
-            transform: translateY(-2px);
-        }
-        
-        .overdue {
-            background-color: #fff5f5;
-            border-left: 4px solid #dc3545;
-        }
-
-        #categoryChart { max-height: 250px; }
-
-        .navbar-brand { display: flex; align-items: center; gap: 8px; }
-
-        .logo-icon {
-            height: 24px;
-            width: auto;
-            display: inline-block;
-            vertical-align: middle;
-        }
-
-
-        .navbar { height: 56px; padding-top: 0; padding-bottom: 0; }
-        .navbar .container-fluid { height: 56px; align-items: center; }
-
-        .navbar-brand { display: flex; align-items: center; gap: 8px; padding: 0; }
-
-
-        .logo-icon {
-            height: 40px;
-            width: auto;
-            display: inline-block;
-            vertical-align: middle;
-        }
+         :root { --primary-color: #dc3545; --secondary-color: #343a40; }
+        .navbar { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); }
+        .sidebar { background: white; min-height: calc(100vh - 56px); box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+        .sidebar .nav-link { color: var(--secondary-color); margin: 4px 10px; border-radius: 8px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: var(--primary-color); color: #fff; }
+        .main-content { padding: 20px; }
+        .card { border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
     </style>
-</head>
 <body>
-    <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-dark">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="dashboard.php">
-                <img src="Ict logs.png" alt="BSU Logo" class="logo-icon"> BSU Inventory System
+                <img src="Ict logs.png" alt="Logo" style="height:40px;"> BSU Inventory System
             </a>
-
             <div class="navbar-nav ms-auto">
                 <a href="profile.php" class="btn btn-light me-2"><i class="fas fa-user-circle"></i> Profile</a>
                 <a href="logout.php" class="btn btn-outline-light"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -243,46 +216,18 @@ $users = $conn->query("SELECT id, full_name, role FROM users ORDER BY full_name"
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar">
-                <div class="d-flex flex-column flex-shrink-0 p-3">
-                    <ul class="nav nav-pills flex-column mb-auto">
-                        <li class="nav-item">
-                            <a href="dashboard.php" class="nav-link">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="equipment.php" class="nav-link">
-                                <i class="fas fa-laptop"></i> Equipment
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="departments.php" class="nav-link">
-                                <i class="fas fa-building"></i> Departments
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="maintenance.php" class="nav-link">
-                                <i class="fas fa-tools"></i> Maintenance
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="tasks.php" class="nav-link active">
-                                <i class="fas fa-tasks"></i> Tasks
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="reports.php" class="nav-link">
-                                <i class="fas fa-chart-bar"></i> Reports
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="users.php" class="nav-link">
-                                <i class="fas fa-users"></i> Users
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+            <div class="col-md-3 col-lg-2 sidebar p-3">
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item"><a href="dashboard.php" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li class="nav-item"><a href="equipment.php" class="nav-link"><i class="fas fa-laptop"></i> Equipment</a></li>
+                    <li class="nav-item"><a href="departments.php" class="nav-link"><i class="fas fa-building"></i> Departments</a></li>
+                    <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
+                    <li class="nav-item"><a href="tasks.php" class="nav-link active"><i class="fas fa-tasks"></i> Tasks</a></li>
+                    <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                    <li class="nav-item"><a href="system_logs.php" class="nav-link"><i class="fas fa-clipboard-list"></i> System Logs</a></li>
+                    <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
+                    <li class="nav-item"><a href="admin_accounts.php" class="nav-link "><i class="fas fa-user-shield"></i> Admin Accounts</a></li>
+                </ul>
             </div>
 
             <!-- Main Content -->

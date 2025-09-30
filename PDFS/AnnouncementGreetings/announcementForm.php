@@ -2,7 +2,7 @@
 <div class="modal fade" id="announcementModal" tabindex="-1" aria-labelledby="announcementModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
-      <form method="POST" action="PDFS/AnnouncementGreetings/announcementPDF.php">
+      <form method="POST" action="PDFS/AnnouncementGreetings/announcementPDF.php" target="_blank">
         
         <!-- Modal Header -->
         <div class="modal-header">

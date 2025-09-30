@@ -2,7 +2,7 @@
 <div class="modal fade" id="systemReqsModal" tabindex="-1" aria-labelledby="systemReqsModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
-      <form method="POST" action="PDFS/SystemRequest/systemReqsPDF.php">
+      <form method="POST" action="PDFS/SystemRequest/systemReqsPDF.php" target="_blank">
 
         <!-- Modal Header -->
         <div class="modal-header">

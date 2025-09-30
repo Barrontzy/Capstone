@@ -7,7 +7,7 @@
                 <i class="fas fa-home"></i>
                 <span>Home</span>
             </a>
-            <a href="mytasks.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'mytasks.php' ? 'active' : ''; ?>">
+            <a href="mytasks.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'mytasks.php' ? 'active' : ''; ?>" style="display:none">
                 <i class="fas fa-tasks"></i>
                 <span>My Task</span>
             </a>

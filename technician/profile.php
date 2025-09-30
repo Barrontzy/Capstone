@@ -84,19 +84,34 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 $stmt->close();
-
 // Get user statistics
-$stats = $conn->query("
+$stats_query = "
     SELECT 
-        COUNT(DISTINCT e.id) as equipment_count,
-        COUNT(DISTINCT t.id) as task_count,
-        COUNT(DISTINCT mr.id) as maintenance_count
-    FROM users u
-    LEFT JOIN equipment e ON u.id = e.assigned_to
-    LEFT JOIN tasks t ON u.id = t.assigned_to
-    LEFT JOIN maintenance_records mr ON u.id = mr.technician_id
-    WHERE u.id = $user_id
-")->fetch_assoc();
+        ( 
+            SELECT COUNT(*) FROM (
+                SELECT assigned_person FROM desktop WHERE assigned_person = ?
+                UNION ALL
+                SELECT assigned_person FROM laptops WHERE assigned_person = ?
+                UNION ALL
+                SELECT assigned_person FROM printers WHERE assigned_person = ?
+                UNION ALL
+                SELECT assigned_person FROM accesspoint WHERE assigned_person = ?
+                UNION ALL
+                SELECT assigned_person FROM `switch` WHERE assigned_person = ?
+                UNION ALL
+                SELECT assigned_person FROM telephone WHERE assigned_person = ?
+            ) AS eq
+        ) AS equipment_count,
+        (SELECT COUNT(*) FROM tasks WHERE assigned_to = ?) AS task_count,
+        (SELECT COUNT(*) FROM history WHERE user_id = ?) AS maintenance_count
+";
+
+$stmt = $conn->prepare($stats_query);
+$stmt->bind_param("ssssssii", $user_id, $user_id, $user_id, $user_id, $user_id, $user_id, $user_id, $user_id);
+$stmt->execute();
+$stats = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
 
 $page_title = 'Profile';
 require_once 'header.php';
@@ -253,7 +268,7 @@ require_once 'header.php';
                                 <a href="index.php" class="btn btn-outline-primary">
                                     <i class="fas fa-tasks"></i> View All Tasks
                                 </a>
-                                <a href="mytasks.php" class="btn btn-outline-info">
+                                <a href="mytasks.php" class="btn btn-outline-info" style="display:none">
                                     <i class="fas fa-list"></i> My Assigned Tasks
                                 </a>
                                 <a href="qr.php" class="btn btn-outline-success">
