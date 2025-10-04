@@ -1,15 +1,16 @@
 <?php
+session_start();
 require_once 'includes/session.php';
 require_once 'includes/db.php';
 
 // Redirect if already logged in
 if (isset($_SESSION['user_id'])) {
-	if($_SESSION['user_role'] == 'admin'){
-		header('Location: dashboard.php');
-	} elseif($_SESSION['user_role'] == 'technician'){
-		header('Location: technician/indet.php');
-	}
-	exit();
+    if($_SESSION['role'] == 'admin'){
+        header('Location: dashboard.php');
+    } elseif($_SESSION['role'] == 'technician'){
+        header('Location: technician/indet.php');
+    }
+    exit();
 }
 
 $error = '';
@@ -39,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     logAdminAction($user['id'], $user['full_name'], "Login", "Admin logged in");
                     header('Location: dashboard.php');
                 } elseif($user['role'] == 'technician'){
-                    header('Location: technician/indet.php');
+                    header('Location: technician/index.php');
                 }
                 // switch ($user['role']) {
                 //     case 'admin':
@@ -66,159 +67,129 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ICT Management System - Login</title>
+    <title>BSU Inventory Management System - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            margin: 0;
+            background: linear-gradient(135deg, #dc3545 0%, #343a40 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('BSU.jpg') center/cover no-repeat fixed;
         }
-
-        .auth-modal {
-            width: 90%;
-            max-width: 520px;
-            background: #ffffff;
-            border-radius: 18px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             overflow: hidden;
-        }
-
-        .auth-header {
-            padding: 22px 26px 0 26px;
-            text-align: center;
-        }
-
-        .auth-title {
-            margin: 0 0 16px 0;
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: 1px;
-        }
-
-        .auth-body {
-            padding: 0 28px 26px 28px;
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .input-group {
-            display: flex;
-            align-items: center;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            background: #f3f4f6;
-            overflow: hidden;
-        }
-
-        .input-group .input-icon { padding: 12px 14px; color: #6b7280; }
-        .input-group input {
-            border: none;
-            outline: none;
-            background: transparent;
-            padding: 12px 14px;
-            font-size: 14px;
             width: 100%;
+            max-width: 400px;
         }
-        .input-group .toggle-visibility { padding: 10px 12px; color: #6b7280; cursor: pointer; user-select: none; }
-        .input-group .toggle-visibility:hover { color: #dc3545; }
-        .input-group + .form-group { margin-top: 14px; }
+        .login-header {
+            background: #dc3545;
+            color: #fff;
+            /* control the red area height with either padding or a fixed height */
+            /* Option A (responsive): */ padding: 20px 24px; min-height: 220px;
+            /* Option B (fixed height):  height: 220px; */
 
-        .btn-login {
-            width: 100%;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
+            margin-bottom: 15px; /* you already added this */
+        }
+
+        /* control the logo size (change height to adjust) */
+        .login-header .logo-icon {
+            height: 160px; /* adjust 140–180px to match your screenshot */
+            width: auto;
+            display: block;
+        }
+        .login-body {
+            padding: 40px;
+        }
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+        }
+        .form-control:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+        .btn-login {
             background: #dc3545;
-            color: #ffffff;
             border: none;
             border-radius: 10px;
-            padding: 12px 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s ease;
+            padding: 12px;
+            font-weight: 600;
+            width: 100%;
         }
-        .btn-login:hover { background: #c82333; }
-
-        .recaptcha-container { margin: 16px 0 18px 0; display: flex; justify-content: center; }
-        .alert { background: #fde8e8; color: #b91c1c; border: 1px solid #fecaca; padding: 10px 12px; border-radius: 10px; margin-bottom: 14px; font-size: 14px; }
-        .forgot-password { text-align: center; margin-top: 12px; }
-        .forgot-password a { color: #374151; text-decoration: underline; font-size: 14px; }
-        .forgot-password a:hover { color: #dc3545; }
+        .btn-login:hover {
+            background: #c82333;
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .register-link a {
+            color: #dc3545;
+            text-decoration: none;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
     </style>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script>
-        document.addEventListener('DOMContentLoaded', function(){
-            const togglePassword = document.getElementById('togglePassword');
-            const passwordInput = document.getElementById('password');
-            if (togglePassword && passwordInput) {
-                togglePassword.addEventListener('click', function(){
-                    const isText = passwordInput.getAttribute('type') === 'text';
-                    passwordInput.setAttribute('type', isText ? 'password' : 'text');
-                    this.innerHTML = isText ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
-                    this.setAttribute('aria-label', isText ? 'Show password' : 'Hide password');
-                });
-            }
-        });
-    </script>
-    
 </head>
 <body>
-    <div class="auth-modal" role="dialog" aria-modal="true">
-        <div class="auth-header">
-            <h2 class="auth-title">LOGIN</h2>
+    <div class="login-container">
+        <div class="login-header">
+            <img src="Ict logs.png" alt="BSU Logo" class="logo-icon">
+            <h2>BSU</h2>
+            <p class="mb-0">Inventory Management System</p>
         </div>
-        <div class="auth-body">
+        <div class="login-body">
             <?php if ($error): ?>
-                <div class="alert" role="alert">
+                <div class="alert alert-danger" role="alert">
                     <i class="fas fa-exclamation-triangle"></i> <?php echo $error; ?>
                 </div>
             <?php endif; ?>
-
+            
             <form method="POST" action="">
-                <div class="form-group">
-                    <label for="email" class="form-label">Email Address:</label>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email Address</label>
                     <div class="input-group">
-                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
-                        <input type="email" id="email" name="email" required>
+                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                        <input type="email" class="form-control" id="email" name="email" required>
                     </div>
                 </div>
-
-                <div class="form-group">
+                
+                <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
                     <div class="input-group">
-                        <span class="input-icon"><i class="fas fa-lock"></i></span>
-                        <input type="password" id="password" name="password" required>
-                        <span class="toggle-visibility" id="togglePassword" aria-label="Show password"><i class="fas fa-eye"></i></span>
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" class="form-control" id="password" name="password" required>
                     </div>
                 </div>
-
-                <div class="recaptcha-container">
-                    <div class="g-recaptcha" data-sitekey="6LcfFscrAAAAAF_fa8-Wogo2eMJj026s_aeT89H8"></div>
+                <div class="text-center mb-3">
+                  <require>  <div class="g-recaptcha d-inline-block" data-sitekey="6LcfFscrAAAAAF_fa8-Wogo2eMJj026s_aeT89H8"></div>  </require>
                 </div>
-
-                <button type="submit" class="btn-login">
-                    <i class="fas fa-arrow-right"></i>
-                    Login
+                <button type="submit" class="btn btn-primary btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Login
                 </button>
             </form>
-
-            <div class="forgot-password">
-                <a href="forgot_password.php">Forgot password?</a>
+            
+            <div class="register-link" style="display:none">
+                <p>Don't have an account? <a href="register.php">Register here</a></p>
+                <p class="mt-2"><a href="forgot_password.php" class="text-muted"><i class="fas fa-key"></i> Forgot your password?</a></p>
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
 </html> 
 
