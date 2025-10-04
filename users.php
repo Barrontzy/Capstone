@@ -22,6 +22,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (empty($full_name) || empty($email) || empty($phone_number) || empty($password)) {
         $error = 'Please fill in all fields';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Please enter a valid email address';
+    } elseif (!preg_match('/@g\.batstate-u\.edu\.ph$/', $email)) {
+        $error = 'Email must be from @g.batstate-u.edu.ph domain';
+    } elseif (!preg_match('/^09\d{9}$/', $phone_number)) {
+        $error = 'Phone number must be exactly 11 digits long, starting with 09';
+    } elseif (!preg_match('/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]).{6,}$/', $password)) {
+        $error = 'Password must contain at least one uppercase letter, one number, and one special character';
     } elseif ($password !== $confirm_password) {
         $error = 'Passwords do not match';
     } elseif (strlen($password) < 6) {
@@ -174,11 +182,11 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Email</label>
-                                <input type="email" name="email" class="form-control" required>
+                                <input type="email" name="email" class="form-control" placeholder="username@g.batstate-u.edu.ph" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Phone Number</label>
-                                <input type="text" name="phone_number" class="form-control" required>
+                                <input type="tel" name="phone_number" class="form-control" placeholder="09123456789" maxlength="11" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Role</label>
@@ -188,7 +196,8 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Password</label>
-                                <input type="password" name="password" class="form-control" required>
+                                <input type="password" name="password" class="form-control" placeholder="Enter strong password" required>
+                                <small class="text-muted">Must contain uppercase, number, and special character</small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Confirm Password</label>
@@ -218,6 +227,224 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
                 info: false,
                 ordering: true
             });
+            
+            // Form validation
+            const emailInput = document.querySelector('input[name="email"]');
+            const phoneInput = document.querySelector('input[name="phone_number"]');
+            const passwordInput = document.querySelector('input[name="password"]');
+            const confirmPasswordInput = document.querySelector('input[name="confirm_password"]');
+            const registerForm = document.querySelector('form');
+            
+            // Email validation
+            if (emailInput) {
+                emailInput.addEventListener('blur', function() {
+                    validateEmail(this);
+                });
+                
+                emailInput.addEventListener('input', function() {
+                    clearError(this);
+                });
+            }
+            
+            // Phone number validation
+            if (phoneInput) {
+                phoneInput.addEventListener('blur', function() {
+                    validatePhone(this);
+                });
+                
+                phoneInput.addEventListener('input', function() {
+                    // Only allow numbers and limit to 11 digits
+                    this.value = this.value.replace(/[^0-9]/g, '').substring(0, 11);
+                    clearError(this);
+                });
+            }
+            
+            // Password validation
+            if (passwordInput) {
+                passwordInput.addEventListener('blur', function() {
+                    validatePassword(this);
+                });
+                
+                passwordInput.addEventListener('input', function() {
+                    clearError(this);
+                    updatePasswordStrength(this);
+                });
+            }
+            
+            // Confirm password validation
+            if (confirmPasswordInput) {
+                confirmPasswordInput.addEventListener('blur', function() {
+                    validateConfirmPassword(this);
+                });
+                
+                confirmPasswordInput.addEventListener('input', function() {
+                    clearError(this);
+                });
+            }
+            
+            // Form submission validation
+            if (registerForm) {
+                registerForm.addEventListener('submit', function(e) {
+                    let isValid = true;
+                    
+                    if (!validateEmail(emailInput)) isValid = false;
+                    if (!validatePhone(phoneInput)) isValid = false;
+                    if (!validatePassword(passwordInput)) isValid = false;
+                    if (!validateConfirmPassword(confirmPasswordInput)) isValid = false;
+                    
+                    if (!isValid) {
+                        e.preventDefault();
+                        showError('Please fix the validation errors before submitting');
+                    }
+                });
+            }
+            
+            function validateEmail(input) {
+                const email = input.value.trim();
+                const emailRegex = /^[^\s@]+@g\.batstate-u\.edu\.ph$/;
+                
+                if (email && !emailRegex.test(email)) {
+                    showFieldError(input, 'Email must be from @g.batstate-u.edu.ph');
+                    return false;
+                } else {
+                    clearError(input);
+                    return true;
+                }
+            }
+            
+            function validatePhone(input) {
+                const phone = input.value.trim();
+                const phoneRegex = /^09\d{9}$/;
+                
+                if (phone && !phoneRegex.test(phone)) {
+                    showFieldError(input, 'Phone number must be exactly 11 digits long, starting with 09');
+                    return false;
+                } else {
+                    clearError(input);
+                    return true;
+                }
+            }
+            
+            function validatePassword(input) {
+                const password = input.value;
+                const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]).{6,}$/;
+                
+                if (password && !passwordRegex.test(password)) {
+                    showFieldError(input, 'Password must contain at least one uppercase letter, one number, and one special character');
+                    return false;
+                } else {
+                    clearError(input);
+                    return true;
+                }
+            }
+            
+            function validateConfirmPassword(input) {
+                const password = passwordInput.value;
+                const confirmPassword = input.value;
+                
+                if (confirmPassword && password !== confirmPassword) {
+                    showFieldError(input, 'Passwords do not match');
+                    return false;
+                } else {
+                    clearError(input);
+                    return true;
+                }
+            }
+            
+            function updatePasswordStrength(input) {
+                const password = input.value;
+                const strengthIndicator = document.getElementById('password-strength') || createStrengthIndicator(input);
+                
+                let strength = 0;
+                let strengthText = '';
+                let strengthColor = '';
+                
+                if (password.length >= 6) strength++;
+                if (/[A-Z]/.test(password)) strength++;
+                if (/\d/.test(password)) strength++;
+                if (/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]/.test(password)) strength++;
+                
+                switch(strength) {
+                    case 0:
+                    case 1:
+                        strengthText = 'Very Weak';
+                        strengthColor = '#dc3545';
+                        break;
+                    case 2:
+                        strengthText = 'Weak';
+                        strengthColor = '#fd7e14';
+                        break;
+                    case 3:
+                        strengthText = 'Medium';
+                        strengthColor = '#ffc107';
+                        break;
+                    case 4:
+                        strengthText = 'Strong';
+                        strengthColor = '#28a745';
+                        break;
+                }
+                
+                strengthIndicator.textContent = `Password Strength: ${strengthText}`;
+                strengthIndicator.style.color = strengthColor;
+            }
+            
+            function createStrengthIndicator(input) {
+                const strengthDiv = document.createElement('div');
+                strengthDiv.id = 'password-strength';
+                strengthDiv.style.fontSize = '12px';
+                strengthDiv.style.marginTop = '5px';
+                strengthDiv.style.fontWeight = '500';
+                input.parentNode.appendChild(strengthDiv);
+                return strengthDiv;
+            }
+            
+            function showFieldError(input, message) {
+                input.style.borderColor = '#dc3545';
+                input.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
+                
+                // Remove existing error message
+                const existingError = input.parentNode.querySelector('.field-error');
+                if (existingError) {
+                    existingError.remove();
+                }
+                
+                // Create new error message
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'field-error';
+                errorDiv.style.color = '#dc3545';
+                errorDiv.style.fontSize = '12px';
+                errorDiv.style.marginTop = '5px';
+                errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + message;
+                
+                input.parentNode.appendChild(errorDiv);
+            }
+            
+            function clearError(input) {
+                input.style.borderColor = '';
+                input.style.boxShadow = '';
+                
+                const errorDiv = input.parentNode.querySelector('.field-error');
+                if (errorDiv) {
+                    errorDiv.remove();
+                }
+            }
+            
+            function showError(message) {
+                // Remove existing error messages
+                const existingError = document.querySelector('.alert-danger');
+                if (existingError) {
+                    existingError.remove();
+                }
+                
+                // Create new error message
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-danger';
+                errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + message;
+                
+                // Insert error message at the top of the form
+                const form = document.querySelector('form');
+                form.insertBefore(errorDiv, form.firstChild);
+            }
         });
     </script>
 </body>
