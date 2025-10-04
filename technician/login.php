@@ -1,15 +1,14 @@
 <?php
-session_start();
 require_once '../includes/session.php';
 require_once '../includes/db.php';
 
 // Check if user is already logged in
 if (isLoggedIn()) {
-    if($_SESSION['role'] == 'admin'){
-        header('Location: dashboard.php');
+    if(isAdmin()){
+        header('Location: ../dashboard.php');
         exit();
-    } elseif($_SESSION['role'] == 'technician'){
-        header('Location: technician/index.php');
+    } elseif(isTechnician()){
+        header('Location: indet.php');
         exit();
     }
 }
@@ -48,8 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $ip_address = $_SERVER['REMOTE_ADDR'];
                 $user_agent = $_SERVER['HTTP_USER_AGENT'];
              
-                
-              header('Location: index.php');
+              header('Location: indet.php');
                exit();
             } else {
                 $error = 'Invalid password.';

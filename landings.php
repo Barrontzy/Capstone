@@ -1,15 +1,11 @@
-<?php
+﻿<?php
 require_once 'includes/session.php';
 require_once 'includes/db.php';
 
 // Redirect if already logged in
 if (isset($_SESSION['user_id'])) {
-	if($_SESSION['user_role'] == 'admin'){
-		header('Location: dashboard.php');
-	} elseif($_SESSION['user_role'] == 'technician'){
-		header('Location: technician/indet.php');
-	}
-	exit();
+    header('Location: dashboard.php');
+    exit();
 }
 
 $error = '';
@@ -33,22 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['user_name'] = $user['full_name'];
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_role'] = $user['role'];
-				include 'logger.php';
                 
-                if($user['role'] == 'admin'){
-                    logAdminAction($user['id'], $user['full_name'], "Login", "Admin logged in");
-                    header('Location: dashboard.php');
-                } elseif($user['role'] == 'technician'){
-                    header('Location: technician/indet.php');
-                }
-                // switch ($user['role']) {
-                //     case 'admin':
-                //         header('Location: dashboard.php');
-                //         break;
-                //     case 'technician':
-                //         header('Location: technician/index.php');
-                //     break;
-                // }
+                header('Location: dashboard.php');
                 exit();
             } else {
                 $error = 'Invalid password';
@@ -120,7 +102,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             overflow: hidden;
         }
 
-        .input-group .input-icon { padding: 12px 14px; color: #6b7280; }
+        .input-group .input-icon {
+            padding: 12px 14px;
+            color: #6b7280;
+        }
+
         .input-group input {
             border: none;
             outline: none;
@@ -129,8 +115,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-size: 14px;
             width: 100%;
         }
-        .input-group .toggle-visibility { padding: 10px 12px; color: #6b7280; cursor: pointer; user-select: none; }
+
+        .input-group .toggle-visibility {
+            padding: 10px 12px;
+            color: #6b7280;
+            cursor: pointer;
+            user-select: none;
+        }
+
         .input-group .toggle-visibility:hover { color: #dc3545; }
+
         .input-group + .form-group { margin-top: 14px; }
 
         .btn-login {
@@ -148,31 +142,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             cursor: pointer;
             transition: background 0.2s ease;
         }
+
         .btn-login:hover { background: #c82333; }
 
-        .recaptcha-container { margin: 16px 0 18px 0; display: flex; justify-content: center; }
-        .alert { background: #fde8e8; color: #b91c1c; border: 1px solid #fecaca; padding: 10px 12px; border-radius: 10px; margin-bottom: 14px; font-size: 14px; }
-        .forgot-password { text-align: center; margin-top: 12px; }
-        .forgot-password a { color: #374151; text-decoration: underline; font-size: 14px; }
+        .recaptcha-container {
+            margin: 16px 0 18px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .alert {
+            background: #fde8e8;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-bottom: 14px;
+            font-size: 14px;
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .forgot-password a {
+            color: #374151;
+            text-decoration: underline;
+            font-size: 14px;
+        }
+
         .forgot-password a:hover { color: #dc3545; }
     </style>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script>
-        document.addEventListener('DOMContentLoaded', function(){
-            const togglePassword = document.getElementById('togglePassword');
-            const passwordInput = document.getElementById('password');
-            if (togglePassword && passwordInput) {
-                togglePassword.addEventListener('click', function(){
-                    const isText = passwordInput.getAttribute('type') === 'text';
-                    passwordInput.setAttribute('type', isText ? 'password' : 'text');
-                    this.innerHTML = isText ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
-                    this.setAttribute('aria-label', isText ? 'Show password' : 'Hide password');
-                });
-            }
-        });
-    </script>
-    
 </head>
 <body>
     <div class="auth-modal" role="dialog" aria-modal="true">
@@ -219,6 +220,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
         </div>
     </div>
+
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function(){
+                const isText = passwordInput.getAttribute('type') === 'text';
+                passwordInput.setAttribute('type', isText ? 'password' : 'text');
+                this.innerHTML = isText ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+                this.setAttribute('aria-label', isText ? 'Show password' : 'Hide password');
+            });
+        }
+    </script>
 </body>
 </html> 
 

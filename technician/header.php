@@ -216,7 +216,7 @@ if (!isset($_SESSION['user_id'])) {
     <!-- Header Navigation -->
     <nav class="header-nav">
         <div class="header-container">
-            <a href="index.php" class="header-brand">
+            <a href="indet.php" class="header-brand">
                 <i class="fas fa-tools"></i>
                 Technician Portal
             </a>

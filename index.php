@@ -1,12 +1,12 @@
 <?php
-require_once 'includes/session.php';
-require_once 'includes/db.php';
+require_once "includes/session.php";
+require_once "includes/db.php";
 
 // Check if user is already logged in
-// if (isset($_SESSION['user_id'])) {
-//     header('Location: dashboard.php');
-//     exit();
-// }
+if (isset($_SESSION["user_id"])) {
+    header("Location: dashboard.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -14,7 +14,7 @@ require_once 'includes/db.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BSU Inventory Management System</title>
+    <title>ICT Inventory System - BSU</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -23,395 +23,385 @@ require_once 'includes/db.php';
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
-            min-height: 100vh;
-            overflow: hidden;
+        .container {
+            display: flex;
+            height: 100vh;
         }
 
-        .loading-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        /* Left Side - White Background with Logo */
+        .left-side {
+            flex: 1;
+            background: #ffffff;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
-        }
-
-        .logo-section {
-            text-align: center;
-            margin-bottom: 40px;
-            animation: fadeInUp 1s ease-out;
-        }
-
-        .logo {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            box-shadow: 0 10px 30px rgba(220, 53, 69, 0.3);
-            animation: pulse 2s infinite;
-        }
-
-        .logo i {
-            font-size: 50px;
-            color: white;
-        }
-
-        .system-title {
-            color: white;
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-
-        .system-subtitle {
-            color: #cccccc;
-            font-size: 1.2rem;
-            margin-bottom: 30px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
-
-        .loading-bar {
-            width: 300px;
-            height: 6px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 20px;
+            padding: 40px;
             position: relative;
         }
 
-        .loading-progress {
-            height: 100%;
-            background: linear-gradient(90deg, #dc3545, #ff6b6b);
-            border-radius: 3px;
-            width: 0%;
-            animation: loading 3s ease-in-out;
-            position: relative;
-        }
-
-        .loading-progress::after {
-            content: '';
+        .left-side::before {
+            content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
             bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            animation: shimmer 1.5s infinite;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #dc3545 0%, #ff4444 50%, #ffaa00 100%);
+            clip-path: polygon(0 100%, 100% 60%, 100% 100%);
+            z-index: 1;
         }
 
-        .loading-text {
-            color: #cccccc;
-            font-size: 1rem;
-            margin-bottom: 40px;
-            animation: fadeIn 2s ease-out;
+        .logo-container {
+            text-align: center;
+            z-index: 2;
         }
 
-        .action-buttons {
+        .laptop-icon {
+            width: 400px;
+            padding-top: 0px;
+            height: auto;
+            margin-bottom: 0px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+
+        .system-title-left {
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: #000000;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding-top: 0px;
+            padding-bottom: 100px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            font-family: 'Inknut Antiqua', serif;
+        }
+
+        /* Right Side - Building Background */
+        .right-side {
+            flex: 1;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url("BSU.jpg") center/cover;
             display: flex;
-            gap: 20px;
-            animation: fadeInUp 1.5s ease-out;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            position: relative;
         }
 
-        .btn-landing {
-            padding: 15px 30px;
+        .top-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .top-btn {
+            background: #dc3545;
+            color: white;
             border: none;
-            border-radius: 50px;
-            font-size: 1.1rem;
+            padding: 10px 20px;
+            border-radius: 5px;
             font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .top-btn:hover {
+            background: #c82333;
+        }
+
+        .right-content {
+            max-width: 500px;
+            width: 100%;
+            margin-top: 100px;
+            text-align: center;
+        }
+
+        .welcome-text {
+            color: white;
+            font-size: 3rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+            margin-bottom: 0px;
+            line-height: 1.2;
+        }
+
+        .tagline {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 500;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+            margin-bottom: 50px;
+        }
+
+        .login-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 18px 80px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 10px;
             transition: all 0.3s ease;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+            margin-bottom: 80px;
         }
 
-        .btn-primary-landing {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            color: white;
-            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
-        }
-
-        .btn-primary-landing:hover {
-            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+        .login-btn:hover {
+            background: #c82333;
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
-            color: white;
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6);
         }
 
-        .btn-secondary-landing {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 2px solid rgba(255,255,255,0.3);
-            backdrop-filter: blur(10px);
+        .icon-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
         }
 
-        .btn-secondary-landing:hover {
-            background: rgba(255,255,255,0.2);
-            border-color: rgba(255,255,255,0.5);
-            transform: translateY(-2px);
-            color: white;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 60px;
-            max-width: 800px;
-            animation: fadeInUp 2s ease-out;
-        }
-
-        .feature-card {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255,255,255,0.1);
-            border-color: rgba(220, 53, 69, 0.3);
-        }
-
-        .feature-icon {
-            font-size: 2.5rem;
-            color: #dc3545;
-            margin-bottom: 15px;
-        }
-
-        .feature-title {
-            color: white;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .feature-description {
-            color: #cccccc;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .particles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: -1;
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(220, 53, 69, 0.3);
+        .icon-circle {
+            width: 70px;
+            height: 70px;
+            background: #dc3545;
             border-radius: 50%;
-            animation: float 6s infinite linear;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        @keyframes loading {
-            0% { width: 0%; }
-            50% { width: 70%; }
-            100% { width: 100%; }
+        .icon-circle:hover {
+            background: #c82333;
+            transform: scale(1.1);
         }
 
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+        .icon-circle i {
+            color: white;
+            font-size: 1.8rem;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
+        .modal {
+            background: #ffffff;
+            width: 100%;
+            max-width: 700px;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: #dc3545;
+            color: #ffffff;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 20px;
+            color: #212529;
+            line-height: 1.6;
+        }
+
+        .modal-body h4 {
+            margin: 0 0 6px 0;
+        }
+
+        .modal-body p {
+            margin: 0 0 14px 0;
+        }
+
+        @media (max-width: 968px) {
+            .container {
+                flex-direction: column;
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+            .left-side, .right-side {
+                min-height: 50vh;
+            }
 
-        @keyframes float {
-            0% {
-                transform: translateY(100vh) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .system-title {
+            .system-title-left {
                 font-size: 2rem;
             }
-            
-            .system-subtitle {
-                font-size: 1rem;
+
+            .welcome-text {
+                font-size: 2rem;
             }
-            
-            .action-buttons {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .features-grid {
-                grid-template-columns: 1fr;
-                margin-top: 40px;
+
+            .tagline {
+                font-size: 1.3rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Particles Background -->
-    <div class="particles">
-        <?php for($i = 0; $i < 20; $i++): ?>
-            <div class="particle" style="
-                left: <?php echo rand(0, 100); ?>%;
-                animation-delay: <?php echo rand(0, 6); ?>s;
-                animation-duration: <?php echo rand(4, 8); ?>s;">
+    <div class="container">
+        <!-- Left Side -->
+        <div class="left-side">
+            <div class="logo-container">
+                <img src="Ict logs.png" alt="ICT Inventory System" class="laptop-icon">
+                <h1 class="system-title-left">ICT INVENTORY SYSTEM</h1>
             </div>
-        <?php endfor; ?>
+        </div>
+
+        <!-- Right Side -->
+        <div class="right-side">
+            <div class="top-buttons">
+                <a href="#" id="btnPrivacy" class="top-btn">Privacy Policy</a>
+                <a href="#" id="btnFaq" class="top-btn">FAQS</a>
+            </div>
+
+            <div class="right-content">
+                <h2 class="welcome-text">Log in and let's get started!</h2>
+                <p class="tagline">Welcome to BSU</p>
+
+                <a href="landing.php" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login
+                </a>
+
+                <div class="icon-row">
+                    <div class="icon-circle" data-modal="equipment">
+                        <i class="fas fa-desktop"></i>
+                    </div>
+                    <div class="icon-circle" data-modal="maintenance">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <div class="icon-circle" data-modal="analytics">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="loading-container">
-        <!-- Logo and Title Section -->
-        <div class="logo-section">
-            <div class="logo">
-                <img src="Ict logs.png"alt="University Icon" width="150" height="150" marginleft="20px " marginright="20px" margin-bottom="30px">
+    <div id="app-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">Title</div>
+                <button class="modal-close" id="modal-close" aria-label="Close modal"><i class="fas fa-times"></i></button>
             </div>
-            <h1 class="system-title">BSU Inventory System</h1>
-            <p class="system-subtitle">Batangas State University</p>
-        </div>
-
-        <!-- Loading Animation -->
-        <div class="loading-bar">
-            <div class="loading-progress"></div>
-        </div>
-        <p class="loading-text">Initializing system...</p>
-
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-            <a href="landing.php" class="btn-landing btn-primary-landing">
-                <i class="fas fa-sign-in-alt"></i>
-                Login
-            </a>
-            <a href="register.php" class="btn-landing btn-secondary-landing" style="display:none">
-                <i class="fas fa-user-plus"></i>
-                Register
-            </a>
-        </div>
-
-        <!-- Features Grid -->
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-laptop"></i>
-                </div>
-                <h3 class="feature-title">Equipment Management</h3>
-                <p class="feature-description">Track and manage all equipment with detailed information and QR codes</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-tools"></i>
-                </div>
-                <h3 class="feature-title">Maintenance Tracking</h3>
-                <p class="feature-description">Schedule and monitor maintenance activities with cost tracking</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-chart-bar"></i>
-                </div>
-                <h3 class="feature-title">Analytics & Reports</h3>
-                <p class="feature-description">Generate comprehensive reports and view real-time analytics</p>
+            <div class="modal-body" id="modal-body">
+                <!-- dynamic content -->
             </div>
         </div>
     </div>
 
     <script>
-        // Simulate loading process
-        setTimeout(() => {
-            document.querySelector('.loading-text').textContent = 'System ready...';
-        }, 1500);
+        (function(){
+            const modalOverlay = document.getElementById('app-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalClose = document.getElementById('modal-close');
 
-        setTimeout(() => {
-            document.querySelector('.loading-text').textContent = 'Welcome to BSU Inventory Management System';
-        }, 3000);
+            function openModal(title, html){
+                modalTitle.textContent = title;
+                modalBody.innerHTML = html;
+                modalOverlay.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
 
-        // Add click effects to buttons
-        document.querySelectorAll('.btn-landing').forEach(button => {
-            button.addEventListener('click', function(e) {
-                // Add ripple effect
-                const ripple = document.createElement('span');
-                const rect = this.getBoundingClientRect();
-                const size = Math.max(rect.width, rect.height);
-                const x = e.clientX - rect.left - size / 2;
-                const y = e.clientY - rect.top - size / 2;
-                
-                ripple.style.width = ripple.style.height = size + 'px';
-                ripple.style.left = x + 'px';
-                ripple.style.top = y + 'px';
-                ripple.classList.add('ripple');
-                
-                this.appendChild(ripple);
-                
-                setTimeout(() => {
-                    ripple.remove();
-                }, 600);
-            });
-        });
+            function closeModal(){
+                modalOverlay.style.display = 'none';
+                document.body.style.overflow = 'hidden';
+            }
 
-        // Add hover effects to feature cards
-        document.querySelectorAll('.feature-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-10px) scale(1.02)';
+            modalClose.addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', (e)=>{
+                if(e.target === modalOverlay){ closeModal(); }
             });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
+            document.addEventListener('keydown', (e)=>{
+                if(e.key === 'Escape'){ closeModal(); }
             });
-        });
+
+            const modalContent = {
+                equipment: `
+                    <h3>Equipment Management</h3>
+                    <p>Track and manage all equipment with detailed information and QR codes.</p>
+                `,
+                maintenance: `
+                    <h3>Maintenance Tracking</h3>
+                    <p>Schedule and monitor maintenance activities with cost tracking.</p>
+                `,
+                analytics: `
+                    <h3>Analytics & Reports</h3>
+                    <p>Generate comprehensive reports and view real-time analytics.</p>
+                `,
+                privacy: `
+                    <h3>Privacy Policy</h3>
+                    <p>Your privacy is important to us. We collect only the information necessary to operate the ICT Inventory System, including user account data and usage logs used for authentication, auditing, and system improvement.</p>
+                    <p>Data is stored securely and access is restricted to authorized personnel. We do not share your personal data with third parties except as required by law. You can request access or deletion of your data through the system administrator.</p>
+                    <p>By continuing to use this system, you consent to the collection and processing of your information as described.</p>
+                `,
+                faqs: `
+                    <h3>FAQs</h3>
+                    <h4>How do I log in?</h4>
+                    <p>Click the Login button and enter your university-issued credentials.</p>
+                    <h4>How do I add equipment?</h4>
+                    <p>After logging in, go to Equipment and click Add Equipment. Fill in the required details and save.</p>
+                    <h4>How do I track maintenance?</h4>
+                    <p>Open Maintenance to create schedules, record activities, and track costs.</p>
+                    <h4>Where can I generate reports?</h4>
+                    <p>Go to Reports to generate analytics and export documents.</p>
+                    <h4>Who do I contact for support?</h4>
+                    <p>Please contact the ICT office or your system administrator.</p>
+                `
+            };
+
+            document.querySelectorAll('.icon-circle').forEach(el => {
+                el.addEventListener('click', () => {
+                    const key = el.getAttribute('data-modal');
+                    const mapTitle = {
+                        equipment: 'Equipment Management',
+                        maintenance: 'Maintenance Tracking',
+                        analytics: 'Analytics & Reports'
+                    };
+                    openModal(mapTitle[key], modalContent[key]);
+                });
+            });
+
+            document.getElementById('btnPrivacy').addEventListener('click', (e)=>{
+                e.preventDefault();
+                openModal('Privacy Policy', modalContent.privacy);
+            });
+
+            document.getElementById('btnFaq').addEventListener('click', (e)=>{
+                e.preventDefault();
+                openModal('FAQs', modalContent.faqs);
+            });
+        })();
     </script>
 </body>
-</html> 
+</html>

@@ -1,10 +1,9 @@
 <?php
-session_start();
 require_once '../includes/session.php';
 require_once '../includes/db.php';
 
 // Check if user is logged in and is a technician
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'technician') {
+if (!isLoggedIn() || !isTechnician()) {
     header('Location: login.php');
     exit();
 }
@@ -265,7 +264,7 @@ require_once 'header.php';
                         </div>
                         <div class="card-body">
                             <div class="d-grid gap-2">
-                                <a href="index.php" class="btn btn-outline-primary">
+                                <a href="indet.php" class="btn btn-outline-primary">
                                     <i class="fas fa-tasks"></i> View All Tasks
                                 </a>
                                 <a href="mytasks.php" class="btn btn-outline-info" style="display:none">
