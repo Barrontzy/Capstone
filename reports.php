@@ -67,11 +67,9 @@ $categories = $conn->query("SELECT * FROM equipment_categories ORDER BY name");
                 <!-- Report Types -->
                 <div class="row">
     <!-- System Data Reports -->
-   <div class="row">
-    <!-- System Data Reports -->
-    <div class="col-md-6 mb-4">
+    <div class="col-12 mb-4">
         <div class="card shadow-sm h-100">
-            <div class="card-header bg-primary text-white text-center">
+            <div class="card-header text-white text-center" style="background-color: #dc3545;">
                 <i class="fas fa-database"></i> System Data Reports
             </div>
             <div class="card-body">
