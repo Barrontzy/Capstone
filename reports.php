@@ -1,17 +1,4 @@
 <?php
-require_once 'includes/session.php';
-require_once 'includes/db.php';
-include 'PDFS/PreventiveMaintenancePlan/preventiveForm.php';
-include 'PDFS/PreventiveMaintendancePlanIndexCard/PreventiveMaintendancePlanIndexCard.php';
-include 'PDFS/AnnouncementGreetings/announcementForm.php';
-include 'PDFS/WebsitePosting/webpostingForm.php';
-include 'PDFS/SystemRequest/systemReqsForm.php';
-include 'PDFS/ICTRequestForm/ICTRequestForm.php';
-include 'PDFS/ISPEvaluation/ISPEvaluation.php';
-include 'PDFS/UserAccountForm/UserAccountForm.php';
-include 'PDFS/PostingRequestForm/PostingRequestForm.php';
-
-
 
 $departments = $conn->query("SELECT * FROM departments ORDER BY name");
 $categories = $conn->query("SELECT * FROM equipment_categories ORDER BY name");
@@ -138,46 +125,6 @@ $categories = $conn->query("SELECT * FROM equipment_categories ORDER BY name");
         </div>
     </div>
 
-    <!-- System Generated Reports -->
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-success text-white text-center">
-                <i class="fas fa-cogs"></i> System Generated Reports
-            </div>
-            <div class="card-body">
-                <div class="list-group">
-                    <button class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#preventiveModal">
-                        <i class="fas fa-calendar-check text-success me-2"></i> Preventive Maintenance Plan
-                    </button>
-                    <button class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#PreventiveMaintendancePlanIndexCard">
-                        <i class="fas fa-clipboard-list text-primary me-2"></i> Preventive Maintenance Plan Index Card
-                    </button>
-                    <button class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#ictServiceRequestModal">
-                        <i class="fas fa-laptop-code text-dark me-2"></i> ICT Request Form
-                    </button>
-                    <button class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#ispEvaluationModal">
-                        <i class="fas fa-wifi text-info me-2"></i> ISP Evaluation Form
-                    </button>
-                    <button class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#announcementModal">
-                        <i class="fas fa-bullhorn text-danger me-2"></i> Announcement / Greetings Request
-                    </button>
-                    <button class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#webPostingModal">
-                        <i class="fas fa-globe text-secondary me-2"></i> Website Posting Request
-                    </button>
-                    <button class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#userAccountRequestModal">
-                        <i class="fas fa-user-shield text-warning me-2"></i> System User Account Request Form
-                    </button>
-                    <button class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#postingRequestModal">
-                        <i class="fas fa-envelope-open-text text-success me-2"></i> Posting of Announcement/Greetings
-                    </button>
-                    <button class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#systemReqsModal">
-                        <i class="fas fa-cog text-dark me-2"></i> System Request
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 
  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

@@ -34,7 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = 'Email address already exists';
         } else {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("INSERT INTO users (full_name, email, role, phone_number, password) VALUES (?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO users (full_name, email, role, phone_number, password) 
+                                    VALUES (?, ?, ?, ?, ?)");
             $stmt->bind_param("sssss", $full_name, $email, $role, $phone_number, $hashed_password);
 
             if ($stmt->execute()) {
@@ -47,10 +48,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// Fetch admins
-$result = $conn->query("SELECT full_name, email, role, phone_number, created_at FROM users WHERE role = 'admin' ORDER BY created_at DESC");
+// ✅ Fetch admins and department admins
+$result = $conn->query("SELECT full_name, email, role, phone_number, created_at 
+                        FROM users 
+                        WHERE role IN ('admin', 'department_admin') 
+                        ORDER BY created_at DESC");
 $admins = $result->fetch_all(MYSQLI_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -182,6 +187,7 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
                                 <label>Role</label>
                                 <select name="role" class="form-control" required>
                                     <option value="admin">Admin</option>
+                                    <option value="department_admin">Department Admin</option>
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -211,7 +217,7 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
     <script>
         $(document).ready(function() {
             $('#adminsTable').DataTable({
-                searching: true, // ✅ search only
+                searching: true,
                 paging: true,
                 info: false,
                 ordering: true
