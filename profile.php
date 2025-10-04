@@ -23,6 +23,52 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $new_password = $_POST['new_password'];
     $confirm_password = $_POST['confirm_password'];
     
+    // Handle profile image upload
+    $profile_image_path = $user['profile_image'] ?? null; // Keep existing image if no new upload
+    
+    if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
+        $upload_dir = 'uploads/profile_images/';
+        $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        $max_size = 2 * 1024 * 1024; // 2MB
+        
+        $file_info = $_FILES['profile_image'];
+        
+        // Validate file type
+        if (!in_array($file_info['type'], $allowed_types)) {
+            $error = 'Please upload a valid image file (JPEG, PNG, or GIF)';
+        }
+        // Validate file size
+        elseif ($file_info['size'] > $max_size) {
+            $error = 'Image size must be less than 2MB';
+        }
+        // Validate file extension
+        elseif (!in_array(strtolower(pathinfo($file_info['name'], PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif'])) {
+            $error = 'Invalid file extension. Please upload a valid image file.';
+        }
+        else {
+            // Generate unique filename
+            $file_extension = strtolower(pathinfo($file_info['name'], PATHINFO_EXTENSION));
+            $new_filename = 'profile_' . $_SESSION['user_id'] . '_' . time() . '.' . $file_extension;
+            $upload_path = $upload_dir . $new_filename;
+            
+            // Create directory if it doesn't exist
+            if (!file_exists($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+            
+            // Move uploaded file
+            if (move_uploaded_file($file_info['tmp_name'], $upload_path)) {
+                // Delete old profile image if it exists
+                if ($profile_image_path && file_exists($profile_image_path)) {
+                    unlink($profile_image_path);
+                }
+                $profile_image_path = $upload_path;
+            } else {
+                $error = 'Failed to upload image. Please try again.';
+            }
+        }
+    }
+    
     // Validation
     if (empty($full_name) || empty($email) || empty($phone_number)) {
         $error = 'Please fill in all required fields';
@@ -34,19 +80,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($stmt->get_result()->num_rows > 0) {
             $error = 'Email address already exists';
         } else {
-            // Update basic information
-            $stmt = $conn->prepare("UPDATE users SET full_name = ?, email = ?, phone_number = ? WHERE id = ?");
-            $stmt->bind_param("sssi", $full_name, $email, $phone_number, $_SESSION['user_id']);
+            // Update basic information including profile image
+            $stmt = $conn->prepare("UPDATE users SET full_name = ?, email = ?, phone_number = ?, profile_image = ? WHERE id = ?");
+            $stmt->bind_param("ssssi", $full_name, $email, $phone_number, $profile_image_path, $_SESSION['user_id']);
             
             if ($stmt->execute()) {
                 $_SESSION['user_name'] = $full_name;
                 $_SESSION['user_email'] = $email;
-                $message = 'Profile updated successfully!';
+                
+                // Check if profile image was uploaded
+                if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
+                    $message = 'Profile and image updated successfully!';
+                } else {
+                    $message = 'Profile updated successfully!';
+                }
                 
                 // Update user data for display
                 $user['full_name'] = $full_name;
                 $user['email'] = $email;
                 $user['phone_number'] = $phone_number;
+                $user['profile_image'] = $profile_image_path;
             } else {
                 $error = 'Failed to update profile';
             }
@@ -139,6 +192,128 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             padding: 30px;
             border-radius: 15px 15px 0 0;
         }
+        
+        .modern-profile-card {
+            border: none;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .user-info-section {
+            padding: 30px;
+            background: white;
+        }
+        
+        .profile-image-container {
+            margin-right: 20px;
+        }
+        
+        .profile-image-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #f8f9fa;
+        }
+        
+        .profile-image-placeholder-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #e9ecef;
+        }
+        
+        .profile-image-placeholder-large i {
+            font-size: 2rem;
+            color: #6c757d;
+        }
+        
+        .user-details {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #343a40;
+            margin-bottom: 5px;
+        }
+        
+        .user-email {
+            color: #6c757d;
+            font-size: 1rem;
+            margin-bottom: 0;
+        }
+        
+        .profile-separator {
+            height: 1px;
+            background-color: #e9ecef;
+            margin: 0;
+        }
+        
+        .profile-navigation {
+            background: white;
+        }
+        
+        .nav-item {
+            display: block;
+            text-decoration: none;
+            color: #343a40;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .nav-item:last-child {
+            border-bottom: none;
+        }
+        
+        .nav-item:hover {
+            background-color: #f8f9fa;
+            text-decoration: none;
+            color: #343a40;
+        }
+        
+        .nav-item.active {
+            background-color: #f8f9fa;
+        }
+        
+        .nav-item-content {
+            display: flex;
+            align-items: center;
+            padding: 20px 30px;
+        }
+        
+        .nav-icon {
+            font-size: 1.2rem;
+            color: #6c757d;
+            margin-right: 15px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .nav-text {
+            flex: 1;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .nav-arrow {
+            font-size: 0.9rem;
+            color: #adb5bd;
+        }
+        
+        .logout-item .nav-icon {
+            color: #dc3545;
+        }
+        
+        .logout-item:hover .nav-icon {
+            color: #c82333;
+        }
     </style>
 </head>
 <body>
@@ -146,19 +321,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="dashboard.php">
-                <i class="fas fa-university"></i> BSU Inventory System
+                <img src="Ict logs.png" alt="Logo" style="height:40px;"> BSU Inventory System
             </a>
             <div class="navbar-nav ms-auto">
-                <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user"></i> <?php echo $_SESSION['user_name']; ?>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="profile.php"><i class="fas fa-user-circle"></i> Profile</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                    </ul>
-                </div>
+                <a href="profile.php" class="btn btn-light me-2"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="logout.php" class="btn btn-outline-light"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
     </nav>
@@ -228,127 +395,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
                 <?php endif; ?>
 
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="card">
-                            <div class="profile-header">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 col-lg-6">
+                        <div class="card modern-profile-card">
+                            <!-- User Information Section -->
+                            <div class="user-info-section">
                                 <div class="d-flex align-items-center">
-                                    <div class="me-3">
-                                        <i class="fas fa-user-circle fa-3x"></i>
+                                    <div class="profile-image-container">
+                                        <?php if (!empty($user['profile_image']) && file_exists($user['profile_image'])): ?>
+                                            <img src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image" class="profile-image-large">
+                                        <?php else: ?>
+                                            <div class="profile-image-placeholder-large">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
-                                    <div>
-                                        <h4 class="mb-1"><?php echo htmlspecialchars($user['full_name']); ?></h4>
-                                        <p class="mb-0"><?php echo ucfirst($user['role']); ?></p>
+                                    <div class="user-details">
+                                        <h4 class="user-name"><?php echo htmlspecialchars($user['full_name']); ?></h4>
+                                        <p class="user-email"><?php echo htmlspecialchars($user['email']); ?></p>
                                     </div>
                                 </div>
                             </div>
-                            <div class="card-body">
-                                <form method="POST">
-                                    <h5 class="mb-3">Personal Information</h5>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Full Name</label>
-                                            <input type="text" class="form-control" name="full_name" value="<?php echo htmlspecialchars($user['full_name']); ?>" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Email Address</label>
-                                            <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
-                                        </div>
+                            
+                            <!-- Separator -->
+                            <div class="profile-separator"></div>
+                            
+                            <!-- Navigation Items -->
+                            <div class="profile-navigation">
+                                <a href="#" class="nav-item active" data-bs-toggle="modal" data-bs-target="#profileModal">
+                                    <div class="nav-item-content">
+                                        <i class="fas fa-user nav-icon"></i>
+                                        <span class="nav-text">My Profile</span>
+                                        <i class="fas fa-chevron-right nav-arrow"></i>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Phone Number</label>
-                                            <input type="tel" class="form-control" name="phone_number" value="<?php echo htmlspecialchars($user['phone_number']); ?>" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Role</label>
-                                            <input type="text" class="form-control" value="<?php echo ucfirst($user['role']); ?>" readonly>
-                                        </div>
+                                </a>
+                                
+                                <a href="#" class="nav-item" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                                    <div class="nav-item-content">
+                                        <i class="fas fa-cog nav-icon"></i>
+                                        <span class="nav-text">Settings</span>
+                                        <i class="fas fa-chevron-right nav-arrow"></i>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Member Since</label>
-                                            <input type="text" class="form-control" value="<?php echo date('F d, Y', strtotime($user['created_at'])); ?>" readonly>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Last Updated</label>
-                                            <input type="text" class="form-control" value="<?php echo date('F d, Y', strtotime($user['updated_at'])); ?>" readonly>
-                                        </div>
+                                </a>
+                                
+                                <a href="logout.php" class="nav-item logout-item">
+                                    <div class="nav-item-content">
+                                        <i class="fas fa-sign-out-alt nav-icon"></i>
+                                        <span class="nav-text">Log Out</span>
                                     </div>
-                                    
-                                    <hr class="my-4">
-                                    
-                                    <h5 class="mb-3">Change Password</h5>
-                                    <div class="row">
-                                        <div class="col-md-12 mb-3">
-                                            <label class="form-label">Current Password</label>
-                                            <input type="password" class="form-control" name="current_password" placeholder="Enter current password">
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">New Password</label>
-                                            <input type="password" class="form-control" name="new_password" placeholder="Enter new password">
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Confirm New Password</label>
-                                            <input type="password" class="form-control" name="confirm_password" placeholder="Confirm new password">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-save"></i> Update Profile
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="fas fa-info-circle"></i> Account Information</h5>
-                                <ul class="list-unstyled">
-                                    <li class="mb-2">
-                                        <strong>User ID:</strong> <?php echo $user['id']; ?>
-                                    </li>
-                                    <li class="mb-2">
-                                        <strong>Role:</strong> 
-                                        <span class="badge bg-<?php echo $user['role'] == 'admin' ? 'danger' : 'info'; ?>">
-                                            <?php echo ucfirst($user['role']); ?>
-                                        </span>
-                                    </li>
-                                    <li class="mb-2">
-                                        <strong>Status:</strong> 
-                                        <span class="badge bg-success">Active</span>
-                                    </li>
-                                    <li class="mb-2">
-                                        <strong>Email Verified:</strong> 
-                                        <i class="fas fa-check-circle text-success"></i>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <div class="card mt-3">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="fas fa-shield-alt"></i> Security Tips</h5>
-                                <ul class="list-unstyled">
-                                    <li class="mb-2">
-                                        <i class="fas fa-check text-success"></i> Use a strong password
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="fas fa-check text-success"></i> Never share your credentials
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="fas fa-check text-success"></i> Logout when done
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="fas fa-check text-success"></i> Keep your information updated
-                                    </li>
-                                </ul>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -357,6 +452,231 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
 
+    <!-- Profile Edit Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="profileModalLabel">
+                        <i class="fas fa-user-circle"></i> Edit Profile
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" enctype="multipart/form-data" id="profileForm">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6 class="mb-3">Profile Image</h6>
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <?php if (!empty($user['profile_image']) && file_exists($user['profile_image'])): ?>
+                                            <img src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image" class="rounded-circle profile-image-large">
+                                        <?php else: ?>
+                                            <div class="profile-image-placeholder-large">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Upload New Image</label>
+                                        <input type="file" class="form-control" name="profile_image" accept="image/*" id="profileImageInput" onchange="previewImage(this)">
+                                        <small class="text-muted">Max size: 2MB. Supported formats: JPG, PNG, GIF</small>
+                                        <div id="imagePreview" class="mt-2" style="display: none;">
+                                            <small class="text-success">Preview:</small>
+                                            <img id="previewImg" src="" alt="Preview" class="rounded-circle profile-image-large mt-1">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <h6 class="mb-3">Personal Information</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control" name="full_name" value="<?php echo htmlspecialchars($user['full_name']); ?>" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" name="phone_number" value="<?php echo htmlspecialchars($user['phone_number']); ?>" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Role</label>
+                                <input type="text" class="form-control" value="<?php echo ucfirst($user['role']); ?>" readonly>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <h6 class="mb-3">Change Password</h6>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Current Password</label>
+                                <input type="password" class="form-control" name="current_password" placeholder="Enter current password">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">New Password</label>
+                                <input type="password" class="form-control" name="new_password" placeholder="Enter new password">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" name="confirm_password" placeholder="Confirm new password">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="profileForm" class="btn btn-primary" id="updateBtn">
+                        <i class="fas fa-save"></i> Update Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">
+                        <i class="fas fa-cog"></i> Settings
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">User ID</label>
+                            <input type="text" class="form-control" value="<?php echo $user['id']; ?>" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Role</label>
+                            <input type="text" class="form-control" value="<?php echo ucfirst($user['role']); ?>" readonly>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Member Since</label>
+                            <input type="text" class="form-control" value="<?php echo date('F d, Y', strtotime($user['created_at'])); ?>" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Last Updated</label>
+                            <input type="text" class="form-control" value="<?php echo date('F d, Y', strtotime($user['updated_at'])); ?>" readonly>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h6 class="mb-3">Security Tips</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i> Use a strong password
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i> Never share your credentials
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i> Logout when done
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i> Keep your information updated
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Validate file size (2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('File size must be less than 2MB');
+                    input.value = '';
+                    return;
+                }
+                
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Please select a valid image file (JPEG, PNG, or GIF)');
+                    input.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Show success message for image upload
+        <?php if ($message && isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0): ?>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Scroll to top to show success message
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        <?php endif; ?>
+        
+        // Auto-hide alerts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
+            });
+        });
+        
+        // Handle form submission with loading state
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            const updateBtn = document.getElementById('updateBtn');
+            const originalText = updateBtn.innerHTML;
+            
+            // Show loading state
+            updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+            updateBtn.disabled = true;
+            
+            // Re-enable button after 10 seconds (in case of slow response)
+            setTimeout(function() {
+                updateBtn.innerHTML = originalText;
+                updateBtn.disabled = false;
+            }, 10000);
+        });
+        
+        // Handle modal close and refresh page on successful update
+        document.getElementById('profileModal').addEventListener('hidden.bs.modal', function() {
+            // Check if there was a successful update (you can add a flag in PHP)
+            <?php if ($message): ?>
+                // Refresh the page to show updated profile
+                setTimeout(function() {
+                    window.location.reload();
+                }, 100);
+            <?php endif; ?>
+        });
+    </script>
 </body>
 </html> 

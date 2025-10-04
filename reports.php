@@ -1,4 +1,9 @@
 <?php
+require_once 'includes/session.php';
+require_once 'includes/db.php';
+
+// Check if user is logged in
+requireLogin();
 
 $departments = $conn->query("SELECT * FROM departments ORDER BY name");
 $categories = $conn->query("SELECT * FROM equipment_categories ORDER BY name");

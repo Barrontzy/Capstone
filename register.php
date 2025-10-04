@@ -22,6 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validation
     if (empty($full_name) || empty($email) || empty($phone_number) || empty($password)) {
         $error = 'Please fill in all fields';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Please enter a valid email address';
+    } elseif (!preg_match('/@g\.batstate-u\.edu\.ph$/', $email)) {
+        $error = 'Email must be from @g.batstate-u.edu.ph domain';
     } elseif ($password !== $confirm_password) {
         $error = 'Passwords do not match';
     } elseif (strlen($password) < 6) {
@@ -154,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <label for="email" class="form-label">Email Address</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="username@g.batstate-u.edu.ph" required>
                         </div>
                     </div>
                     
