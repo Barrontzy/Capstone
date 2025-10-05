@@ -206,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="login-container">
         <div class="login-header">
             <div class="logo">
-                <i class="fas fa-tools"></i>
+                <img src="User icon.png" alt="Technician Portal Logo" style="width: 48px; height: 48px;">
             </div>
             <h2>Technician Portal</h2>
             <p>BSU Equipment Management System</p>
