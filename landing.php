@@ -9,7 +9,7 @@ if (isset($_SESSION['user_id'])) {
 	} elseif($_SESSION['user_role'] == 'technician'){
 		header('Location: technician/indet.php');
 	} elseif($_SESSION['user_role'] == 'department_admin'){ 
-		header('Location: dep_admin/depdashboard.php');
+		header('Location: depdashboard.php');
 	}
 	exit();
 }
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 } elseif($user['role'] == 'technician'){
                     header('Location: technician/indet.php');
                 } elseif($user['role'] == 'department_admin'){ 
-                    header('Location: dep_admin/depdashboard.php');
+                    header('Location: depdashboard.php');
                 }
                 exit();
             } else {
