@@ -1,33 +1,33 @@
 <?php
-require_once __DIR__ . '/../../includes/fpdf/fpdf.php';
+require_once __DIR__ . '/../../includes/pdf_template.php';
 require_once '../../includes/session.php';
 require_once '../../includes/db.php';
 
 	include '../../logger.php';
-	logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], "Generated Report", "SYSTEM REQUEST FORM");
-class PDF extends FPDF {
-    function Header() {
-        // Logo
-        $logoPath = __DIR__ . '/../../assets/logo/bsutneu.png';
-        if (file_exists($logoPath)) {
-            $this->Cell(25, 20, '', 1, 0, 'C');
-            $this->Image($logoPath, $this->GetX()-24, $this->GetY(), 23, 20);
+	$uid = $_SESSION['user_id'] ?? 0;
+	$uname = $_SESSION['user_name'] ?? 'SYSTEM';
+	logAdminAction($uid, $uname, "Generated Report", "SYSTEM REQUEST FORM");
+class PDF extends TemplatePDF {
+    // Draw a checkbox with a vector tick for wide font compatibility
+    function DrawCheckbox($label, $checked = false, $w = 0, $h = 8) {
+        $x = $this->GetX();
+        $y = $this->GetY();
+        // space for the label if width provided
+        $boxSize = 4;
+        // draw box
+        $this->Rect($x + 1, $y + ($h - $boxSize) / 2, $boxSize, $boxSize);
+        if ($checked) {
+            $this->SetDrawColor(0, 0, 0);
+            $this->SetLineWidth(0.4);
+            $yMid = $y + ($h - $boxSize) / 2;
+            $this->Line($x + 1.6, $yMid + 2.3, $x + 2.4, $yMid + 3.6); // left slant
+            $this->Line($x + 2.4, $yMid + 3.6, $x + 4.4, $yMid + 1.4); // right slant
         }
-        $this->SetFont('Arial','',9);
-        $this->Cell(95, 20, 'Reference No.: BatStateU-FO-ICT-03', 1, 0, 'L');
-        $this->Cell(45, 20, 'Effectivity Date: Jan 23, 2023', 1, 0, 'L');
-        $this->Cell(25, 20, 'Rev. No.: 02', 1, 1, 'L');
-
-        // Title
-        $this->SetFont('Arial','B',14);
-        $this->Cell(0, 12, 'SYSTEM REQUEST FORM', 1, 1, 'C');
+        // label
+        $this->SetXY($x + 1 + $boxSize + 3, $y);
+        $labelWidth = ($w > 0) ? $w - ($boxSize + 4) : 0;
+        $this->Cell($labelWidth, $h, $label, 0, 1, 'L');
     }
-}
-
-// Render checkbox
-function checkbox($label, $array, $value) {
-    $mark = (is_array($array) && in_array($value, $array)) ? "[x]" : "[ ]";
-    return $mark . " " . $label;
 }
 
 // Collect POST
@@ -40,6 +40,7 @@ $remarks     = $_POST['remarks'] ?? '';
 
 // Create PDF
 $pdf = new PDF('P','mm','A4');
+$pdf->setTitleText('SYSTEM REQUEST FORM');
 $pdf->AddPage();
 $pdf->SetFont('Arial','',11);
 $fullWidth = 190;
@@ -64,9 +65,8 @@ $pdf->Rect($x, $y, $fullWidth-50, $cellHeight);
 
 // Checkboxes inside right column
 foreach ($options as $opt) {
-    $mark = checkbox($opt, $sysType, $opt);
-    $pdf->SetXY($x, $y);
-    $pdf->Cell($fullWidth-50, $lineHeight, $mark, 0, 1, 'L');
+    $pdf->SetXY($x + 3, $y + 1);
+    $pdf->DrawCheckbox($opt, in_array($opt, $sysType), $fullWidth-50 - 6, $lineHeight - 2);
     $y += $lineHeight;
 }
 
@@ -89,9 +89,8 @@ $pdf->Rect($x, $y, $fullWidth-50, $cellHeight);
 
 // Checkboxes inside cell
 foreach ($options as $opt) {
-    $mark = checkbox($opt, $urgency, $opt);
-    $pdf->SetXY($x, $y);
-    $pdf->Cell($fullWidth-50, $lineHeight, $mark, 0, 1, 'L');
+    $pdf->SetXY($x + 3, $y + 1);
+    $pdf->DrawCheckbox($opt, in_array($opt, $urgency), $fullWidth-50 - 6, $lineHeight - 2);
     $y += $lineHeight;
 }
 

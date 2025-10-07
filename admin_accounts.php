@@ -11,51 +11,64 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $full_name = trim($_POST['full_name']);
-    $email = trim($_POST['email']);
-    $role = $_POST['role'];
-    $phone_number = trim($_POST['phone_number']);
-    $password = $_POST['password'];
-    $confirm_password = $_POST['confirm_password'];
-
-    if (empty($full_name) || empty($email) || empty($phone_number) || empty($password)) {
-        $error = 'Please fill in all fields';
-    } elseif ($password !== $confirm_password) {
-        $error = 'Passwords do not match';
-    } elseif (strlen($password) < 6) {
-        $error = 'Password must be at least 6 characters long';
-    } else {
-        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows > 0) {
-            $error = 'Email address already exists';
+    // Delete admin
+    if (isset($_POST['action']) && $_POST['action'] === 'delete' && isset($_POST['user_id'])) {
+        $toDelete = (int)$_POST['user_id'];
+        $stmt = $conn->prepare("DELETE FROM users WHERE id = ? AND role = 'admin'");
+        $stmt->bind_param("i", $toDelete);
+        if ($stmt->execute()) {
+            include 'logger.php';
+            logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], 'Delete Admin', 'Deleted admin ID ' . $toDelete);
+            $success = 'Admin deleted successfully';
         } else {
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("INSERT INTO users (full_name, email, role, phone_number, password) 
-                                    VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssss", $full_name, $email, $role, $phone_number, $hashed_password);
-
-            if ($stmt->execute()) {
-                $success = 'User account registered successfully!';
-            } else {
-                $error = 'Registration failed. Please try again.';
-            }
+            $error = 'Failed to delete admin';
         }
         $stmt->close();
+    } else {
+        // Add admin
+        $full_name = trim($_POST['full_name']);
+        $email = trim($_POST['email']);
+        $role = $_POST['role'];
+        $phone_number = trim($_POST['phone_number']);
+        $password = $_POST['password'];
+        $confirm_password = $_POST['confirm_password'];
+
+        if (empty($full_name) || empty($email) || empty($phone_number) || empty($password)) {
+            $error = 'Please fill in all fields';
+        } elseif ($password !== $confirm_password) {
+            $error = 'Passwords do not match';
+        } elseif (strlen($password) < 6) {
+            $error = 'Password must be at least 6 characters long';
+        } else {
+            $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows > 0) {
+                $error = 'Email address already exists';
+            } else {
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                $stmt = $conn->prepare("INSERT INTO users (full_name, email, role, phone_number, password) VALUES (?, ?, ?, ?, ?)");
+                $stmt->bind_param("sssss", $full_name, $email, $role, $phone_number, $hashed_password);
+
+                if ($stmt->execute()) {
+                    include 'logger.php';
+                    logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], 'Add Admin', 'Added admin ' . $email);
+                    $success = 'User account registered successfully!';
+                } else {
+                    $error = 'Registration failed. Please try again.';
+                }
+            }
+            $stmt->close();
+        }
     }
 }
 
-// ✅ Fetch admins and department admins
-$result = $conn->query("SELECT full_name, email, role, phone_number, created_at 
-                        FROM users 
-                        WHERE role IN ('admin', 'department_admin') 
-                        ORDER BY created_at DESC");
+// Fetch admins
+$result = $conn->query("SELECT id, full_name, email, role, phone_number, created_at FROM users WHERE role = 'admin' ORDER BY created_at DESC");
 $admins = $result->fetch_all(MYSQLI_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -132,6 +145,7 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
                                     <th>Role</th>
                                     <th>Phone</th>
                                     <th>Created At</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -142,6 +156,13 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
                                         <td><?= htmlspecialchars($a['role']); ?></td>
                                         <td><?= htmlspecialchars($a['phone_number']); ?></td>
                                         <td><?= htmlspecialchars($a['created_at']); ?></td>
+                                        <td>
+                                            <form method="POST" class="d-inline" onsubmit="return confirm('Delete this admin?');">
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="user_id" value="<?= (int)$a['id']; ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -187,7 +208,6 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
                                 <label>Role</label>
                                 <select name="role" class="form-control" required>
                                     <option value="admin">Admin</option>
-                                    <option value="department_admin">Department Admin</option>
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -217,7 +237,7 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
     <script>
         $(document).ready(function() {
             $('#adminsTable').DataTable({
-                searching: true,
+                searching: true, // ✅ search only
                 paging: true,
                 info: false,
                 ordering: true

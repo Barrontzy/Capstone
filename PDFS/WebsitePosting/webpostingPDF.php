@@ -1,30 +1,15 @@
 <?php
-require_once __DIR__ . '/../../includes/fpdf/fpdf.php';
+require_once __DIR__ . '/../../includes/pdf_template.php';
 
 require_once '../../includes/session.php';
 require_once '../../includes/db.php';
 
 	include '../../logger.php';
-	logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], "Generated Report", "RWEBSITE POSTING REQUEST FORM");
+	$uid = $_SESSION['user_id'] ?? 0;
+	$uname = $_SESSION['user_name'] ?? 'SYSTEM';
+	logAdminAction($uid, $uname, "Generated Report", "RWEBSITE POSTING REQUEST FORM");
 
-class PDF extends FPDF {
-    function Header() {
-        // Reference box
-        $logoPath = __DIR__ . '/../../assets/logo/bsutneu.png';
-        if (file_exists($logoPath)) {
-            $this->Cell(25, 20, '', 1, 0, 'C');
-            $this->Image($logoPath, $this->GetX() - 24, $this->GetY(), 23, 20);
-        }
-        $this->SetFont('Arial','',10);
-        $this->Cell(80, 20, 'Reference No.: BatStateU-FO-ICT-06', 1, 0, 'C');
-        $this->Cell(55, 20, 'Eff. Date: January 3, 2023', 1, 0, 'C');
-        $this->Cell(30, 20, 'Rev. No.: 00', 1, 1, 'C');
-
-        // Title
-        $this->SetFont('Arial','B',14);
-        $this->Cell(0, 10, 'WEBSITE POSTING REQUEST FORM', 1, 1, 'C');
-    }
-}
+class PDF extends TemplatePDF {}
 
 // Collect POST data
 $office          = $_POST['office'] ?? '';
@@ -35,6 +20,7 @@ $content         = $_POST['content'] ?? '';
 
 // Create PDF
 $pdf = new PDF('P', 'mm', 'A4');
+$pdf->setTitleText('WEBSITE POSTING REQUEST FORM');
 $pdf->AddPage();
 $pdf->SetFont('Arial','',11);
 $fullWidth = 190;

@@ -1,12 +1,14 @@
 <?php
 
-require_once __DIR__ . '/../../includes/fpdf/fpdf.php';
+require_once __DIR__ . '/../../includes/pdf_template.php';
 require_once '../../includes/session.php';
 require_once '../../includes/db.php';
 
-	include '../../logger.php';
-	logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], "Generated Report", "ICT SERVICE REQUEST FORM");
-// Collect POST data
+include '../../logger.php';
+$uid = $_SESSION['user_id'] ?? 0;
+$uname = $_SESSION['user_name'] ?? 'SYSTEM';
+logAdminAction($uid, $uname, "Generated Report", "ICT SERVICE REQUEST FORM");
+
 $campus         = $_POST['campus'] ?? '';
 $ict_srf_no     = $_POST['ict_srf_no'] ?? '';
 $client_name    = $_POST['client_name'] ?? '';
@@ -22,36 +24,44 @@ $eval_quality   = $_POST['eval_quality'] ?? '';
 $eval_courtesy  = $_POST['eval_courtesy'] ?? '';
 $eval_overall   = $_POST['eval_overall'] ?? '';
 
-class PDF extends FPDF {
+class PDF extends TemplatePDF {
     function Header() {
-        $logoPath = __DIR__ . '/../../assets/logo/bsutneu.png';
-        if (file_exists($logoPath)) {
-            $this->Cell(25, 20, '', 1, 0, 'C');
-            $this->Image($logoPath, $this->GetX() - 24, $this->GetY(), 23, 20);
-        }
-
-        $this->SetFont('Arial','',9); // smaller font
-        $this->Cell(80, 20, 'Reference No.: BatStateU-FO-ICT-01', 1, 0, 'C');
-        $this->Cell(50, 20, 'Effectivity Date: May 18, 2022', 1, 0, 'C');
-        $this->Cell(35, 20, 'Revision No.: 02', 1, 1, 'C');
-
-        $this->SetFont('Arial','B',11);
-        $this->Cell(190, 8, 'ICT SERVICE REQUEST FORM', 1, 1, 'C');
+        parent::Header();
     }
 
-    function evaluationRow($statement, $selected) {
-        $this->SetFont('Arial','',8); // smaller font for table
-        $this->Cell(80, 8, $statement, 1, 0);
+ function evaluationRow($statement, $selected) {
+    $this->SetFont('Arial','',8);
+    $this->Cell(80, 8, $statement, 1, 0);
 
-        for ($i = 5; $i >= 1; $i--) {
-            $mark = ($selected == $i) ? 'X' : ''; // use "X" instead of ✓
-            $this->Cell(22, 8, $mark, 1, 0, 'C');
+    for ($i = 5; $i >= 1; $i--) {
+        $x = $this->GetX();
+        $y = $this->GetY();
+
+        // draw empty cell
+        $this->Cell(22, 8, '', 1, 0, 'C');
+
+        // draw the check symbol manually using a small line tick
+        if ($selected == $i) {
+            $tick_x1 = $x + 8;
+            $tick_y1 = $y + 5;
+            $tick_x2 = $x + 10;
+            $tick_y2 = $y + 7;
+            $tick_x3 = $x + 14;
+            $tick_y3 = $y + 3;
+
+            // draw two small lines to form a ✓
+            $this->Line($tick_x1, $tick_y1, $tick_x2, $tick_y2);
+            $this->Line($tick_x2, $tick_y2, $tick_x3, $tick_y3);
         }
-        $this->Ln();
     }
+    $this->Ln();
+}
+
+
 }
 
 $pdf = new PDF('P','mm','A4');
+$pdf->setTitleText('ICT SERVICE REQUEST FORM');
 $pdf->AddPage();
 $pdf->SetFont('Arial','',9);
 
@@ -74,16 +84,11 @@ $pdf->Cell(65, 7, '', 1, 1);
 $pdf->Cell(30, 7, 'Date/Time of Call', 1, 0);
 $pdf->Cell(65, 7, $date_time_call, 1, 0);
 
-// --- Required Response Time on 2 lines ---
 $x = $pdf->GetX();
 $y = $pdf->GetY();
 $pdf->MultiCell(30, 3.5, "Required\nResponse Time", 1, 'C');
 $pdf->SetXY($x + 30, $y);
-
-// Value cell
 $pdf->Cell(65, 7, $response_time, 1, 1);
-
-
 
 $pdf->Cell(190, 7, 'Service Requirements:', 1, 1);
 $pdf->MultiCell(190, 7, $requirements, 1, 'L');
@@ -99,7 +104,7 @@ $pdf->MultiCell(190, 7, $remarks, 1, 'L');
 // --- Evaluation ---
 $pdf->Ln(2);
 $pdf->SetFont('Arial','',8);
-$pdf->MultiCell(190, 5, "Thank you for giving us the opportunity to serve you better. Please help us by taking a few minutes to inform us about the technical assistance/service that you have just been provided. Put an X on the column that corresponds to your level of satisfaction.", 0, 'L');
+$pdf->MultiCell(190, 5, "Thank you for giving us the opportunity to serve you better. Please help us by taking a few minutes to inform us about the technical assistance/service that you have just been provided. Put a ✓ on the column that corresponds to your level of satisfaction.", 0, 'L');
 
 $pdf->Ln(1);
 $pdf->SetFont('Arial','B',8);

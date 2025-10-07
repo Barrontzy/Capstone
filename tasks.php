@@ -235,7 +235,7 @@ $users = $conn->query("SELECT id, full_name, role FROM users ORDER BY full_name"
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2><i class="fas fa-tasks"></i> Task Management</h2>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addTaskModal">
                         <i class="fas fa-plus"></i> Assign Task
                     </button>
                 </div>

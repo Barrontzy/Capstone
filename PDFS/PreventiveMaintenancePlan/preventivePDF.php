@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../includes/fpdf/fpdf.php';
+require_once __DIR__ . '/../../includes/pdf_template.php';
 
 $items = $_POST['items'] ?? [];
 
@@ -7,26 +7,14 @@ require_once '../../includes/session.php';
 require_once '../../includes/db.php';
 
 	include '../../logger.php';
-	logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], "Generated Report", "PREVENTIVE MAINTENANCE PLAN");
+	$uid = $_SESSION['user_id'] ?? 0;
+	$uname = $_SESSION['user_name'] ?? 'SYSTEM';
+	logAdminAction($uid, $uname, "Generated Report", "PREVENTIVE MAINTENANCE PLAN");
 
-class PDF extends FPDF {
+class PDF extends TemplatePDF {
     function Header() {
-        // Header
-        $logoPath = __DIR__ . '/../../assets/logo/bsutneu.png';
-        if (file_exists($logoPath)) {
-            $this->Cell(25, 20, '', 1, 0, 'C');
-            $this->Image($logoPath, $this->GetX() - 24, $this->GetY(), 23, 20);
-        }
-        $this->SetFont('Arial','',10);
-        $this->Cell(80, 20, 'Reference No.: BatStateU-FO-ICT-06', 1, 0, 'C');
-        $this->Cell(55, 20, 'Eff. Date: January 3, 2023', 1, 0, 'C');
-        $this->Cell(30, 20, 'Rev. No.: 00', 1, 1, 'C');
-
-        // Title
-        $this->SetFont('Arial', 'B', 14);
-        $this->Cell(190, 15, 'PREVENTIVE MAINTENANCE PLAN', 1, 1, 'C');
-
-        // Table Header
+        parent::Header();
+        // Table Header below the title
         $this->SetFont('Arial','',11);
         $this->Cell(30, 7, 'Office/College', 1, 0, 'C');
         $this->Cell(110, 7, ' ', 1, 0, 'C');
@@ -44,7 +32,7 @@ class PDF extends FPDF {
 }
 
 $pdf = new PDF('P','mm','A4'); // Portrait
-$pdf->AliasNbPages();
+$pdf->setTitleText('PREVENTIVE MAINTENANCE PLAN');
 $pdf->AddPage();
 
 // Table Rows
@@ -124,5 +112,5 @@ $pdf->Rect(10+$colWidth, $yStart2, $colWidth, $blockHeight);
 $pdf->SetXY(10+$colWidth, $yStart2+5);
 $pdf->MultiCell($colWidth, 6, "Remarks:", 0, 'L');
 
-$pdf->Output('D','Preventive_Maintenance_Plan.pdf');
+$pdf->Output('I','Preventive_Maintenance_Plan.pdf');
 ?>

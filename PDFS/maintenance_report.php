@@ -5,56 +5,68 @@ require_once __DIR__ . '/../includes/fpdf/fpdf.php';
 class PDF extends FPDF {
     public $headers = ['Equipment','Type','Department','Status','Start Date','End Date','Task/Description'];
     public $widths;
+    private $headerImage;
 
-    function __construct($orientation='L',$unit='mm',$size='A4') {
+    function __construct($orientation='P',$unit='mm',$size='A4') {
         parent::__construct($orientation,$unit,$size);
+
+        // Compute usable width
         $usableWidth = $this->GetPageWidth() - $this->lMargin - $this->rMargin;
 
-        $ratios = [0.20,0.08,0.15,0.12,0.12,0.12,0.21];
+        // Adjusted ratios to fit portrait layout
+        $ratios = [0.20,0.08,0.15,0.10,0.12,0.12,0.23];
         $this->widths = array_map(fn($r)=>$r*$usableWidth,$ratios);
+
+        // Path to header image
+        $this->headerImage = __DIR__ . '/../header.png';
     }
 
     function Header() {
-        $logoPath = __DIR__ . '/../assets/logo/bsutneu.png';
-        if(file_exists($logoPath)){
-            $this->Cell(25,20,'',1,0,'C');
-            $this->Image($logoPath,$this->GetX()-24,$this->GetY(),23,20);
-        } else {
-            $this->Cell(25,20,'NO LOGO',1,0,'C');
+        // Header image (BatStateU letterhead)
+        if(file_exists($this->headerImage)){
+            $this->Image($this->headerImage, 10, 5, 190, 40);
         }
 
-        $this->SetFont('Arial','',9);
-        $this->Cell(120,20,'Reference No.: BatStateU-FO-ICT-06',1,0,'L');
-        $this->Cell(107,20,'Eff. Date: Jan 23, 2023',1,0,'L');
-        $this->Cell(25,20,'Rev. No.: 00',1,1,'L');
+        // Move below image
+        $this->SetY(50);
 
-        $this->SetFont('Arial','B',14);
-        $this->Cell(0,12,'MAINTENANCE & STATUS REPORT',1,1,'C');
+        // Title section
+        $this->SetFont('Arial','B',13);
+        $this->Cell(0,10,'MAINTENANCE & STATUS REPORT',0,1,'C');
 
-        $this->SetFont('Arial','',12);
-        $this->Cell(0,12,'INFORMATION AND COMMUNICATIONS TECHNOLOGY SERVICES',1,1,'C');
+        $this->SetFont('Arial','',11);
+        $this->Cell(0,8,'Information and Communications Technology Services',0,1,'C');
+        $this->Ln(4);
 
-        $this->SetFont('Arial','B',9);
+        // Table header
+        $this->SetFont('Arial','B',8.5);
         foreach($this->headers as $i=>$h){
-            $this->Cell($this->widths[$i],10,$h,1,0,'C');
+            $this->Cell($this->widths[$i],9,$h,1,0,'C');
         }
         $this->Ln();
     }
 
     function Footer(){
-        $this->SetY(-15);
+        // Footer motto + page number
+        $this->SetY(-20);
+        $this->SetFont('Arial','I',9);
+        $this->SetTextColor(255,87,87);
+        $this->Cell(0,8,'Leading Innovations, Transforming Lives, Building the Nation',0,1,'C');
+
         $this->SetFont('Arial','I',8);
-        $this->Cell(0,10,'Page '.$this->PageNo(),0,0,'C');
+        $this->SetTextColor(0);
+        $this->Cell(0,5,'Page '.$this->PageNo(),0,0,'C');
     }
 }
 
+// --- PDF start ---
 $pdf = new PDF();
 $pdf->AddPage();
 $pdf->SetFont('Arial','',8);
 
 $widths = $pdf->widths;
 
-// ✅ Use LEFT JOIN so equipment always shows
+// ✅ LEFT JOIN ensures all equipment are listed
 $queries = [
     "SELECT e.asset_tag AS equip, 'Desktop' AS type, e.department_office AS department,
             mr.status, mr.start_date, mr.end_date, mr.description
@@ -82,6 +94,7 @@ $queries = [
      LEFT JOIN maintenance_records mr ON mr.equipment_id=e.id AND mr.equipment_type='telephone'"
 ];
 
+// === Populate rows ===
 foreach($queries as $sql){
     $result = $conn->query($sql);
     while($row=$result->fetch_assoc()){
@@ -95,4 +108,6 @@ foreach($queries as $sql){
     }
 }
 
+// === Output ===
 $pdf->Output('I','Maintenance_Status_Report.pdf');
+?>

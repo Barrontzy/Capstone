@@ -5,45 +5,55 @@ require_once __DIR__ . '/../includes/fpdf/fpdf.php';
 class PDF extends FPDF {
     public $headers = ['ID','Type','Asset Tag','Property/Equip','Department','Assigned To','Location','Cost','Missing Fields'];
     public $widths;
+    private $headerImage;
 
-    function __construct($orientation='L', $unit='mm', $size='A4') {
+    function __construct($orientation='P', $unit='mm', $size='A4') {
         parent::__construct($orientation, $unit, $size);
         $usableWidth = $this->GetPageWidth() - $this->lMargin - $this->rMargin;
-        $ratios = [0.04, 0.08, 0.14, 0.12, 0.11, 0.12, 0.14, 0.09, 0.16];
+
+        // Adjusted ratios to fit neatly in portrait orientation
+        $ratios = [0.05, 0.08, 0.13, 0.12, 0.11, 0.12, 0.12, 0.09, 0.18];
         $this->widths = array_map(fn($r) => $r * $usableWidth, $ratios);
+
+        // Path to BatStateU letterhead
+        $this->headerImage = __DIR__ . '/../header.png';
     }
 
     function Header() {
-        $logoPath = __DIR__ . '/../assets/logo/bsutneu.png';
-        if (file_exists($logoPath)) {
-            $this->Cell(25, 20, '', 1, 0, 'C');
-            $this->Image($logoPath, $this->GetX() - 24, $this->GetY(), 23, 20);
-        } else {
-            $this->Cell(25, 20, 'NO LOGO', 1, 0, 'C');
+        // Header image (BatStateU letterhead)
+        if (file_exists($this->headerImage)) {
+            $this->Image($this->headerImage, 10, 5, 190, 40);
         }
 
-        $this->SetFont('Arial','',9);
-        $this->Cell(120, 20, 'Reference No.: BatStateU-FO-ICT-06', 1, 0, 'L');
-        $this->Cell(107, 20, 'Eff. Date: Jan 23, 2023', 1, 0, 'L');
-        $this->Cell(25, 20, 'Rev. No.: 00', 1, 1, 'L');
+        // Move cursor below image
+        $this->SetY(50);
 
-        $this->SetFont('Arial','B',14);
-        $this->Cell(0, 12, 'INCOMPLETE EQUIPMENT RECORDS REPORT', 1, 1, 'C');
+        // Title section
+        $this->SetFont('Arial','B',13);
+        $this->Cell(0,10,'INCOMPLETE EQUIPMENT RECORDS REPORT',0,1,'C');
 
-        $this->SetFont('Arial','',12);
-        $this->Cell(0, 12, 'INFORMATION AND COMMUNICATIONS TECHNOLOGY SERVICES', 1, 1, 'C');
+        $this->SetFont('Arial','',11);
+        $this->Cell(0,8,'Information and Communications Technology Services',0,1,'C');
+        $this->Ln(4);
 
-        $this->SetFont('Arial','B',9);
+        // Table header
+        $this->SetFont('Arial','B',8.5);
         foreach ($this->headers as $i => $h) {
-            $this->Cell($this->widths[$i], 10, $h, 1, 0, 'C');
+            $this->Cell($this->widths[$i], 9, $h, 1, 0, 'C');
         }
         $this->Ln();
     }
 
     function Footer() {
-        $this->SetY(-15);
+        // Motto and page number
+        $this->SetY(-20);
+        $this->SetFont('Arial','I',9);
+        $this->SetTextColor(255, 87, 87);
+        $this->Cell(0,8,'Leading Innovations, Transforming Lives, Building the Nation',0,1,'C');
+
         $this->SetFont('Arial','I',8);
-        $this->Cell(0, 10, 'Page ' . $this->PageNo(), 0, 0, 'C');
+        $this->SetTextColor(0);
+        $this->Cell(0,5,'Page '.$this->PageNo(),0,0,'C');
     }
 }
 
@@ -95,3 +105,4 @@ foreach ($tables as $table => [$type, $deptField]) {
 }
 
 $pdf->Output('I', 'Incomplete_Inventory_Report.pdf');
+?>

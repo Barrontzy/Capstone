@@ -5,6 +5,7 @@ require_once __DIR__ . '/../includes/fpdf/fpdf.php';
 class PDF extends FPDF {
     public $headers = ['Department','Desktops','Laptops','Printers','Switches','Telephones','Access Points','Total Cost'];
     public $widths;
+    private $headerImage;
 
     function __construct($orientation='L', $unit='mm', $size='A4') {
         parent::__construct($orientation, $unit, $size);
@@ -12,47 +13,50 @@ class PDF extends FPDF {
         // Page width (A4 landscape = 297mm)
         $usableWidth = $this->GetPageWidth() - $this->lMargin - $this->rMargin;
 
-        // Column ratios (must add up to 1.0)
+        // Adjusted ratios to fit the landscape width (more space available)
         $ratios = [0.30, 0.08, 0.08, 0.08, 0.08, 0.10, 0.10, 0.18];
-
         $this->widths = array_map(fn($r) => $r * $usableWidth, $ratios);
+
+        // Path to letterhead header image
+        $this->headerImage = __DIR__ . '/../header.png';
     }
 
     function Header() {
-        // Logo
-        $logoPath = __DIR__ . '/../assets/logo/bsutneu.png';
-        if (file_exists($logoPath)) {
-            $this->Cell(25, 20, '', 1, 0, 'C');
-            $this->Image($logoPath, $this->GetX()-24, $this->GetY(), 23, 20);
-        } else {
-            $this->Cell(25, 20, 'NO LOGO', 1, 0, 'C');
+        // Header image at top
+        if (file_exists($this->headerImage)) {
+            $this->Image($this->headerImage, 10, 5, 277, 40); // fits landscape width
         }
 
-        // Reference
-        $this->SetFont('Arial','',9);
-        $this->Cell(120, 20, 'Reference No.: BatStateU-FO-ICT-06', 1, 0, 'L');
-        $this->Cell(107, 20, 'Eff. Date: Jan 23, 2023', 1, 0, 'L');
-        $this->Cell(25, 20, 'Rev. No.: 00', 1, 1, 'L');
+        // Move below the header image
+        $this->SetY(50);
 
         // Title
-        $this->SetFont('Arial','B',14);
-        $this->Cell(0, 12, 'DEPARTMENT ANALYSIS REPORT', 1, 1, 'C');
+        $this->SetFont('Arial','B',13);
+        $this->Cell(0,10,'DEPARTMENT ANALYSIS REPORT',0,1,'C');
 
-        $this->SetFont('Arial','',12);
-        $this->Cell(0, 12, 'INFORMATION AND COMMUNICATIONS TECHNOLOGY SERVICES', 1, 1, 'C');
+        $this->SetFont('Arial','',11);
+        $this->Cell(0,8,'Information and Communications Technology Services',0,1,'C');
+        $this->Ln(4);
 
         // Table header
-        $this->SetFont('Arial','B',9);
+        $this->SetFont('Arial','B',8.5);
         foreach ($this->headers as $i => $h) {
-            $this->Cell($this->widths[$i], 10, $h, 1, 0, 'C');
+            $this->Cell($this->widths[$i], 9, $h, 1, 0, 'C');
         }
         $this->Ln();
     }
 
     function Footer() {
-        $this->SetY(-15);
+        // Footer motto
+        $this->SetY(-20);
+        $this->SetFont('Arial','I',9);
+        $this->SetTextColor(255, 87, 87);
+        $this->Cell(0,8,'Leading Innovations, Transforming Lives, Building the Nation',0,1,'C');
+
+        // Page number
         $this->SetFont('Arial','I',8);
-        $this->Cell(0, 10, 'Page '.$this->PageNo(), 0, 0, 'C');
+        $this->SetTextColor(0);
+        $this->Cell(0,5,'Page '.$this->PageNo(),0,0,'C');
     }
 }
 
@@ -91,7 +95,7 @@ $grandTotal = 0;
 
 // Loop through departments
 foreach ($departments as $dept) {
-    // counts
+    // Counts and total cost per department
     $desktop = $conn->query("SELECT COUNT(*) c, COALESCE(SUM(unit_price),0) total FROM desktop WHERE department_office='$dept'")->fetch_assoc();
     $laptop  = $conn->query("SELECT COUNT(*) c, COALESCE(SUM(unit_price),0) total FROM laptops WHERE department='$dept'")->fetch_assoc();
     $printer = $conn->query("SELECT COUNT(*) c, COALESCE(SUM(unit_price),0) total FROM printers WHERE department='$dept'")->fetch_assoc();
@@ -107,6 +111,7 @@ foreach ($departments as $dept) {
     $totalCost = $desktop['total'] + $laptop['total'] + $printer['total'] + $switch['total'] + $tel['total'] + $access['total'];
     $grandTotal += $totalCost;
 
+    // Table rows
     $pdf->Cell($widths[0], 8, $dept, 1, 0, 'L');
     $pdf->Cell($widths[1], 8, $desktop['c'], 1, 0, 'C');
     $pdf->Cell($widths[2], 8, $laptop['c'], 1, 0, 'C');
@@ -123,3 +128,4 @@ $pdf->Cell(array_sum($widths)-$widths[7], 10, 'GRAND TOTAL', 1, 0, 'R');
 $pdf->Cell($widths[7], 10, chr(8369).number_format($grandTotal,2), 1, 1, 'R');
 
 $pdf->Output('I', 'Department_Analysis_Report.pdf');
+?>

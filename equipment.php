@@ -17,7 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $department = $conn->real_escape_string($_POST['department'] ?? '');
     $assigned_person = $conn->real_escape_string($_POST['assigned_person'] ?? '');
     $location = $conn->real_escape_string($_POST['location'] ?? '');
-    $unit_price = is_numeric($_POST['unit_price'] ?? null) ? floatval($_POST['unit_price']) : null;
     $date_acquired = !empty($_POST['date_acquired']) ? $conn->real_escape_string($_POST['date_acquired']) : null;
     $useful_life = $conn->real_escape_string($_POST['useful_life'] ?? '');
     $hardware_specifications = $conn->real_escape_string($_POST['hardware_specifications'] ?? '');
@@ -41,11 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     // Insert based on type
     if ($type === 'desktop') {
         // Adjust columns if your desktop table has different column names
-        $stmt = $conn->prepare("INSERT INTO desktop (asset_tag, property_equipment, assigned_person, location, processor, ram, gpu, hard_drive, operating_system, date_acquired, inventory_item_no, unit_price, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssssssssdss",
+        $stmt = $conn->prepare("INSERT INTO desktop (asset_tag, property_equipment, assigned_person, location, processor, ram, gpu, hard_drive, operating_system, date_acquired, inventory_item_no, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssssssssss",
             $asset_tag, $property_equipment, $assigned_person, $location,
             $processor, $ram, $gpu, $hard_drive, $operating_system,
-            $date_acquired, $inventory_item_no, $unit_price, $remarks
+            $date_acquired, $inventory_item_no, $remarks
         );
     } elseif (in_array($type, ['laptop','printer','accesspoint','switch','telephone'])) {
         // Map type to table name
@@ -58,10 +57,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         ];
         $table = $map[$type];
 
-        $stmt = $conn->prepare("INSERT INTO {$table} (asset_tag, property_equipment, department, assigned_person, location, unit_price, date_acquired, useful_life, hardware_specifications, software_specifications, high_value_ics_no, inventory_item_no, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssssdsisssss",
+        $stmt = $conn->prepare("INSERT INTO {$table} (asset_tag, property_equipment, department, assigned_person, location, date_acquired, useful_life, hardware_specifications, software_specifications, high_value_ics_no, inventory_item_no, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssssisssss",
             $asset_tag, $property_equipment, $department, $assigned_person, $location,
-            $unit_price, $date_acquired, $useful_life, $hardware_specifications, $software_specifications,
+            $date_acquired, $useful_life, $hardware_specifications, $software_specifications,
             $high_value_ics_no, $inventory_item_no, $remarks
         );
     } else {
@@ -163,7 +162,7 @@ $telephone_where = buildWhere($search, $status, 'remarks');
     <div class="col-md-9 col-lg-10 main-content">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2><i class="fas fa-laptop"></i> Equipment</h2>
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addEquipmentModal"><i class="fas fa-plus"></i> Add Equipment</button>
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addEquipmentModal"><i class="fas fa-plus"></i> Add Equipment</button>
       </div>
 
       <?php if (isset($_GET['added']) && $_GET['added'] == '1'): ?>
@@ -219,7 +218,6 @@ $telephone_where = buildWhere($search, $status, 'remarks');
       data-os="<?php echo htmlspecialchars($row['operating_system'] ?? ''); ?>"
       data-date="<?php echo htmlspecialchars($row['date_acquired'] ?? ''); ?>"
       data-itemno="<?php echo htmlspecialchars($row['inventory_item_no'] ?? ''); ?>"
-      data-price="<?php echo htmlspecialchars($row['unit_price'] ?? ''); ?>"
       data-remarks="<?php echo htmlspecialchars($row['remarks'] ?? ''); ?>">
     <td><?php echo htmlspecialchars($row['asset_tag']); ?></td>
     <td><?php echo htmlspecialchars($row['assigned_person']); ?></td>
@@ -255,7 +253,6 @@ $telephone_where = buildWhere($search, $status, 'remarks');
                   data-specs="<?php echo 'HW: '.htmlspecialchars($row['hardware_specifications']).' | SW: '.htmlspecialchars($row['software_specifications']); ?>"
                   data-date="<?php echo htmlspecialchars($row['date_acquired'] ?? ''); ?>"
                   data-itemno="<?php echo htmlspecialchars($row['inventory_item_no'] ?? ''); ?>"
-                  data-price="<?php echo htmlspecialchars($row['unit_price'] ?? ''); ?>"
                   data-remarks="<?php echo htmlspecialchars($row['remarks'] ?? ''); ?>">
                 <td><?php echo htmlspecialchars($row['asset_tag']); ?></td>
                 <td><?php echo htmlspecialchars($row['assigned_person']); ?></td>
@@ -290,7 +287,6 @@ $telephone_where = buildWhere($search, $status, 'remarks');
                   data-specs="<?php echo htmlspecialchars($row['hardware_specifications']); ?>"
                   data-date="<?php echo htmlspecialchars($row['date_acquired'] ?? ''); ?>"
                   data-itemno="<?php echo htmlspecialchars($row['inventory_item_no'] ?? ''); ?>"
-                  data-price="<?php echo htmlspecialchars($row['unit_price'] ?? ''); ?>"
                   data-remarks="<?php echo htmlspecialchars($row['remarks'] ?? ''); ?>">
                 <td><?php echo htmlspecialchars($row['asset_tag']); ?></td>
                 <td><?php echo htmlspecialchars($row['assigned_person']); ?></td>
@@ -324,7 +320,6 @@ $telephone_where = buildWhere($search, $status, 'remarks');
                   data-specs="<?php echo htmlspecialchars($row['hardware_specifications']); ?>"
                   data-date="<?php echo htmlspecialchars($row['date_acquired'] ?? ''); ?>"
                   data-itemno="<?php echo htmlspecialchars($row['inventory_item_no'] ?? ''); ?>"
-                  data-price="<?php echo htmlspecialchars($row['unit_price'] ?? ''); ?>"
                   data-remarks="<?php echo htmlspecialchars($row['remarks'] ?? ''); ?>">
                 <td><?php echo htmlspecialchars($row['asset_tag']); ?></td>
                 <td><?php echo htmlspecialchars($row['assigned_person']); ?></td>
@@ -358,7 +353,6 @@ $telephone_where = buildWhere($search, $status, 'remarks');
                   data-specs="<?php echo htmlspecialchars($row['hardware_specifications']); ?>"
                   data-date="<?php echo htmlspecialchars($row['date_acquired'] ?? ''); ?>"
                   data-itemno="<?php echo htmlspecialchars($row['inventory_item_no'] ?? ''); ?>"
-                  data-price="<?php echo htmlspecialchars($row['unit_price'] ?? ''); ?>"
                   data-remarks="<?php echo htmlspecialchars($row['remarks'] ?? ''); ?>">
                 <td><?php echo htmlspecialchars($row['asset_tag']); ?></td>
                 <td><?php echo htmlspecialchars($row['assigned_person']); ?></td>
@@ -392,7 +386,6 @@ $telephone_where = buildWhere($search, $status, 'remarks');
                   data-specs="<?php echo htmlspecialchars($row['hardware_specifications']); ?>"
                   data-date="<?php echo htmlspecialchars($row['date_acquired'] ?? ''); ?>"
                   data-itemno="<?php echo htmlspecialchars($row['inventory_item_no'] ?? ''); ?>"
-                  data-price="<?php echo htmlspecialchars($row['unit_price'] ?? ''); ?>"
                   data-remarks="<?php echo htmlspecialchars($row['remarks'] ?? ''); ?>">
                 <td><?php echo htmlspecialchars($row['asset_tag']); ?></td>
                 <td><?php echo htmlspecialchars($row['assigned_person']); ?></td>
@@ -432,7 +425,6 @@ $telephone_where = buildWhere($search, $status, 'remarks');
             <li class="list-group-item"><strong>OS:</strong> <span id="d_os"></span></li>
             <li class="list-group-item"><strong>Date Acquired:</strong> <span id="d_date"></span></li>
             <li class="list-group-item"><strong>Inventory Item No:</strong> <span id="d_itemno"></span></li>
-            <li class="list-group-item"><strong>Unit Price:</strong> ₱<span id="d_price"></span></li>
             <li class="list-group-item"><strong>Remarks:</strong> <span id="d_remarks"></span></li>
           </ul>
         </div>
@@ -471,7 +463,6 @@ $telephone_where = buildWhere($search, $status, 'remarks');
             <li class="list-group-item"><strong>Specifications:</strong> <span id="e_specs"></span></li>
             <li class="list-group-item"><strong>Date Acquired:</strong> <span id="e_date"></span></li>
             <li class="list-group-item"><strong>Inventory Item No:</strong> <span id="e_itemno"></span></li>
-            <li class="list-group-item"><strong>Unit Price:</strong> ₱<span id="e_price"></span></li>
             <li class="list-group-item"><strong>Remarks:</strong> <span id="e_remarks"></span></li>
           </ul>
         </div>
@@ -545,10 +536,6 @@ $telephone_where = buildWhere($search, $status, 'remarks');
             <input type="date" name="date_acquired" class="form-control">
           </div>
 
-          <div class="col-md-4">
-            <label class="form-label">Unit Price</label>
-            <input type="number" step="0.01" name="unit_price" class="form-control">
-          </div>
 
           <div class="col-md-4">
             <label class="form-label">Inventory Item No</label>
@@ -715,7 +702,6 @@ const qrPayload = {
   specs: row.dataset.specs || "",
   date_acquired: row.dataset.date || "",
   inventory_item_no: row.dataset.itemno || "",
-  unit_price: row.dataset.price || "",
   remarks: row.dataset.remarks || ""
 };
 

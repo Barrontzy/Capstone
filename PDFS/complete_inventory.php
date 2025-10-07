@@ -11,44 +11,55 @@ $equipment_category = $_POST['equipment_category'] ?? ''; // now posts category 
 class PDF extends FPDF {
     public $headers = ['ID','Type','Asset Tag','Property/Equip','Department','Assigned To','Location','Cost','Date Acquired'];
     public $widths;
+    private $headerImage;
 
     function __construct($orientation='L',$unit='mm',$size='A4') {
         parent::__construct($orientation,$unit,$size);
         $usableWidth = $this->GetPageWidth() - $this->lMargin - $this->rMargin;
+
+        // Adjusted ratios for landscape orientation (more space available)
         $ratios = [0.05,0.09,0.15,0.15,0.12,0.15,0.12,0.09,0.08];
         $this->widths = array_map(fn($r)=>$r*$usableWidth,$ratios);
+
+        // Path to letterhead image
+        $this->headerImage = __DIR__ . '/../header.png';
     }
 
     function Header(){
-        $logoPath = __DIR__ . '/../assets/logo/bsutneu.png';
-        if(file_exists($logoPath)){
-            $this->Cell(25,20,'',1,0,'C');
-            $this->Image($logoPath,$this->GetX()-24,$this->GetY(),23,20);
-        } else {
-            $this->Cell(25,20,'NO LOGO',1,0,'C');
+        // Show BatStateU header
+        if(file_exists($this->headerImage)){
+            $this->Image($this->headerImage, 10, 5, 277, 40); // fits landscape width
         }
-        $this->SetFont('Arial','',9);
-        $this->Cell(120,20,'Reference No.: BatStateU-FO-ICT-06',1,0,'L');
-        $this->Cell(107,20,'Eff. Date: Jan 23, 2023',1,0,'L');
-        $this->Cell(25,20,'Rev. No.: 00',1,1,'L');
 
-        $this->SetFont('Arial','B',14);
-        $this->Cell(0,12,'COMPLETE INVENTORY REPORT',1,1,'C');
+        // Move cursor below header
+        $this->SetY(50);
 
-        $this->SetFont('Arial','',12);
-        $this->Cell(0,12,'INFORMATION AND COMMUNICATIONS TECHNOLOGY SERVICES',1,1,'C');
+        // Title Section
+        $this->SetFont('Arial','B',13);
+        $this->Cell(0,10,'COMPLETE INVENTORY REPORT',0,1,'C');
 
-        $this->SetFont('Arial','B',9);
+        $this->SetFont('Arial','',11);
+        $this->Cell(0,8,'Information and Communications Technology Services',0,1,'C');
+        $this->Ln(4);
+
+        // Table header
+        $this->SetFont('Arial','B',8.5);
         foreach($this->headers as $i=>$h){
-            $this->Cell($this->widths[$i],10,$h,1,0,'C');
+            $this->Cell($this->widths[$i],9,$h,1,0,'C');
         }
         $this->Ln();
     }
 
     function Footer(){
-        $this->SetY(-15);
+        // Motto and page number
+        $this->SetY(-20);
+        $this->SetFont('Arial','I',9);
+        $this->SetTextColor(255,87,87);
+        $this->Cell(0,8,'Leading Innovations, Transforming Lives, Building the Nation',0,1,'C');
+
         $this->SetFont('Arial','I',8);
-        $this->Cell(0,10,'Page '.$this->PageNo(),0,0,'C');
+        $this->SetTextColor(0);
+        $this->Cell(0,5,'Page '.$this->PageNo(),0,0,'C');
     }
 }
 
@@ -93,7 +104,7 @@ foreach($tables as $table => [$type,$deptField]){
     while($row = $result->fetch_assoc()){
         $pdf->Cell($widths[0],8,$row['id'],1,0,'C');
         $pdf->Cell($widths[1],8,$type,1,0,'C');
-        $pdf->Cell($widths[2],8,$row['asset_tag'],1,0,'C');
+        $pdf->Cell($widths[2],8,$row['asset_tag'],1,0,'L');
         $pdf->Cell($widths[3],8,$row['property_equipment'],1,0,'C');
         $pdf->Cell($widths[4],8,$row['department'],1,0,'C');
         $pdf->Cell($widths[5],8,$row['assigned_person'],1,0,'C');
@@ -112,3 +123,4 @@ $pdf->Cell($widths[7],10,chr(8369).number_format($grandTotal,2),1,0,'R');
 $pdf->Cell($widths[8],10,'',1,1,'C');
 
 $pdf->Output('I','Complete_Inventory_Report.pdf');
+?>
