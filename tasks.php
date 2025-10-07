@@ -28,9 +28,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 				logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], "Task", "Assigned a task to user ID ".$assigned_to);
 
 				// --- insert Task ---
-				$stmt = $conn->prepare("INSERT INTO tasks (title, description, assigned_to, assigned_by, priority, due_date) 
-					VALUES (?, ?, ?, ?, ?, ?)");
-				$stmt->bind_param("ssiiss", $title, $description, $assigned_to, $_SESSION['user_id'], $priority, $due_date);
+				$stmt = $conn->prepare("INSERT INTO tasks (title, description, assigned_to, assigned_by, priority, due_date, remarks) 
+					VALUES (?, ?, ?, ?, ?, ?, ?)");
+				$remarks = ''; // Default empty remarks
+				$stmt->bind_param("ssiisss", $title, $description, $assigned_to, $_SESSION['user_id'], $priority, $due_date, $remarks);
 
 				if ($stmt->execute()) {
 				$message = 'Task assigned successfully!';
