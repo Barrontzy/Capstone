@@ -163,7 +163,7 @@ $telephone_where = buildWhere($search, $status, 'remarks');
     <div class="col-md-9 col-lg-10 main-content">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2><i class="fas fa-laptop"></i> Equipment</h2>
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addEquipmentModal"><i class="fas fa-plus"></i> Add Equipment</button>
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addEquipmentModal"><i class="fas fa-plus"></i> Add Equipment</button>
       </div>
 
       <?php if (isset($_GET['added']) && $_GET['added'] == '1'): ?>

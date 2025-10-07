@@ -833,27 +833,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         function showError(message) {
-            // Remove existing error messages
+            
             const existingError = document.querySelector('.alert-danger');
             if (existingError) {
                 existingError.remove();
             }
             
-            // Create new error message
             const errorDiv = document.createElement('div');
             errorDiv.className = 'alert alert-danger';
             errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + message;
             
-            // Insert error message at the top of the modal body
+            
             const modalBody = document.querySelector('.modal-body');
             modalBody.insertBefore(errorDiv, modalBody.firstChild);
         }
         
-        // Handle modal close and refresh page on successful update
+        
         document.getElementById('profileModal').addEventListener('hidden.bs.modal', function() {
-            // Check if there was a successful update (you can add a flag in PHP)
+           
             <?php if ($message): ?>
-                // Refresh the page to show updated profile
+                
                 setTimeout(function() {
                     window.location.reload();
                 }, 100);

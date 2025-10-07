@@ -390,7 +390,7 @@ $users = $conn->query("SELECT id, full_name, role FROM users ORDER BY full_name"
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-plus"></i> Assign New Task</h5>
+                    <h5 class="modal-title"></button>><i class="fas fa-plus"></i> Assign New Task</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form method="POST">
@@ -436,8 +436,8 @@ $users = $conn->query("SELECT id, full_name, role FROM users ORDER BY full_name"
                         </div>
                     </div>
                     <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">Assign Task</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Assign Task</button>
                     </div>
                 </form>
             </div>

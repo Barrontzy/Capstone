@@ -213,7 +213,7 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Schedule Maintenance</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-danger" data-bs-dismiss="modal"></button>
                 </div>
                 <form method="POST">
                     <input type="hidden" name="action" value="add">
@@ -259,8 +259,8 @@ $technicians = $conn->query("SELECT id, full_name FROM users WHERE role = 'techn
                         </div>
                     </div>
                     <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">Save</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
                     </div>
                 </form>
             </div>
