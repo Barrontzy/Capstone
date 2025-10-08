@@ -125,6 +125,34 @@ $telephone_where = buildWhere($search, $status, 'remarks');
         .sidebar .nav-link:hover, .sidebar .nav-link.active { background: var(--primary-color); color: #fff; }
         .main-content { padding: 20px; }
         .card { border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        
+        /* Red Navigation Tabs Styling */
+        .nav-tabs .nav-link {
+            color: #dc3545;
+            border: 1px solid transparent;
+            border-radius: 8px 8px 0 0;
+            padding: 12px 20px;
+            margin-right: 5px;
+            background-color: transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            color: #fff;
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: #fff;
+            background-color: #dc3545;
+            border-color: #dc3545;
+            border-bottom-color: #fff;
+        }
+        
+        .nav-tabs {
+            border-bottom: 2px solid #dc3545;
+        }
     </style>
 <body>
     <!-- Navbar -->

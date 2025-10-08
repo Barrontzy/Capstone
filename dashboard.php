@@ -211,7 +211,7 @@ $maintenance_alerts = array_slice($maintenance_alerts, 0, 5);
 
     new Chart(document.getElementById('acquisitionChart'), {
       type: 'bar',
-      data: { labels: <?php echo json_encode(array_keys($acquisition_data)); ?>, datasets: [{ label: 'Units Acquired', data: <?php echo json_encode(array_values($acquisition_data)); ?>, backgroundColor: '#0d6efd' }] },
+      data: { labels: <?php echo json_encode(array_keys($acquisition_data)); ?>, datasets: [{ label: 'Units Acquired', data: <?php echo json_encode(array_values($acquisition_data)); ?>, backgroundColor: '#dc3545' }] },
       options: { responsive: true, scales: { y: { beginAtZero: true } } }
     });
   </script>
