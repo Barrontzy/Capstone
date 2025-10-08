@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 27, 2025 at 04:17 PM
+-- Generation Time: Oct 08, 2025 at 05:54 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -149,7 +149,210 @@ INSERT INTO `admin_logs` (`id`, `admin_id`, `admin_name`, `action`, `description
 (37, 4, 'sasasa', 'Logout', 'Admin logged out', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0', '2025-09-27 14:05:52'),
 (38, 4, 'sasasa', 'Login', 'Admin logged in', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0', '2025-09-27 14:05:57'),
 (39, 4, 'sasasa', 'Logout', 'Admin logged out', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0', '2025-09-27 14:06:00'),
-(40, 4, 'sasasa', 'Login', 'Admin logged in', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0', '2025-09-27 14:15:57');
+(40, 4, 'sasasa', 'Login', 'Admin logged in', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0', '2025-09-27 14:15:57'),
+(41, 2, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-28 03:25:02'),
+(42, 2, 'Emmanuel M. Dimaculangan', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-28 03:28:09'),
+(43, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-28 03:28:25'),
+(44, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-28 04:11:48'),
+(45, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-28 04:13:34'),
+(46, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-28 04:13:58'),
+(47, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-28 04:15:59'),
+(48, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-28 04:36:10'),
+(49, 8, 'Emman', 'Task', 'Assigned a task to user ID 9', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-28 04:37:16'),
+(50, 8, 'Emman', 'Task', 'Assigned a task to user ID 10', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-28 04:38:47'),
+(51, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 05:42:23'),
+(52, 9, 'sir', 'User', 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 05:44:06'),
+(53, 8, 'Emman', 'Generated Report', 'EXISTING INTERNET SERVICE PROVIDER\'S EVALUATION', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 05:52:19'),
+(54, 8, 'Emman', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 06:00:10'),
+(55, 8, 'Emman', 'Generated Report', 'Preventive Maintenance of ICT-Related Equipment Index Card', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 06:01:28'),
+(56, 8, 'Emman', 'Generated Report', 'ICT SERVICE REQUEST FORM', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 06:02:18'),
+(57, 8, 'Emman', 'Generated Report', 'REQUEST FOR POSTING OF ANNOUNCEMENTS / GREETINGS', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 06:02:44'),
+(58, 8, 'Emman', 'Task', 'Assigned a task to user ID 9', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 06:08:52'),
+(59, 9, 'sir', 'User', 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 06:10:50'),
+(60, 8, 'Emman', 'Task', 'Assigned a task to user ID 9', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 06:15:01'),
+(61, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 07:22:57'),
+(62, 9, 'sir', 'User', 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 07:23:31'),
+(63, 8, 'Emman', 'Generated Report', 'Preventive Maintenance of ICT-Related Equipment Index Card', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 07:25:19'),
+(64, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 07:36:17'),
+(65, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 07:36:45'),
+(66, 8, 'Emman', 'Task', 'Assigned a task to user ID 9', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-29 07:38:28'),
+(67, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 07:14:39'),
+(68, 8, 'Emman', 'Task', 'Assigned a task to user ID 10', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 07:16:00'),
+(69, 9, 'sir', 'User', 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 07:17:04'),
+(70, 8, 'Emman', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 07:18:19'),
+(71, 8, 'Emman', 'Task', 'Assigned a task to user ID 9', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 07:48:14'),
+(72, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:17:17'),
+(73, 9, 'sir', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:29:23'),
+(74, 9, 'sir', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:32:13'),
+(75, 9, 'sir', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:32:35'),
+(76, 9, 'sir', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:33:50'),
+(77, 9, 'sir', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:34:04'),
+(78, 9, 'sir', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:34:09'),
+(79, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:34:25'),
+(80, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:34:44'),
+(81, 9, 'sir', 'User', 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:35:11'),
+(82, 9, 'sir', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:38:02'),
+(83, 9, 'sir', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:41:27'),
+(84, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:44:01'),
+(85, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:44:12'),
+(86, 9, 'sir', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:44:24'),
+(87, 9, 'sir', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:46:05'),
+(88, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:46:24'),
+(89, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:46:28'),
+(90, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:46:36'),
+(91, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:46:39'),
+(92, 9, 'sir', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:46:48'),
+(93, 9, 'sir', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:47:33'),
+(94, 9, 'sir', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:47:40'),
+(95, 9, 'sir', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:49:30'),
+(96, 9, 'sir', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:50:00'),
+(97, 9, 'sir', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:52:14'),
+(98, 9, 'sir', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:52:31'),
+(99, 9, 'sir', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:53:41'),
+(100, 9, 'sir', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:53:56'),
+(101, 9, 'sir', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:58:11'),
+(102, 9, 'sir', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 08:58:22'),
+(103, 9, 'sir', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 09:02:42'),
+(104, 9, 'sir', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 09:04:23'),
+(105, 9, 'sir', 'User', 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 09:08:16'),
+(106, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 09:12:25'),
+(107, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 09:16:57'),
+(108, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:01:56'),
+(109, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:02:36'),
+(110, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:03:17'),
+(111, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:03:54'),
+(112, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:06:22'),
+(113, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:11:21'),
+(114, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:11:35'),
+(115, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:11:55'),
+(116, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:12:34'),
+(117, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:13:42'),
+(118, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:13:57'),
+(119, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:14:25'),
+(120, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:19:04'),
+(121, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:23:05'),
+(122, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 11:26:18'),
+(123, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 12:12:33'),
+(124, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 12:14:45'),
+(125, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 12:14:53'),
+(126, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 12:20:22'),
+(127, 2, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 12:22:12'),
+(128, 2, 'Emmanuel M. Dimaculangan', 'Task', 'Assigned a task to user ID 9', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 12:22:41'),
+(129, 2, 'Emmanuel M. Dimaculangan', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 12:47:14'),
+(130, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 12:47:45'),
+(131, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:09:45'),
+(132, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:09:56'),
+(133, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:14:59'),
+(134, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:15:13'),
+(135, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:16:32'),
+(136, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:16:54'),
+(137, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:17:20'),
+(138, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:18:55'),
+(139, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:20:57'),
+(140, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:21:13'),
+(141, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:23:16'),
+(142, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:24:16'),
+(143, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:31:07'),
+(144, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:31:22'),
+(145, 9, 'sir', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:39:32'),
+(146, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:40:54'),
+(147, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-30 13:45:34'),
+(148, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-03 10:23:52'),
+(149, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-03 10:31:36'),
+(150, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-03 10:31:48'),
+(151, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-03 10:33:08'),
+(152, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-03 10:33:41'),
+(153, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-03 10:33:58'),
+(154, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 03:38:31'),
+(155, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 04:50:11'),
+(156, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 05:39:54'),
+(157, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 05:42:01'),
+(158, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 05:42:52'),
+(159, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 05:42:54'),
+(160, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:19:26'),
+(161, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:19:28'),
+(162, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:22:16'),
+(163, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:22:20'),
+(164, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:25:23'),
+(165, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:12'),
+(166, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:17'),
+(167, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:20'),
+(168, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:22'),
+(169, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:27'),
+(170, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:29'),
+(171, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:32'),
+(172, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:34'),
+(173, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:37'),
+(174, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:39'),
+(175, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:41'),
+(176, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:44'),
+(177, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:46'),
+(178, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:48'),
+(179, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:50'),
+(180, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:53'),
+(181, 8, 'Emman', 'Task', 'Deleted a task.', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:28:55'),
+(182, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:41:21'),
+(183, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:41:35'),
+(184, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 06:41:37'),
+(185, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 07:58:12'),
+(186, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-04 08:03:58'),
+(187, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-06 13:36:15'),
+(188, 8, 'Emman', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 03:17:15'),
+(189, 15, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 08:13:21'),
+(190, 15, 'Emmanuel M. Dimaculangan', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 08:13:23'),
+(191, 15, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 08:13:51'),
+(192, 15, 'Emmanuel M. Dimaculangan', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 08:15:09'),
+(193, 15, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 08:42:12'),
+(194, 15, 'Emmanuel M. Dimaculangan', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 08:42:36'),
+(195, 16, 'barron', 'Generated Report', 'Preventive Maintenance of ICT-Related Equipment Index Card', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 09:01:58'),
+(196, 16, 'barron', 'Generated Report', 'Preventive Maintenance of ICT-Related Equipment Index Card', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 09:02:04'),
+(197, 16, 'barron', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 10:06:06'),
+(198, 16, 'barron', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 10:06:35'),
+(199, 16, 'barron', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 10:09:46'),
+(200, 16, 'barron', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 10:17:33'),
+(201, 16, 'barron', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 10:20:50'),
+(202, 15, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 10:21:53'),
+(203, 15, 'Emmanuel M. Dimaculangan', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 10:26:51'),
+(204, 16, 'barron', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 10:27:11'),
+(205, 15, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 10:29:50'),
+(206, 15, 'Emmanuel M. Dimaculangan', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 10:31:30'),
+(207, 16, 'barron', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 10:32:01'),
+(208, 15, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 11:30:08'),
+(209, 8, 'Emman', 'Login', 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 15:32:37'),
+(210, 8, 'Emman', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 15:32:46'),
+(211, 8, 'Emman', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 15:40:29'),
+(212, 15, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 15:40:54'),
+(213, 15, 'Emmanuel M. Dimaculangan', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 15:41:00'),
+(214, 16, 'barron', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 15:41:18'),
+(215, 16, 'barron', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 15:45:15'),
+(216, 15, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 15:45:38'),
+(217, 15, 'Emmanuel M. Dimaculangan', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 15:47:28'),
+(218, 16, 'barron', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 15:48:25'),
+(219, 16, 'barron', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 15:48:40'),
+(220, 15, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 15:48:53'),
+(221, 15, 'Emmanuel M. Dimaculangan', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 15:49:05'),
+(222, 15, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 15:49:17'),
+(223, 15, 'Emmanuel M. Dimaculangan', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 16:03:11'),
+(224, 16, 'barron', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 16:03:26'),
+(225, 16, 'barron', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-10-07 16:04:22'),
+(226, 16, 'barron', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 02:32:07'),
+(227, 16, 'barron', 'Generated Report', 'SYSTEM REQUEST FORM', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 02:34:11'),
+(228, 15, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 02:35:57'),
+(229, 15, 'Emmanuel M. Dimaculangan', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 02:39:35'),
+(230, 15, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 06:34:09'),
+(231, 15, 'Emmanuel M. Dimaculangan', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 06:34:25'),
+(232, 15, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 06:36:26'),
+(233, 15, 'Emmanuel M. Dimaculangan', 'Add Technician', 'Added technician 22-34593@g.batstate-u.edu.ph', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 06:37:12'),
+(234, 15, 'Emmanuel M. Dimaculangan', 'Logout', 'Admin logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 06:38:30'),
+(235, 17, 'carlos', 'User', 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 06:40:12'),
+(236, 17, 'carlos', 'User', 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 06:40:56'),
+(237, 17, 'carlos', 'Task', 'Assigned a task to user ID 17', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 06:44:37'),
+(238, 17, 'carlos', 'User', 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 06:52:21'),
+(239, 17, 'carlos', 'User', 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 06:55:25'),
+(240, 15, 'Emmanuel M. Dimaculangan', 'Login', 'Admin logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 07:08:20'),
+(241, 16, 'barron', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 15:24:10'),
+(242, 16, 'barron', 'Generated Report', 'PREVENTIVE MAINTENANCE PLAN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 15:32:02'),
+(243, 16, 'barron', 'Generated Report', 'Preventive Maintenance of ICT-Related Equipment Index Card', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-10-08 15:51:34');
 
 -- --------------------------------------------------------
 
@@ -357,7 +560,8 @@ INSERT INTO `history` (`id`, `user_id`, `equipment_id`, `table_name`, `action`, 
 (5, 4, 57, 'printers', 'Add Maintenance', '2025-09-27 13:37:40'),
 (6, 4, 59, 'printers', 'Add Maintenance', '2025-09-27 13:39:03'),
 (7, 4, 59, 'printers', 'Add Maintenance', '2025-09-27 13:39:17'),
-(8, 4, 1, 'accesspoint', 'Add Maintenance', '2025-09-27 13:39:40');
+(8, 4, 1, 'accesspoint', 'Add Maintenance', '2025-09-27 13:39:40'),
+(9, 9, 35, 'desktop', 'qr_scan', '2025-09-29 06:17:04');
 
 -- --------------------------------------------------------
 
@@ -401,6 +605,19 @@ INSERT INTO `laptops` (`id`, `asset_tag`, `property_equipment`, `department`, `a
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `logs`
+--
+
+CREATE TABLE `logs` (
+  `id` int(11) NOT NULL,
+  `user` varchar(100) NOT NULL,
+  `action` text NOT NULL,
+  `date` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `maintenance_records`
 --
 
@@ -419,19 +636,6 @@ CREATE TABLE `maintenance_records` (
   `update_at` varchar(255) NOT NULL,
   `remarks` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `maintenance_records`
---
-
-INSERT INTO `maintenance_records` (`id`, `equipment_id`, `equipment_type`, `technician_id`, `maintenance_type`, `description`, `cost`, `start_date`, `end_date`, `status`, `created_at`, `update_at`, `remarks`) VALUES
-(1, 57, 'printers', 6, 'corrective', 'sasa', 150000.00, '2024-08-26', '2024-08-26', 'scheduled', '2025-09-27 13:37:40', '', ''),
-(2, 59, 'printers', 7, 'upgrade', 'sasa', 212121.00, '2025-09-26', '2025-09-27', 'completed', '2025-09-27 13:39:03', '', 'sasa'),
-(3, 59, 'printers', 6, 'corrective', 'sasa', 212121.00, '2025-09-11', '2025-10-01', 'scheduled', '2025-09-27 13:39:17', '', ''),
-(4, 1, 'accesspoint', 7, 'corrective', 'sasa', 1111.00, '2025-09-18', '2025-09-09', 'in_progress', '2025-09-27 13:39:40', '', 'sasa'),
-(5, 11111, '', 7, 'preventive', 'sasasasasa', 5000.00, '2024-08-26', '2024-08-26', '', '2025-09-27 14:02:18', '', ''),
-(6, 11111, '', 7, 'preventive', 'sasasasasa', 5000.00, '2024-08-26', '2024-08-26', 'scheduled', '2025-09-27 14:03:46', '', ''),
-(7, 123456, '', 7, 'corrective', 'sample description', 10000.00, '2024-08-26', '2024-08-26', 'completed', '2025-09-27 14:04:14', '', 'sasasasasa');
 
 -- --------------------------------------------------------
 
@@ -575,6 +779,23 @@ INSERT INTO `switch` (`id`, `asset_tag`, `property_equipment`, `department`, `as
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `system_requests`
+--
+
+CREATE TABLE `system_requests` (
+  `id` int(11) NOT NULL,
+  `requesting_office` varchar(255) NOT NULL,
+  `type_of_request` varchar(255) NOT NULL,
+  `urgency` varchar(100) DEFAULT NULL,
+  `system_name` varchar(255) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `status` enum('Pending','In Progress','Completed') DEFAULT 'Pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `tasks`
 --
 
@@ -597,15 +818,7 @@ CREATE TABLE `tasks` (
 --
 
 INSERT INTO `tasks` (`id`, `title`, `description`, `assigned_to`, `assigned_by`, `priority`, `status`, `due_date`, `created_at`, `updated_at`, `remarks`) VALUES
-(2, 'sasa', 'sasa', 4, 4, 'low', 'pending', '2025-09-26', '2025-09-26 14:06:49', '2025-09-26 14:06:49', ''),
-(4, 'sa', 'sa', 6, 4, 'low', 'in_progress', '2025-09-27', '2025-09-27 12:03:43', '2025-09-27 12:03:47', ''),
-(5, 'sa', 'sa', 6, 4, 'low', 'pending', '2025-09-27', '2025-09-27 12:15:14', '2025-09-27 12:15:14', ''),
-(6, 'sa', 'sa', 6, 4, 'low', 'pending', '2025-09-27', '2025-09-27 12:15:24', '2025-09-27 12:15:24', ''),
-(7, 'sasa', 'sasa', 5, 4, 'low', 'pending', '2025-09-28', '2025-09-27 12:18:57', '2025-09-27 12:18:57', ''),
-(8, 'sasa', 'sasa', 5, 4, 'low', 'pending', '2025-09-28', '2025-09-27 12:20:02', '2025-09-27 12:20:02', ''),
-(9, 'sasa', 'sasa', 5, 4, 'low', 'pending', '2025-09-28', '2025-09-27 12:20:14', '2025-09-27 12:20:14', ''),
-(10, 'sasa', 'sasa', 5, 4, 'low', 'pending', '2025-09-28', '2025-09-27 12:20:39', '2025-09-27 12:20:39', ''),
-(11, 'sasa', 'sasa', 7, 4, 'low', 'pending', '2025-09-25', '2025-09-27 12:25:25', '2025-09-27 14:04:44', 'sasa');
+(20, 'repair', 'repair the computer in cics lab', 17, 17, 'medium', 'pending', '2025-10-10', '2025-10-08 06:44:37', '2025-10-08 06:44:37', '');
 
 -- --------------------------------------------------------
 
@@ -667,7 +880,7 @@ CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `full_name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
-  `role` enum('admin','technician') NOT NULL,
+  `role` enum('admin','technician','department_admin') NOT NULL DEFAULT 'technician',
   `phone_number` varchar(20) NOT NULL,
   `password` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -679,13 +892,13 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `full_name`, `email`, `role`, `phone_number`, `password`, `created_at`, `updated_at`) VALUES
-(1, 'System Administrator', 'admin@bsu.edu.ph', 'admin', '09123456789', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '2025-07-27 00:07:33', '2025-07-27 00:07:33'),
-(2, 'Emmanuel M. Dimaculangan', 'isekaisenpai9@gmail.com', 'admin', '09918298717', '$2y$10$arrlKKHVbE/uKg2yHtQIR.ZhTDdTKkc4ed/79Fk.hwQNcTVva9dDm', '2025-07-27 00:47:57', '2025-07-27 00:47:57'),
-(3, 'admin', 'admin@gmail.com', 'admin', '09918298717', '$2y$10$k.Tah7NDxXIVyBKyGRtcsuuQvN4gUoekS4MOlSa/DyU1DQlwlP9zS', '2025-08-29 09:16:47', '2025-08-29 09:16:47'),
-(4, 'sasasa', 'rhenoah15@gmail.com', 'admin', '123456789', '$2y$10$1FmWtRo75z5kmoIQZbE77e3gAmyViG/jwQshxsbkAIYIRE4lvWuuS', '2025-09-17 12:55:29', '2025-09-17 12:55:29'),
-(5, 'sample', 'aubreyadaya1@gmail.com', 'admin', '11111', '$2y$10$NdIXqWXqSr4KoTc5WCdYRu/L.z6ObmP.XNFpcN45uSB4DBcIW504a', '2025-09-26 16:39:52', '2025-09-27 12:21:40'),
-(6, 'sa', 'tech@gmail.com', 'technician', 'sa', '$2y$10$M7nTGWaXY26ogaN5NIqsUuYphZv1J9YNEqQ6HWITo5dTg8U7BTMGe', '2025-09-27 11:59:14', '2025-09-27 11:59:14'),
-(7, 'sample', 'cc@gmail.com', 'technician', 'ccc', '$2y$10$XrjEdcsVkoN.aMt6rc0crugO/60U91wJUg40CHvULjnDrL3L/QpJq', '2025-09-27 12:23:46', '2025-09-27 13:17:07');
+(8, 'Emman', 'senpai@gmail.com', 'admin', '12345678901', '$2y$10$7VhW09z6NC2.BMx7F5LgP.6MZG8JHb./9oWYqcwOMKmloxHa3318C', '2025-09-28 03:27:51', '2025-09-28 03:27:51'),
+(9, 'sir', 'dimaculanganemmanuel9@gmail.com', 'technician', '09918298717', '$2y$10$mLDHDeVzmTXGHkef8i0GSudkb/6CCIOfmEZngWWJc0IxRGh1g0HCq', '2025-09-28 04:36:49', '2025-09-28 04:36:49'),
+(10, 'barrin', 'kantoworks03@gmail.com', 'technician', '09123455678', '$2y$10$ds2S7qfo0JVVVjMBLXUKKO4ogV6Kwtl2iQfk/24BclutBEFxR2CzG', '2025-09-28 04:38:25', '2025-09-28 04:38:25'),
+(14, 'barriah', 'barriah@gmail.com', 'department_admin', '09812345671', '$2y$10$SilMZp9fko9.2UDkgWftjeaIqe.2aaKWklyWYpwWxhOdZSri1SpaW', '2025-10-04 04:45:10', '2025-10-04 04:45:10'),
+(15, 'Emmanuel M. Dimaculangan', '22-34069@g.batstate-u.edu.ph', 'admin', '09918298717', '$2y$10$wVm8EaIDJ8UjSANiI6dhFu5LA/nlSKUbqYS1CPj8Eq/oRQEYyxzGa', '2025-10-04 06:30:26', '2025-10-04 06:30:26'),
+(16, 'barron', '22-37117@g.batstate-u.edu.ph', 'department_admin', '09918298685', '$2y$10$AWXSiW5OYiH9Vvds3EdkSO14XsnO/28uIRKQZ.ui1kHE5dAZ5u1f2', '2025-10-07 08:15:04', '2025-10-07 08:15:04'),
+(17, 'carlos', '22-34593@g.batstate-u.edu.ph', 'technician', '12345678901', '$2y$10$bwmT9rKSi.qRi81oCLViUOjtNJ7xHBoen7UD5sDWAe5Xn/sjHEc3a', '2025-10-08 06:37:12', '2025-10-08 06:37:12');
 
 --
 -- Indexes for dumped tables
@@ -722,12 +935,24 @@ ALTER TABLE `history`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `logs`
+--
+ALTER TABLE `logs`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `maintenance_records`
 --
 ALTER TABLE `maintenance_records`
   ADD PRIMARY KEY (`id`),
   ADD KEY `equipment_id` (`equipment_id`),
   ADD KEY `technician_id` (`technician_id`);
+
+--
+-- Indexes for table `system_requests`
+--
+ALTER TABLE `system_requests`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `tasks`
@@ -752,7 +977,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `admin_logs`
 --
 ALTER TABLE `admin_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=244;
 
 --
 -- AUTO_INCREMENT for table `departments`
@@ -776,7 +1001,13 @@ ALTER TABLE `equipment_categories`
 -- AUTO_INCREMENT for table `history`
 --
 ALTER TABLE `history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- AUTO_INCREMENT for table `logs`
+--
+ALTER TABLE `logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `maintenance_records`
@@ -785,16 +1016,22 @@ ALTER TABLE `maintenance_records`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
+-- AUTO_INCREMENT for table `system_requests`
+--
+ALTER TABLE `system_requests`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `tasks`
 --
 ALTER TABLE `tasks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- Constraints for dumped tables
