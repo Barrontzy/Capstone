@@ -1,12 +1,16 @@
 <?php
-session_start();
 require_once '../includes/session.php';
 require_once '../includes/db.php';
 
 // Check if user is already logged in
-if (isset($_SESSION['user_id'])) {
-    header('Location: index.php');
-    exit();
+if (isLoggedIn()) {
+    if(isAdmin()){
+        header('Location: ../dashboard.php');
+        exit();
+    } elseif(isTechnician()){
+        header('Location: indet.php');
+        exit();
+    }
 }
 
 $error = '';
@@ -43,8 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $ip_address = $_SERVER['REMOTE_ADDR'];
                 $user_agent = $_SERVER['HTTP_USER_AGENT'];
              
-                
-              header('Location: index.php');
+              header('Location: indet.php');
                exit();
             } else {
                 $error = 'Invalid password.';
@@ -203,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="login-container">
         <div class="login-header">
             <div class="logo">
-                <i class="fas fa-tools"></i>
+                <img src="User icon.png" alt="Technician Portal Logo" style="width: 48px; height: 48px;">
             </div>
             <h2>Technician Portal</h2>
             <p>BSU Equipment Management System</p>

@@ -1,9 +1,8 @@
 <?php
-session_start();
 require_once '../includes/session.php';
 require_once '../includes/db.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'technician') {
+if (!isLoggedIn() || !isTechnician()) {
     header('Location: login.php');
     exit();
 }

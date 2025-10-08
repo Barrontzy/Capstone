@@ -1,7 +1,11 @@
 <?php
-session_start();
 require_once '../includes/session.php';
 require_once '../includes/db.php';
+
+if (!isLoggedIn() || !isTechnician()) {
+    header('Location: login.php');
+    exit();
+}
 
 $user_id = $_SESSION['user_id'];
 $equipment_info = null;

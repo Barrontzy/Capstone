@@ -190,8 +190,23 @@ $maintenance_alerts = array_slice($maintenance_alerts, 0, 5);
 
   <script>
     new Chart(document.getElementById('categoryChart'), {
-      type: 'pie',
-      data: { labels: <?php echo json_encode(array_column($category_data, 'name')); ?>, datasets: [{ data: <?php echo json_encode(array_column($category_data, 'count')); ?>, backgroundColor: ['#dc3545','#0d6efd','#198754','#ffc107','#fd7e14','#6f42c1'] }] }
+      type: 'doughnut',
+      data: { 
+        labels: <?php echo json_encode(array_column($category_data, 'name')); ?>, 
+        datasets: [{ 
+          data: <?php echo json_encode(array_column($category_data, 'count')); ?>, 
+          backgroundColor: ['#dc3545','#6c757d','#198754','#ffc107','#4169e1','#fd7e14'] 
+        }] 
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
     });
 
     new Chart(document.getElementById('acquisitionChart'), {

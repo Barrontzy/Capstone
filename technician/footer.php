@@ -3,7 +3,7 @@
     <!-- Footer Navigation -->
     <nav class="footer-nav">
         <div class="nav-container">
-            <a href="index.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : ''; ?>">
+            <a href="indet.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'indet.php' ? 'active' : ''; ?>">
                 <i class="fas fa-home"></i>
                 <span>Home</span>
             </a>
