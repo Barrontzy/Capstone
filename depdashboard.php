@@ -12,8 +12,6 @@ $pendingRequests = $conn->query("SELECT COUNT(*) AS count FROM system_requests W
 $completedRequests = $conn->query("SELECT COUNT(*) AS count FROM system_requests WHERE status='Completed'")->fetch_assoc()['count'] ?? 0;
 $activityLogs = $conn->query("SELECT COUNT(*) AS count FROM logs")->fetch_assoc()['count'] ?? 0;
 
-// ✅ Fetch recent logs
-$recentLogs = $conn->query("SELECT * FROM logs ORDER BY date DESC LIMIT 5");
 
 // ✅ Include your forms (modals)
 include 'PDFS/PreventiveMaintenancePlan/preventiveForm.php';
@@ -99,6 +97,7 @@ include 'PDFS/PostingRequestForm/PostingRequestForm.php';
         <div class="col-md-3 col-lg-2 sidebar py-4">
             <h5 class="text-center text-danger mb-3"><i class="fas fa-cogs"></i> System Reports</h5>
             <div class="nav flex-column">
+                <a href="depdashboard.php" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                 <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#preventiveModal"><i class="fas fa-calendar-check"></i> Preventive Maintenance Plan</a>
                 <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#PreventiveMaintendancePlanIndexCard"><i class="fas fa-clipboard-list"></i> Index Card</a>
                 <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#ictServiceRequestModal"><i class="fas fa-laptop-code"></i> ICT Request Form</a>
@@ -108,6 +107,7 @@ include 'PDFS/PostingRequestForm/PostingRequestForm.php';
                 <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#userAccountRequestModal"><i class="fas fa-user-shield"></i> User Account Request</a>
                 <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#postingRequestModal"><i class="fas fa-envelope"></i> Posting Request</a>
                 <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#systemReqsModal"><i class="fas fa-cog"></i> System Request</a>
+                <a href="dep_activity_logs.php" class="nav-link"><i class="fas fa-history"></i> Activity Logs</a>
             </div>
         </div>
 
@@ -147,32 +147,6 @@ include 'PDFS/PostingRequestForm/PostingRequestForm.php';
                 </div>
             </div>
 
-            <!-- Recent Logs Table -->
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <i class="fas fa-list"></i> Recent Activity Logs
-                </div>
-                <div class="card-body">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>User</th>
-                                <th>Action</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php while ($log = $recentLogs->fetch_assoc()): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($log['user']) ?></td>
-                                    <td><?= htmlspecialchars($log['action']) ?></td>
-                                    <td><?= htmlspecialchars($log['date']) ?></td>
-                                </tr>
-                            <?php endwhile; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
 
         </div>
     </div>

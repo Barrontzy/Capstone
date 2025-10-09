@@ -2,6 +2,17 @@
 require_once 'includes/session.php';
 require_once 'includes/db.php';
 
+// ✅ Include your forms (modals)
+include 'PDFS/PreventiveMaintenancePlan/preventiveForm.php';
+include 'PDFS/PreventiveMaintendancePlanIndexCard/PreventiveMaintendancePlanIndexCard.php';
+include 'PDFS/AnnouncementGreetings/announcementForm.php';
+include 'PDFS/WebsitePosting/webpostingForm.php';
+include 'PDFS/SystemRequest/systemReqsForm.php';
+include 'PDFS/ICTRequestForm/ICTRequestForm.php';
+include 'PDFS/ISPEvaluation/ISPEvaluation.php';
+include 'PDFS/UserAccountForm/UserAccountForm.php';
+include 'PDFS/PostingRequestForm/PostingRequestForm.php';
+
 // Check if user is logged in
 requireLogin();
 
@@ -328,7 +339,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="dashboard.php">
+            <a class="navbar-brand" href="depdashboard.php">
                 <img src="Ict logs.png" alt="Logo" style="height:40px;"> BSU Inventory System
             </a>
             <div class="navbar-nav ms-auto">
@@ -337,6 +348,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
         </div>
     </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar py-4">
+                <h5 class="text-center text-danger mb-3"><i class="fas fa-cogs"></i> System Reports</h5>
+                <div class="nav flex-column">
+                    <a href="depdashboard.php" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#preventiveModal"><i class="fas fa-calendar-check"></i> Preventive Maintenance Plan</a>
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#PreventiveMaintendancePlanIndexCard"><i class="fas fa-clipboard-list"></i> Index Card</a>
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#ictServiceRequestModal"><i class="fas fa-laptop-code"></i> ICT Request Form</a>
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#ispEvaluationModal"><i class="fas fa-wifi"></i> ISP Evaluation</a>
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#announcementModal"><i class="fas fa-bullhorn"></i> Announcement Request</a>
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#webPostingModal"><i class="fas fa-globe"></i> Website Posting</a>
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#userAccountRequestModal"><i class="fas fa-user-shield"></i> User Account Request</a>
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#postingRequestModal"><i class="fas fa-envelope"></i> Posting Request</a>
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#systemReqsModal"><i class="fas fa-cog"></i> System Request</a>
+                    <a href="dep_activity_logs.php" class="nav-link"><i class="fas fa-history"></i> Activity Logs</a>
+                </div>
+            </div>
 
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 main-content">
@@ -859,5 +890,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php endif; ?>
         });
     </script>
+        </div>
+    </div>
 </body>
 </html> 
