@@ -115,6 +115,16 @@ INSERT INTO equipment_categories (name, description) VALUES
 ('Router', 'Network routing devices'),
 ('Access Point', 'Wireless network access points');
 
+-- Password reset OTP table
+CREATE TABLE password_reset_otps (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    otp_code VARCHAR(6) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_email (email)
+);
+
 -- Insert default admin user
 INSERT INTO users (full_name, email, role, phone_number, password) VALUES
 ('System Administrator', 'admin@bsu.edu.ph', 'admin', '09123456789', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');

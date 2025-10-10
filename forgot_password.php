@@ -1,6 +1,11 @@
 <?php
 require_once 'includes/session.php';
 require_once 'includes/db.php';
+require_once 'vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
 
 // If already logged in, go to dashboard
 if (isset($_SESSION['user_id'])) {
@@ -22,12 +27,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         $result = $stmt->get_result();
         if ($result && $result->num_rows === 1) {
-            // For now, we just show a success message.
-            // In a real app, generate a token, save it, and email a reset link.
-            $message = 'If this email is registered, a reset link has been sent.';
+            // Generate 6-digit OTP
+            $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            
+            // Store OTP in database with expiration (15 minutes from now)
+            $stmt2 = $conn->prepare('INSERT INTO password_reset_otps (email, otp_code, expires_at, created_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 15 MINUTE), NOW()) ON DUPLICATE KEY UPDATE otp_code = ?, expires_at = DATE_ADD(NOW(), INTERVAL 15 MINUTE), created_at = NOW()');
+            $stmt2->bind_param('sss', $email, $otp, $otp);
+            
+            if ($stmt2->execute()) {
+                // Send OTP via email
+                $mail = new PHPMailer(true);
+                
+                try {
+                    // Include email configuration
+                    require_once 'includes/email_config.php';
+                    
+                    // Server settings
+                    $mail->isSMTP();
+                    $mail->Host       = SMTP_HOST;
+                    $mail->SMTPAuth   = SMTP_AUTH;
+                    $mail->Username   = SMTP_USERNAME;
+                    $mail->Password   = SMTP_PASSWORD;
+                    $mail->SMTPSecure = SMTP_SECURE === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
+                    $mail->Port       = SMTP_PORT;
+                    
+                    // Recipients
+                    $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+                    $mail->addAddress($email);
+                    
+                    // Content
+                    $mail->isHTML(true);
+                    $mail->Subject = 'Password Reset OTP - BSU Inventory Management';
+                    $mail->Body    = "
+                        <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+                            <h2 style='color: #dc3545; text-align: center;'>Password Reset Verification</h2>
+                            <p>Hello,</p>
+                            <p>You have requested to reset your password for the BSU Inventory Management System.</p>
+                            <p>Your verification code is:</p>
+                            <div style='background-color: #f8f9fa; border: 2px solid #dc3545; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;'>
+                                <h1 style='color: #dc3545; font-size: 32px; margin: 0; letter-spacing: 5px;'>$otp</h1>
+                            </div>
+                            <p><strong>This code will expire in 15 minutes.</strong></p>
+                            <p>If you did not request this password reset, please ignore this email.</p>
+                            <hr style='border: 1px solid #eee; margin: 20px 0;'>
+                            <p style='color: #666; font-size: 12px; text-align: center;'>
+                                Batangas State University - Inventory Management System
+                            </p>
+                        </div>
+                    ";
+                    
+                    $mail->send();
+                    
+                    // Set success message and redirect to OTP verification page
+                    $_SESSION['reset_email'] = $email;
+                    $_SESSION['email_sent_message'] = 'Verification code sent successfully to your email.';
+                    header('Location: otp.php');
+                    exit();
+                    
+                } catch (Exception $e) {
+                    $error = 'Failed to send verification email. Please try again.';
+                }
+            } else {
+                $error = 'Failed to process your request. Please try again.';
+            }
+            $stmt2->close();
         } else {
             // Same generic message for security
-            $message = 'If this email is registered, a reset link has been sent.';
+            $message = 'If this email is registered, a verification code has been sent.';
         }
         $stmt->close();
     }
@@ -151,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="email" id="email" name="email" required>
                 </div>
                 <div style="height: 14px"></div>
-                <button type="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> Send Reset Link</button>
+                <button type="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> Send Verification Code</button>
             </form>
 
             

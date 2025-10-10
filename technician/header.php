@@ -3,6 +3,25 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit();
 }
+
+// Normalize profile image URL regardless of how it's stored (filename vs path)
+$profileImageUrl = '';
+if (!empty($_SESSION['profile_image'])) {
+    $pi = $_SESSION['profile_image'];
+    if (preg_match('/^https?:\/\//', $pi)) {
+        // Absolute URL stored
+        $profileImageUrl = $pi;
+    } elseif (strpos($pi, 'uploads/') === 0) {
+        // Path from web root, add one level up since we're in technician/
+        $profileImageUrl = '../' . $pi;
+    } elseif (strpos($pi, '../uploads/') === 0 || strpos($pi, '/uploads/') === 0) {
+        // Already a relative path
+        $profileImageUrl = $pi;
+    } else {
+        // Likely only the filename stored (technician uploader behavior)
+        $profileImageUrl = '../uploads/profiles/' . $pi;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -449,13 +468,13 @@ if (!isset($_SESSION['user_id'])) {
             <div class="header-user">
                 <div class="profile-dropdown">
                     <div class="profile-trigger" onclick="toggleDropdown()">
-                        <img src="<?php echo !empty($_SESSION['profile_image']) ? '../uploads/profiles/' . $_SESSION['profile_image'] : 'https://via.placeholder.com/32x32/6c757d/ffffff?text=' . substr($_SESSION['user_name'], 0, 1); ?>" 
+                        <img src="<?php echo !empty($profileImageUrl) ? $profileImageUrl : 'https://via.placeholder.com/32x32/6c757d/ffffff?text=' . substr($_SESSION['user_name'], 0, 1); ?>" 
                              alt="Profile" class="profile-picture-small">
                     </div>
                     
                     <div class="dropdown-menu" id="profileDropdown">
                         <div class="dropdown-header">
-                            <img src="<?php echo !empty($_SESSION['profile_image']) ? '../uploads/profiles/' . $_SESSION['profile_image'] : 'https://via.placeholder.com/60x60/6c757d/ffffff?text=' . substr($_SESSION['user_name'], 0, 1); ?>" 
+                            <img src="<?php echo !empty($profileImageUrl) ? $profileImageUrl : 'https://via.placeholder.com/60x60/6c757d/ffffff?text=' . substr($_SESSION['user_name'], 0, 1); ?>" 
                                  alt="Profile" class="dropdown-profile-picture">
                             <div class="dropdown-user-info">
                                 <h6><?php echo $_SESSION['user_name']; ?></h6>
@@ -506,7 +525,7 @@ if (!isset($_SESSION['user_id'])) {
                             <div class="col-auto">
                                 <div class="profile-image-preview">
                                     <img id="profileImagePreview" 
-                                         src="<?php echo !empty($_SESSION['profile_image']) ? '../uploads/profiles/' . $_SESSION['profile_image'] : 'https://via.placeholder.com/100x100/6c757d/ffffff?text=' . substr($_SESSION['user_name'], 0, 1); ?>" 
+                                         src="<?php echo !empty($profileImageUrl) ? $profileImageUrl : 'https://via.placeholder.com/100x100/6c757d/ffffff?text=' . substr($_SESSION['user_name'], 0, 1); ?>" 
                                          alt="Profile Picture" class="rounded-circle">
                                 </div>
                             </div>

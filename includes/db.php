@@ -1,4 +1,7 @@
 <?php
+// Set PHP timezone to Philippines
+date_default_timezone_set('Asia/Manila');
+
 // Database connection settings
 $host = 'localhost';
 $user = 'root';
@@ -22,6 +25,9 @@ if ($mysqli instanceof mysqli && $mysqli->connect_errno === 1049) {
 if ($mysqli->connect_error) {
     die('Database connection failed: ' . $mysqli->connect_error);
 }
+
+// Set timezone to match PHP
+$mysqli->query("SET time_zone = '+08:00'"); // Philippines timezone
 
 // Expose a single $conn variable as the rest of the app expects
 $conn = $mysqli; 
