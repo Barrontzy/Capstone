@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($email) || empty($password)) {
         $error = 'Please fill in all fields.';
     } else {
-        $stmt = $conn->prepare("SELECT id, full_name, email, role, password FROM users WHERE email = ? AND role = 'technician'");
+        $stmt = $conn->prepare("SELECT id, full_name, email, role, password, profile_image FROM users WHERE email = ? AND role = 'technician'");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -36,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['user_name'] = $user['full_name'];
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_role'] = $user['role'];
+                $_SESSION['profile_image'] = $user['profile_image'];
 				
 				
 				include 'logger.php';

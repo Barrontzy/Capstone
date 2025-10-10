@@ -212,5 +212,45 @@ include 'PDFS/PostingRequestForm/PostingRequestForm.php';
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// System Request Form Date Enhancement
+document.addEventListener('DOMContentLoaded', function() {
+    const systemReqsModal = document.getElementById('systemReqsModal');
+    
+    if (systemReqsModal) {
+        systemReqsModal.addEventListener('shown.bs.modal', function() {
+            // Set today's date as default for ICT Services date field
+            const today = new Date();
+            const todayString = today.toISOString().split('T')[0];
+            
+            // Set default date for ICT Services
+            const ictDateInput = document.querySelector('input[name="ictDate"]');
+            if (ictDateInput && !ictDateInput.value) {
+                ictDateInput.value = todayString;
+            }
+            
+            // Set default date for Work Done By date if empty
+            const workDoneDateInput = document.querySelector('input[name="ictWorkByDate"]');
+            if (workDoneDateInput && !workDoneDateInput.value) {
+                workDoneDateInput.value = todayString;
+            }
+            
+            // Set default date for Conforme date if empty
+            const conformeDateInput = document.querySelector('input[name="ictConformeDate"]');
+            if (conformeDateInput && !conformeDateInput.value) {
+                conformeDateInput.value = todayString;
+            }
+        });
+        
+        // Clear form when modal is hidden
+        systemReqsModal.addEventListener('hidden.bs.modal', function() {
+            const form = systemReqsModal.querySelector('form');
+            if (form) {
+                form.reset();
+            }
+        });
+    }
+});
+</script>
 </body>
 </html>

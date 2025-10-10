@@ -39,7 +39,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $error = 'Email address already exists.';
                     } else {
                         // Handle profile image upload
-                        $profile_image_path = $user['profile_image'] ?? null; // Keep existing image if no new upload
+                        $profile_image_path = null; // Initialize as null
+                        
+                        // Get current profile image from database first
+                        $current_stmt = $conn->prepare("SELECT profile_image FROM users WHERE id = ?");
+                        $current_stmt->bind_param("i", $user_id);
+                        $current_stmt->execute();
+                        $current_result = $current_stmt->get_result();
+                        if ($current_result->num_rows > 0) {
+                            $current_user = $current_result->fetch_assoc();
+                            $profile_image_path = $current_user['profile_image'];
+                        }
+                        $current_stmt->close();
                         
                         if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
                             $upload_dir = '../uploads/profiles/';
@@ -91,9 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             if ($stmt->execute()) {
                                 $_SESSION['user_name'] = $full_name;
                                 $_SESSION['user_email'] = $email;
-                                if (!empty($profile_image_path)) {
-                                    $_SESSION['profile_image'] = $profile_image_path;
-                                }
+                                $_SESSION['profile_image'] = $profile_image_path; // Always update session, even if null
                                 
                                 // Check if profile image was uploaded
                                 if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {

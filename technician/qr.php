@@ -198,29 +198,82 @@ require_once 'header.php';
                 <!-- Equipment Information -->
                 <div class="col-md-6">
                     <div class="card">
-                        <div class="card-header">
+                        <div class="card-header d-flex justify-content-between align-items-center">
                             <h5><i class="fas fa-info-circle"></i> Equipment Information</h5>
+                            <?php if ($equipment_info): ?>
+                                <span class="badge bg-success">Equipment Found</span>
+                            <?php endif; ?>
                         </div>
                         <div class="card-body">
                             <?php if ($equipment_info): ?>
                                 <div class="equipment-details">
-                                    <?php foreach ($equipment_info as $key => $val): ?>
-                                        <?php if ($key !== 'table_name'): ?>
-                                            <p><strong><?php echo ucfirst($key); ?>:</strong> <?php echo htmlspecialchars($val); ?></p>
-                                        <?php endif; ?>
-                                    <?php endforeach; ?>
+                                    <div class="row">
+                                        <?php 
+                                        $important_fields = ['id', 'asset_tag', 'property_equipment', 'department_office', 'department', 'assigned_person', 'location', 'model', 'processor', 'ram', 'hard_drive', 'operating_system', 'inventory_item_no'];
+                                        $other_fields = [];
+                                        
+                                        foreach ($equipment_info as $key => $val): 
+                                            if ($key === 'table_name') continue;
+                                            
+                                            if (in_array($key, $important_fields) && !empty($val)) {
+                                                $other_fields[$key] = $val;
+                                            }
+                                        endforeach;
+                                        
+                                        // Display important fields
+                                        foreach ($important_fields as $field):
+                                            if (isset($equipment_info[$field]) && !empty($equipment_info[$field])):
+                                        ?>
+                                            <div class="col-md-6 mb-2">
+                                                <small class="text-muted"><?php echo ucwords(str_replace('_', ' ', $field)); ?>:</small>
+                                                <div class="fw-bold"><?php echo htmlspecialchars($equipment_info[$field]); ?></div>
+                                            </div>
+                                        <?php 
+                                            endif;
+                                        endforeach; 
+                                        ?>
+                                    </div>
 
-                                    <div class="mt-3">
-                                        <button class="btn btn-outline-success" onclick="addToHistory(<?php echo $equipment_info['id']; ?>, '<?php echo $equipment_info['table_name']; ?>')">
+                                    <!-- Editable Remarks Section -->
+                                    <div class="mt-4">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-comment"></i> Remarks
+                                        </label>
+                                        <div class="input-group">
+                                            <textarea 
+                                                id="remarksTextarea" 
+                                                class="form-control" 
+                                                rows="3" 
+                                                placeholder="Enter remarks for this equipment..."
+                                                data-equipment-id="<?php echo $equipment_info['id']; ?>"
+                                                data-table-name="<?php echo $equipment_info['table_name']; ?>"
+                                            ><?php echo htmlspecialchars($equipment_info['remarks'] ?? ''); ?></textarea>
+                                            <button 
+                                                class="btn btn-outline-primary" 
+                                                type="button" 
+                                                id="saveRemarksBtn"
+                                                onclick="updateRemarks()"
+                                            >
+                                                <i class="fas fa-save"></i> Save
+                                            </button>
+                                        </div>
+                                        <div id="remarksStatus" class="mt-2"></div>
+                                    </div>
+
+                                    <div class="mt-4 d-flex gap-2">
+                                        <button class="btn btn-success" onclick="addToHistory(<?php echo $equipment_info['id']; ?>, '<?php echo $equipment_info['table_name']; ?>')">
                                             <i class="fas fa-history"></i> Add to History
+                                        </button>
+                                        <button class="btn btn-outline-info" onclick="refreshEquipmentInfo()">
+                                            <i class="fas fa-sync-alt"></i> Refresh
                                         </button>
                                     </div>
                                 </div>
                             <?php else: ?>
-                                <div class="text-center py-4">
-                                    <i class="fas fa-qrcode fa-3x text-muted mb-3"></i>
+                                <div class="text-center py-5">
+                                    <i class="fas fa-qrcode fa-4x text-muted mb-3"></i>
                                     <h5 class="text-muted">No Equipment Selected</h5>
-                                    <p class="text-muted">Scan a QR code or enter QR data to view equipment information.</p>
+                                    <p class="text-muted">Scan a QR code, upload a QR file, or enter QR data to view equipment information.</p>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -310,25 +363,181 @@ function addToHistory(equipmentId, tableName) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('✅ Equipment added to history!');
+            showAlert('✅ Equipment added to history!', 'success');
         } else {
-            alert('❌ Failed to add to history.');
+            showAlert('❌ Failed to add to history: ' + (data.error || 'Unknown error'), 'danger');
         }
     })
     .catch(error => {
         console.error('❌ Error:', error);
+        showAlert('❌ Network error occurred', 'danger');
     });
+}
+
+function updateRemarks() {
+    const textarea = document.getElementById('remarksTextarea');
+    const equipmentId = textarea.dataset.equipmentId;
+    const tableName = textarea.dataset.tableName;
+    const remarks = textarea.value.trim();
+    
+    const saveBtn = document.getElementById('saveRemarksBtn');
+    const statusDiv = document.getElementById('remarksStatus');
+    
+    // Show loading state
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    saveBtn.disabled = true;
+    
+    fetch('update_remarks.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            equipment_id: equipmentId, 
+            table_name: tableName, 
+            remarks: remarks 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('✅ Remarks updated successfully!', 'success');
+            statusDiv.innerHTML = '<small class="text-success"><i class="fas fa-check-circle"></i> Last updated: ' + new Date().toLocaleTimeString() + '</small>';
+        } else {
+            showAlert('❌ Failed to update remarks: ' + (data.error || 'Unknown error'), 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('❌ Error:', error);
+        showAlert('❌ Network error occurred', 'danger');
+    })
+    .finally(() => {
+        // Reset button state
+        saveBtn.innerHTML = '<i class="fas fa-save"></i> Save';
+        saveBtn.disabled = false;
+    });
+}
+
+function refreshEquipmentInfo() {
+    // Reload the page to refresh equipment info
+    window.location.reload();
+}
+
+function showAlert(message, type) {
+    // Create alert element
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Insert at the top of the page
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
 }
 </script>
 
 <style>
 .equipment-details {
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    padding: 15px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-.equipment-details p { margin-bottom: 6px; }
-#qr-reader { border: 2px solid #dc3545; border-radius: 10px; }
+
+.equipment-details p { 
+    margin-bottom: 6px; 
+}
+
+#qr-reader { 
+    border: 2px solid #dc3545; 
+    border-radius: 10px; 
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border: none;
+    border-radius: 12px;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    border-radius: 12px 12px 0 0 !important;
+    border: none;
+}
+
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+}
+
+.btn-outline-primary {
+    border-color: #007bff;
+    color: #007bff;
+}
+
+.btn-outline-primary:hover {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border-color: #007bff;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.badge {
+    font-size: 0.75em;
+    padding: 0.5em 0.75em;
+    border-radius: 6px;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.fw-bold {
+    color: #495057;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .equipment-details {
+        padding: 15px;
+    }
+    
+    .card-header h5 {
+        font-size: 1.1rem;
+    }
+    
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+}
 </style>
 
 <?php require_once 'footer.php'; ?>

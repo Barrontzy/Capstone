@@ -38,6 +38,28 @@ $nameSystem  = $_POST['nameSystem'] ?? '';
 $descRequest = $_POST['descRequest'] ?? '';
 $remarks     = $_POST['remarks'] ?? '';
 
+// Collect date and signature data
+$reqByName          = $_POST['reqByName'] ?? '';
+$reqByDesignation   = $_POST['reqByDesignation'] ?? '';
+$reqByDate          = $_POST['reqByDate'] ?? '';
+$recApprovalName    = $_POST['recApprovalName'] ?? '';
+$recApprovalDesignation = $_POST['recApprovalDesignation'] ?? '';
+$recApprovalDate    = $_POST['recApprovalDate'] ?? '';
+$approvedByName     = $_POST['approvedByName'] ?? '';
+$approvedByDesignation = $_POST['approvedByDesignation'] ?? '';
+$approvedByDate     = $_POST['approvedByDate'] ?? '';
+
+// ICT Services data
+$ictDate            = $_POST['ictDate'] ?? '';
+$ictAssigned        = $_POST['ictAssigned'] ?? '';
+$ictTasks           = $_POST['ictTasks'] ?? '';
+$ictWorkByName      = $_POST['ictWorkByName'] ?? '';
+$ictWorkByDesignation = $_POST['ictWorkByDesignation'] ?? '';
+$ictWorkByDate      = $_POST['ictWorkByDate'] ?? '';
+$ictConformeName    = $_POST['ictConformeName'] ?? '';
+$ictConformeDesignation = $_POST['ictConformeDesignation'] ?? '';
+$ictConformeDate    = $_POST['ictConformeDate'] ?? '';
+
 // Create PDF
 $pdf = new PDF('P','mm','A4');
 $pdf->setTitleText('SYSTEM REQUEST FORM');
@@ -128,21 +150,33 @@ $pdf->Rect(10, $yStart, $colWidth, $blockHeight);
 $pdf->SetXY(10, $yStart+5);
 $pdf->MultiCell($colWidth, 7, "Requested by:", 0, 'L');
 $pdf->SetXY(10, $pdf->GetY());
-$pdf->MultiCell($colWidth, 8, "\nNAME OF REQUESTING OFFICIAL / PERSONNEL\nDesignation\nDate: ___________", 0, 'C');
+$reqByText = "\n" . $reqByName . "\n" . $reqByDesignation . "\nDate: ___________";
+if (!empty($reqByDate)) {
+    $reqByText = "\n" . $reqByName . "\n" . $reqByDesignation . "\nDate: " . $reqByDate;
+}
+$pdf->MultiCell($colWidth, 8, $reqByText, 0, 'C');
 
 // Recommending Approval
 $pdf->Rect(10+$colWidth, $yStart, $colWidth, $blockHeight);
 $pdf->SetXY(10+$colWidth, $yStart+5);
 $pdf->MultiCell($colWidth, 7, "Recommending Approval:", 0, 'L');
 $pdf->SetXY(10+$colWidth, $pdf->GetY());
-$pdf->MultiCell($colWidth, 8, "\nNAME\nDesignation\n\nDate: ___________", 0, 'C');
+$recApprovalText = "\n" . $recApprovalName . "\n" . $recApprovalDesignation . "\n\nDate: ___________";
+if (!empty($recApprovalDate)) {
+    $recApprovalText = "\n" . $recApprovalName . "\n" . $recApprovalDesignation . "\n\nDate: " . $recApprovalDate;
+}
+$pdf->MultiCell($colWidth, 8, $recApprovalText, 0, 'C');
 
 // Approved by
 $pdf->Rect(10+2*$colWidth, $yStart, $colWidth, $blockHeight);
 $pdf->SetXY(10+2*$colWidth, $yStart+5);
 $pdf->MultiCell($colWidth, 7, "Approved by:", 0, 'L');
 $pdf->SetXY(10+2*$colWidth, $pdf->GetY());
-$pdf->MultiCell($colWidth, 8, "\nNAME\nDesignation\n\nDate: ___________", 0, 'C');
+$approvedByText = "\n" . $approvedByName . "\n" . $approvedByDesignation . "\n\nDate: ___________";
+if (!empty($approvedByDate)) {
+    $approvedByText = "\n" . $approvedByName . "\n" . $approvedByDesignation . "\n\nDate: " . $approvedByDate;
+}
+$pdf->MultiCell($colWidth, 8, $approvedByText, 0, 'C');
 
 $pdf->SetY($yStart+$blockHeight);
 
@@ -152,19 +186,32 @@ $pdf->Cell(0, 8, '--- To be completed by ICT Services ---', 1, 1, 'C');
 $pdf->SetFont('Arial','',11);
 
 $pdf->Cell(30, $rowHeight, 'Date:', 1, 0);
-$pdf->Cell(160, $rowHeight, '', 1, 1);
+$dateValue = !empty($ictDate) ? $ictDate : '';
+$pdf->Cell(160, $rowHeight, $dateValue, 1, 1);
 
 $pdf->Cell(30, $rowHeight, 'Assigned to:', 1, 0);
-$pdf->Cell(160, $rowHeight, '', 1, 1);
+$assignedValue = !empty($ictAssigned) ? $ictAssigned : '';
+$pdf->Cell(160, $rowHeight, $assignedValue, 1, 1);
 
 $pdf->Cell(30, $rowHeight, 'Tasks:', 1, 0);
-$pdf->MultiCell(160, $rowHeight, '', 1);
+$tasksValue = !empty($ictTasks) ? $ictTasks : '';
+$pdf->MultiCell(160, $rowHeight, $tasksValue, 1);
 
 $pdf->Cell(30, $rowHeight, 'Work Done by:', 1, 0);
-$pdf->Cell(160, $rowHeight, '', 1, 1);
+if (!empty($ictWorkByName) && !empty($ictWorkByDesignation) && !empty($ictWorkByDate)) {
+    $workDoneText = $ictWorkByName . ' (' . $ictWorkByDesignation . ') - Date: ' . $ictWorkByDate;
+} else {
+    $workDoneText = '';
+}
+$pdf->MultiCell(160, $rowHeight, $workDoneText, 1);
 
-$pdf->Cell(30, $rowHeight, 'Conforme:', 1, 0);
-$pdf->Cell(160, $rowHeight, '', 1, 1);
+$pdf->Cell(30, $rowHeight, 'Confirmed by:', 1, 0);
+if (!empty($ictConformeName) && !empty($ictConformeDesignation) && !empty($ictConformeDate)) {
+    $conformeText = $ictConformeName . ' (' . $ictConformeDesignation . ') - Date: ' . $ictConformeDate;
+} else {
+    $conformeText = '';
+}
+$pdf->MultiCell(160, $rowHeight, $conformeText, 1);
 
 // --- Footer ---
 $pdf->Ln(5);

@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } elseif (!preg_match('/@g\.batstate-u\.edu\.ph$/', $email)) {
         $error = 'Email must be from @g.batstate-u.edu.ph ';
     } else {
-        $stmt = $conn->prepare("SELECT id, full_name, email, role, password FROM users WHERE email = ?");
+        $stmt = $conn->prepare("SELECT id, full_name, email, role, password, profile_image FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -39,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['user_name'] = $user['full_name'];
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_role'] = $user['role'];
+                $_SESSION['profile_image'] = $user['profile_image'];
 				include 'logger.php';
                 
                 if($user['role'] == 'admin'){

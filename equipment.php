@@ -431,35 +431,25 @@ $telephone_where = buildWhere($search, $status, 'remarks');
   </div>
 </div>
 
-<!-- Desktop Modal -->
-<div class="modal fade" id="desktopModal" tabindex="-1" aria-hidden="true">
+<!-- Universal Equipment Modal -->
+<div class="modal fade" id="equipmentModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg"><div class="modal-content">
     <div class="modal-header">
-      <h5 class="modal-title">🖥️ Desktop Details</h5>
+      <h5 class="modal-title" id="modal_title">📦 Equipment Details</h5>
       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     </div>
     <div class="modal-body">
       <div class="row">
         <!-- Left: Information -->
         <div class="col-md-8">
-          <ul class="list-group">
-            <li class="list-group-item"><strong>Asset Tag:</strong> <span id="d_asset"></span></li>
-            <li class="list-group-item"><strong>Assigned Person:</strong> <span id="d_user"></span></li>
-            <li class="list-group-item"><strong>Location:</strong> <span id="d_location"></span></li>
-            <li class="list-group-item"><strong>Processor:</strong> <span id="d_processor"></span></li>
-            <li class="list-group-item"><strong>RAM:</strong> <span id="d_ram"></span></li>
-            <li class="list-group-item"><strong>GPU:</strong> <span id="d_gpu"></span></li>
-            <li class="list-group-item"><strong>Hard Drive:</strong> <span id="d_hdd"></span></li>
-            <li class="list-group-item"><strong>OS:</strong> <span id="d_os"></span></li>
-            <li class="list-group-item"><strong>Date Acquired:</strong> <span id="d_date"></span></li>
-            <li class="list-group-item"><strong>Inventory Item No:</strong> <span id="d_itemno"></span></li>
-            <li class="list-group-item"><strong>Remarks:</strong> <span id="d_remarks"></span></li>
+          <ul class="list-group" id="equipment_details">
+            <!-- Dynamic content will be inserted here -->
           </ul>
         </div>
         <!-- Right: QR Code -->
         <div class="col-md-4 text-center">
 		<center>
-          <div id="desktop_qrcode"></div>
+          <div id="equipment_qrcode"></div>
           <p class="mt-2 text-muted">Scan QR for details</p>
 		  </center>
         </div>
@@ -467,47 +457,36 @@ $telephone_where = buildWhere($search, $status, 'remarks');
     </div>
     <div class="modal-footer">
       <button class="btn btn-primary" onclick="editFromModal()">Edit</button>
+      <button class="btn btn-success" onclick="showPrintPreview()">Print</button>
       <button class="btn btn-danger" onclick="deleteFromModal()">Delete</button>
       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
     </div>
   </div></div>
 </div>
 
-<div class="modal fade" id="equipModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg"><div class="modal-content">
-    <div class="modal-header">
-      <h5 class="modal-title">📦 Equipment Details</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-    </div>
-    <div class="modal-body">
-      <div class="row">
-        <!-- Left column: info -->
-        <div class="col-md-8">
-          <ul class="list-group">
-            <li class="list-group-item"><strong>Equipment:</strong> <span id="e_equipment"></span></li>
-            <li class="list-group-item"><strong>Asset Tag:</strong> <span id="e_asset"></span></li>
-            <li class="list-group-item"><strong>Assigned Person:</strong> <span id="e_user"></span></li>
-            <li class="list-group-item"><strong>Location:</strong> <span id="e_location"></span></li>
-            <li class="list-group-item"><strong>Specifications:</strong> <span id="e_specs"></span></li>
-            <li class="list-group-item"><strong>Date Acquired:</strong> <span id="e_date"></span></li>
-            <li class="list-group-item"><strong>Inventory Item No:</strong> <span id="e_itemno"></span></li>
-            <li class="list-group-item"><strong>Remarks:</strong> <span id="e_remarks"></span></li>
-          </ul>
-        </div>
-        <!-- Right column: QR Code -->
-        <div class="col-md-4 text-center">
-          <div id="equip_qrcode"></div>
-          <p class="mt-2 text-muted">Scan QR for details</p>
+<!-- Print Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">📄 Print Preview - BSU Asset Label</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="previewContent">
+          <!-- Preview content will be inserted here -->
         </div>
       </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" onclick="printFromPreview()">
+          <i class="fas fa-print"></i> Print
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-primary" onclick="editFromModal()">Edit</button>
-      <button class="btn btn-danger" onclick="deleteFromModal()">Delete</button>
-      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-    </div>
-  </div></div>
+  </div>
 </div>
+
 
 
 <!-- Add Equipment Modal (dynamic fields) -->
@@ -629,42 +608,83 @@ let currentAssetTag = '';
 let currentType = '';
 
 document.addEventListener('DOMContentLoaded', function() {
-  // When a row is clicked → open correct modal and store asset_tag/type
+  // When a row is clicked → open universal equipment modal
   document.querySelectorAll('.clickable-row').forEach(function(row) {
     row.addEventListener('click', function() {
       currentAssetTag = row.dataset.asset;
       currentType = row.dataset.type || row.dataset.equipment;
 
+      // Get equipment type and icon
+      const equipmentType = row.dataset.type === 'desktop' ? 'Desktop' : (row.dataset.equipment || 'Equipment');
+      const icons = {
+        'Desktop': '🖥️',
+        'Laptop': '💻', 
+        'Printer': '🖨️',
+        'Access Point': '📡',
+        'Switch': '🔀',
+        'Telephone': '☎️'
+      };
+      const icon = icons[equipmentType] || '📦';
+
+      // Update modal title
+      document.getElementById('modal_title').textContent = `${icon} ${equipmentType} Details`;
+
+      // Build equipment details based on type
+      const detailsContainer = document.getElementById('equipment_details');
+      detailsContainer.innerHTML = '';
+
+      // Common fields for all equipment types
+      const commonFields = [
+        { label: 'Asset Tag', value: row.dataset.asset },
+        { label: 'Assigned Person', value: row.dataset.user },
+        { label: 'Location', value: row.dataset.location },
+        { label: 'Date Acquired', value: row.dataset.date },
+        { label: 'Inventory Item No', value: row.dataset.itemno },
+        { label: 'Remarks', value: row.dataset.remarks }
+      ];
+
+      // Desktop-specific fields
       if (row.dataset.type === 'desktop') {
-        // Desktop modal
-        document.getElementById('d_asset').textContent = row.dataset.asset;
-        document.getElementById('d_user').textContent = row.dataset.user;
-        document.getElementById('d_location').textContent = row.dataset.location;
-        document.getElementById('d_processor').textContent = row.dataset.processor;
-        document.getElementById('d_ram').textContent = row.dataset.ram;
-        document.getElementById('d_gpu').textContent = row.dataset.gpu;
-        document.getElementById('d_hdd').textContent = row.dataset.hdd;
-        document.getElementById('d_os').textContent = row.dataset.os;
-        document.getElementById('d_date').textContent = row.dataset.date;
-        document.getElementById('d_itemno').textContent = row.dataset.itemno;
-        document.getElementById('d_price').textContent = row.dataset.price;
-        document.getElementById('d_remarks').textContent = row.dataset.remarks;
-
-        new bootstrap.Modal(document.getElementById('desktopModal')).show();
+        const desktopFields = [
+          { label: 'Processor', value: row.dataset.processor },
+          { label: 'RAM', value: row.dataset.ram },
+          { label: 'GPU', value: row.dataset.gpu },
+          { label: 'Hard Drive', value: row.dataset.hdd },
+          { label: 'OS', value: row.dataset.os }
+        ];
+        // Insert desktop fields after Asset Tag
+        commonFields.splice(3, 0, ...desktopFields);
       } else {
-        // Generic modal
-        document.getElementById('e_equipment').textContent = row.dataset.equipment;
-        document.getElementById('e_asset').textContent = row.dataset.asset;
-        document.getElementById('e_user').textContent = row.dataset.user;
-        document.getElementById('e_location').textContent = row.dataset.location;
-        document.getElementById('e_specs').textContent = row.dataset.specs;
-        document.getElementById('e_date').textContent = row.dataset.date;
-        document.getElementById('e_itemno').textContent = row.dataset.itemno;
-        document.getElementById('e_price').textContent = row.dataset.price;
-        document.getElementById('e_remarks').textContent = row.dataset.remarks;
-
-        new bootstrap.Modal(document.getElementById('equipModal')).show();
+        // Generic equipment fields
+        const genericFields = [
+          { label: 'Equipment Type', value: equipmentType },
+          { label: 'Specifications', value: row.dataset.specs }
+        ];
+        // Insert generic fields after Asset Tag
+        commonFields.splice(2, 0, ...genericFields);
       }
+
+      // Create list items
+      commonFields.forEach(field => {
+        if (field.value && field.value.trim() !== '') {
+          const li = document.createElement('li');
+          li.className = 'list-group-item';
+          li.innerHTML = `<strong>${field.label}:</strong> <span id="eq_${field.label.toLowerCase().replace(/\s+/g, '_')}">${field.value}</span>`;
+          detailsContainer.appendChild(li);
+        }
+      });
+
+      // Generate QR Code
+      const qrText = row.dataset.asset || "N/A";
+      document.getElementById("equipment_qrcode").innerHTML = "";
+      new QRCode(document.getElementById("equipment_qrcode"), {
+        text: qrText,
+        width: 180,
+        height: 180
+      });
+
+      // Show universal equipment modal
+      new bootstrap.Modal(document.getElementById('equipmentModal')).show();
     });
   });
 });
@@ -676,6 +696,689 @@ function editFromModal() {
     return;
   }
   window.location.href = "edit_equipment.php?asset_tag=" + encodeURIComponent(currentAssetTag) + "&type=" + encodeURIComponent(currentType);
+}
+
+// ✅ Show Print Preview
+function showPrintPreview() {
+  // Get all the equipment details from the universal modal
+  const assetTag = document.querySelector('#eq_asset_tag') ? document.querySelector('#eq_asset_tag').textContent : '';
+  const assignedPerson = document.querySelector('#eq_assigned_person') ? document.querySelector('#eq_assigned_person').textContent : '';
+  const location = document.querySelector('#eq_location') ? document.querySelector('#eq_location').textContent : '';
+  const processor = document.querySelector('#eq_processor') ? document.querySelector('#eq_processor').textContent : '';
+  const ram = document.querySelector('#eq_ram') ? document.querySelector('#eq_ram').textContent : '';
+  const gpu = document.querySelector('#eq_gpu') ? document.querySelector('#eq_gpu').textContent : '';
+  const hardDrive = document.querySelector('#eq_hard_drive') ? document.querySelector('#eq_hard_drive').textContent : '';
+  const os = document.querySelector('#eq_os') ? document.querySelector('#eq_os').textContent : '';
+  const equipmentType = document.querySelector('#eq_equipment_type') ? document.querySelector('#eq_equipment_type').textContent : '';
+  const specifications = document.querySelector('#eq_specifications') ? document.querySelector('#eq_specifications').textContent : '';
+  const dateAcquired = document.querySelector('#eq_date_acquired') ? document.querySelector('#eq_date_acquired').textContent : '';
+  const inventoryItemNo = document.querySelector('#eq_inventory_item_no') ? document.querySelector('#eq_inventory_item_no').textContent : '';
+  const remarks = document.querySelector('#eq_remarks') ? document.querySelector('#eq_remarks').textContent : '';
+  
+  // Get the QR code image
+  const qrCodeImg = document.querySelector('#equipment_qrcode img');
+  const qrCodeSrc = qrCodeImg ? qrCodeImg.src : '';
+  
+  // Create the preview HTML
+  const previewHTML = `
+    <div style="
+      font-family: Arial, sans-serif; 
+      margin: 0; 
+      padding: 20px; 
+      background: white;
+      text-align: center;
+    ">
+      <div style="
+        width: 100%;
+        max-width: 700px;
+        margin: 0 auto;
+        border: 4px solid #dc3545;
+        background: white;
+        padding: 25px;
+        box-sizing: border-box;
+        position: relative;
+      ">
+        <div style="
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 25px;
+          position: relative;
+        ">
+          <div style="
+            width: 70px;
+            height: 70px;
+            margin-right: 20px;
+            flex-shrink: 0;
+          ">
+            <img src="assets/logo/bsutneu.png" alt="BSU Logo" style="
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+            " onerror="this.style.display='none';">
+          </div>
+          <div style="
+            font-size: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #000;
+            letter-spacing: 1px;
+            flex: 1;
+            margin-right: 140px;
+          ">BATANGAS STATE UNIVERSITY</div>
+          <div style="
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            z-index: 1;
+          ">
+            ${qrCodeSrc ? `<img src="${qrCodeSrc}" alt="QR Code" style="width: 100%; height: 100%; object-fit: contain;">` : '<div style="width: 100px; height: 100px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 10px;">QR Code</div>'}
+          </div>
+          <div style="
+            position: absolute;
+            top: 105px;
+            right: 0;
+            text-align: center;
+            width: 100px;
+            font-size: 10px;
+            font-weight: bold;
+            color: #000;
+            line-height: 1;
+          ">${assetTag}</div>
+        </div>
+        
+        <div style="margin-top: 50px;">
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+              <span style="font-size: 13px; font-weight: bold; color: #000; white-space: nowrap; min-width: 90px;">Property No:</span>
+              <div style="flex: 1; border-bottom: 2px solid #000; height: 18px; margin: 0 8px; min-width: 50px;"></div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+              <span style="font-size: 13px; font-weight: bold; color: #000; white-space: nowrap; min-width: 55px;">Article:</span>
+              <div style="flex: 1; border-bottom: 2px solid #000; height: 18px; margin: 0 8px; min-width: 50px;"></div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+              <span style="font-size: 13px; font-weight: bold; color: #000; white-space: nowrap; min-width: 90px;">Specification:</span>
+              <div style="flex: 1; border-bottom: 2px solid #000; height: 18px; margin: 0 8px; min-width: 50px;"></div>
+            </div>
+            
+            <div style="border-top: 1px solid #000; padding-top: 18px; margin-top: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+              <span style="font-size: 13px; font-weight: bold; color: #000; white-space: nowrap; min-width: 65px;">Date Acq:</span>
+              <div style="flex: 1; border-bottom: 2px solid #000; height: 18px; margin: 0 8px;"></div>
+              <span style="font-size: 13px; font-weight: bold; color: #000; white-space: nowrap; min-width: 35px;">Amt:</span>
+              <div style="flex: 1; border-bottom: 2px solid #000; height: 18px; margin: 0 8px;"></div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+              <span style="font-size: 13px; font-weight: bold; color: #000; white-space: nowrap; min-width: 65px;">End User:</span>
+              <div style="flex: 1; border-bottom: 2px solid #000; height: 18px; margin: 0 8px; min-width: 50px;"></div>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 35px; padding-top: 15px;">
+            <div style="width: 180px; border-bottom: 2px solid #000; margin: 0 auto 8px; height: 18px;"></div>
+            <div style="font-size: 11px; font-weight: bold; color: #000;">Supply Officer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Insert the preview content
+  document.getElementById('previewContent').innerHTML = previewHTML;
+  
+  // Show the preview modal
+  new bootstrap.Modal(document.getElementById('previewModal')).show();
+}
+
+// ✅ Print from Preview
+function printFromPreview() {
+  // Get all the equipment details from the universal modal
+  const assetTag = document.querySelector('#eq_asset_tag') ? document.querySelector('#eq_asset_tag').textContent : '';
+  const assignedPerson = document.querySelector('#eq_assigned_person') ? document.querySelector('#eq_assigned_person').textContent : '';
+  const location = document.querySelector('#eq_location') ? document.querySelector('#eq_location').textContent : '';
+  const processor = document.querySelector('#eq_processor') ? document.querySelector('#eq_processor').textContent : '';
+  const ram = document.querySelector('#eq_ram') ? document.querySelector('#eq_ram').textContent : '';
+  const gpu = document.querySelector('#eq_gpu') ? document.querySelector('#eq_gpu').textContent : '';
+  const hardDrive = document.querySelector('#eq_hard_drive') ? document.querySelector('#eq_hard_drive').textContent : '';
+  const os = document.querySelector('#eq_os') ? document.querySelector('#eq_os').textContent : '';
+  const equipmentType = document.querySelector('#eq_equipment_type') ? document.querySelector('#eq_equipment_type').textContent : '';
+  const specifications = document.querySelector('#eq_specifications') ? document.querySelector('#eq_specifications').textContent : '';
+  const dateAcquired = document.querySelector('#eq_date_acquired') ? document.querySelector('#eq_date_acquired').textContent : '';
+  const inventoryItemNo = document.querySelector('#eq_inventory_item_no') ? document.querySelector('#eq_inventory_item_no').textContent : '';
+  const remarks = document.querySelector('#eq_remarks') ? document.querySelector('#eq_remarks').textContent : '';
+  
+  // Get the QR code image
+  const qrCodeImg = document.querySelector('#equipment_qrcode img');
+  const qrCodeSrc = qrCodeImg ? qrCodeImg.src : '';
+  
+  // Create a new window for printing
+  const printWindow = window.open('', '_blank');
+  
+  // Create the print HTML matching BSU asset label format
+  const printHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>BSU Asset Label - ${assetTag}</title>
+      <style>
+        body { 
+          font-family: Arial, sans-serif; 
+          margin: 0; 
+          padding: 20px; 
+          background: white;
+        }
+        .asset-label {
+          width: 100%;
+          max-width: 700px;
+          margin: 0 auto;
+          border: 4px solid #dc3545;
+          background: white;
+          padding: 25px;
+          box-sizing: border-box;
+          position: relative;
+        }
+        .header-section {
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 25px;
+          position: relative;
+        }
+        .logo {
+          width: 70px;
+          height: 70px;
+          margin-right: 20px;
+          flex-shrink: 0;
+        }
+        .logo img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+        .university-name {
+          font-size: 20px;
+          font-weight: bold;
+          text-transform: uppercase;
+          color: #000;
+          letter-spacing: 1px;
+          flex: 1;
+          margin-right: 140px; /* Space for QR code */
+        }
+        .qr-section {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 100px;
+          height: 100px;
+          z-index: 1;
+        }
+        .asset-tag-section {
+          position: absolute;
+          top: 105px;
+          right: 0;
+          text-align: center;
+          width: 100px;
+          font-size: 10px;
+          font-weight: bold;
+          color: #000;
+          line-height: 1;
+        }
+        .qr-code {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+        .form-content {
+          margin-top: 50px;
+        }
+        .form-section {
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+        }
+        .form-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 5px;
+        }
+        .form-row.top-section {
+          margin-bottom: 8px;
+        }
+        .form-row.bottom-section {
+          border-top: 1px solid #000;
+          padding-top: 18px;
+          margin-top: 10px;
+        }
+        .form-label {
+          font-size: 13px;
+          font-weight: bold;
+          color: #000;
+          white-space: nowrap;
+        }
+        .form-label.property-no { min-width: 90px; }
+        .form-label.article { min-width: 55px; }
+        .form-label.specification { min-width: 90px; }
+        .form-label.date-acq { min-width: 65px; }
+        .form-label.end-user { min-width: 65px; }
+        .form-label.amount { min-width: 35px; }
+        .form-line {
+          flex: 1;
+          border-bottom: 2px solid #000;
+          height: 18px;
+          margin: 0 8px;
+          min-width: 50px;
+        }
+        .form-line.short {
+          flex: 1;
+          border-bottom: 2px solid #000;
+          height: 18px;
+          margin: 0 8px;
+          min-width: 50px;
+        }
+        .signature-section {
+          text-align: center;
+          margin-top: 35px;
+          padding-top: 15px;
+        }
+        .signature-line {
+          width: 180px;
+          border-bottom: 2px solid #000;
+          margin: 0 auto 8px;
+          height: 18px;
+        }
+        .signature-label {
+          font-size: 11px;
+          font-weight: bold;
+          color: #000;
+        }
+        @media print {
+          body { 
+            margin: 0; 
+            padding: 15px; 
+          }
+          .asset-label { 
+            border: 4px solid #dc3545; 
+            max-width: 100%;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="asset-label">
+        <div class="header-section">
+          <div class="logo">
+            <img src="assets/logo/bsutneu.png" alt="BSU Logo" onerror="this.style.display='none';">
+          </div>
+          <div class="university-name">BATANGAS STATE UNIVERSITY</div>
+          <div class="qr-section">
+            ${qrCodeSrc ? `<img src="${qrCodeSrc}" alt="QR Code" class="qr-code">` : '<div style="width: 120px; height: 120px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 10px;">QR Code</div>'}
+          </div>
+          <div class="asset-tag-section">
+            ${assetTag}
+          </div>
+        </div>
+        
+        <div class="form-content">
+          <div class="form-section">
+            <div class="form-row top-section">
+              <span class="form-label property-no">Property No:</span>
+              <div class="form-line"></div>
+            </div>
+            
+            <div class="form-row top-section">
+              <span class="form-label article">Article:</span>
+              <div class="form-line">${equipmentType || 'Desktop Computer'}</div>
+            </div>
+            
+            <div class="form-row top-section">
+              <span class="form-label specification">Specification:</span>
+              <div class="form-line">${processor || specifications || ''}</div>
+            </div>
+            
+            <div class="form-row bottom-section">
+              <span class="form-label date-acq">Date Acq:</span>
+              <div class="form-line">${dateAcquired || ''}</div>
+              <span class="form-label amount">Amt:</span>
+              <div class="form-line"></div>
+            </div>
+            
+            <div class="form-row bottom-section">
+              <span class="form-label end-user">End User:</span>
+              <div class="form-line">${assignedPerson || ''}</div>
+            </div>
+          </div>
+          
+          <div class="signature-section">
+            <div class="signature-line"></div>
+            <div class="signature-label">Supply Officer</div>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+  
+  // Write the HTML to the print window
+  printWindow.document.write(printHTML);
+  printWindow.document.close();
+  
+  // Wait for images to load, then print
+  let imagesLoaded = 0;
+  const totalImages = 2; // BSU logo + QR code
+  
+  function checkImagesAndPrint() {
+    imagesLoaded++;
+    if (imagesLoaded >= totalImages || imagesLoaded >= 1) { // Print even if one image fails
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 1000);
+    }
+  }
+  
+  // Handle image loading
+  const bsuLogo = printWindow.document.querySelector('.logo img');
+  const qrCode = printWindow.document.querySelector('.qr-code');
+  
+  if (bsuLogo) {
+    bsuLogo.onload = checkImagesAndPrint;
+    bsuLogo.onerror = checkImagesAndPrint;
+  } else {
+    checkImagesAndPrint();
+  }
+  
+  if (qrCode) {
+    qrCode.onload = checkImagesAndPrint;
+    qrCode.onerror = checkImagesAndPrint;
+  } else {
+    checkImagesAndPrint();
+  }
+}
+
+// ✅ Print Desktop Details (Legacy function - kept for compatibility)
+function printDesktopDetails() {
+  // Get all the desktop details
+  const assetTag = document.getElementById('d_asset').textContent;
+  const assignedPerson = document.getElementById('d_user').textContent;
+  const location = document.getElementById('d_location').textContent;
+  const processor = document.getElementById('d_processor').textContent;
+  const ram = document.getElementById('d_ram').textContent;
+  const gpu = document.getElementById('d_gpu').textContent;
+  const hardDrive = document.getElementById('d_hdd').textContent;
+  const os = document.getElementById('d_os').textContent;
+  const dateAcquired = document.getElementById('d_date').textContent;
+  const inventoryItemNo = document.getElementById('d_itemno').textContent;
+  const remarks = document.getElementById('d_remarks').textContent;
+  
+  // Get the QR code image
+  const qrCodeImg = document.querySelector('#desktop_qrcode img');
+  const qrCodeSrc = qrCodeImg ? qrCodeImg.src : '';
+  
+  // Create specifications text
+  const specs = `${processor} | ${ram} | ${hardDrive}${gpu ? ' | ' + gpu : ''} | ${os}`;
+  
+  // Create a new window for printing
+  const printWindow = window.open('', '_blank');
+  
+  // Create the print HTML matching BSU asset label format
+  const printHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>BSU Asset Label - ${assetTag}</title>
+      <style>
+        body { 
+          font-family: Arial, sans-serif; 
+          margin: 0; 
+          padding: 20px; 
+          background: white;
+        }
+        .asset-label {
+          width: 100%;
+          max-width: 700px;
+          margin: 0 auto;
+          border: 4px solid #dc3545;
+          background: white;
+          padding: 25px;
+          box-sizing: border-box;
+          position: relative;
+        }
+        .header-section {
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 25px;
+          position: relative;
+        }
+        .logo {
+          width: 70px;
+          height: 70px;
+          margin-right: 20px;
+          flex-shrink: 0;
+        }
+        .logo img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+        .university-name {
+          font-size: 20px;
+          font-weight: bold;
+          text-transform: uppercase;
+          color: #000;
+          letter-spacing: 1px;
+          flex: 1;
+          margin-right: 140px; /* Space for QR code */
+        }
+        .qr-section {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 100px;
+          height: 100px;
+          z-index: 1;
+        }
+        .asset-tag-section {
+          position: absolute;
+          top: 105px;
+          right: 0;
+          text-align: center;
+          width: 100px;
+          font-size: 10px;
+          font-weight: bold;
+          color: #000;
+          line-height: 1;
+        }
+        .qr-code {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+        .form-content {
+          margin-top: 50px;
+        }
+        .form-section {
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+        }
+        .form-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 5px;
+        }
+        .form-row.top-section {
+          margin-bottom: 8px;
+        }
+        .form-row.bottom-section {
+          border-top: 1px solid #000;
+          padding-top: 18px;
+          margin-top: 10px;
+        }
+        .form-label {
+          font-size: 13px;
+          font-weight: bold;
+          color: #000;
+          white-space: nowrap;
+        }
+        .form-label.property-no { min-width: 90px; }
+        .form-label.article { min-width: 55px; }
+        .form-label.specification { min-width: 90px; }
+        .form-label.date-acq { min-width: 65px; }
+        .form-label.end-user { min-width: 65px; }
+        .form-label.amount { min-width: 35px; }
+        .form-line {
+          flex: 1;
+          border-bottom: 2px solid #000;
+          height: 18px;
+          margin: 0 8px;
+          min-width: 50px;
+        }
+        .form-line.short {
+          flex: 1;
+          border-bottom: 2px solid #000;
+          height: 18px;
+          margin: 0 8px;
+          min-width: 50px;
+        }
+        .form-value {
+          font-size: 12px;
+          color: #000;
+          max-width: 200px;
+          word-wrap: break-word;
+        }
+        .spec-value {
+          font-size: 11px;
+          color: #000;
+          max-width: 300px;
+          word-wrap: break-word;
+          line-height: 1.2;
+        }
+        .signature-section {
+          text-align: center;
+          margin-top: 35px;
+          padding-top: 15px;
+        }
+        .signature-line {
+          width: 180px;
+          border-bottom: 2px solid #000;
+          margin: 0 auto 8px;
+          height: 18px;
+        }
+        .signature-label {
+          font-size: 11px;
+          font-weight: bold;
+          color: #000;
+        }
+        @media print {
+          body { 
+            margin: 0; 
+            padding: 15px; 
+          }
+          .asset-label { 
+            border: 4px solid #dc3545; 
+            max-width: 100%;
+          }
+          .form-value, .spec-value {
+            font-size: 11px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="asset-label">
+        <div class="header-section">
+          <div class="logo">
+            <img src="assets/logo/bsutneu.png" alt="BSU Logo" onerror="this.style.display='none';">
+          </div>
+          <div class="university-name">BATANGAS STATE UNIVERSITY</div>
+          <div class="qr-section">
+            ${qrCodeSrc ? `<img src="${qrCodeSrc}" alt="QR Code" class="qr-code">` : '<div style="width: 120px; height: 120px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 10px;">QR Code</div>'}
+          </div>
+          <div class="asset-tag-section">
+            ${assetTag}
+          </div>
+        </div>
+        
+        <div class="form-content">
+          <div class="form-section">
+            <div class="form-row top-section">
+              <span class="form-label property-no">Property No:</span>
+              <div class="form-line"></div>
+            </div>
+            
+            <div class="form-row top-section">
+              <span class="form-label article">Article:</span>
+              <div class="form-line">${equipmentType || 'Desktop Computer'}</div>
+            </div>
+            
+            <div class="form-row top-section">
+              <span class="form-label specification">Specification:</span>
+              <div class="form-line">${processor || specifications || ''}</div>
+            </div>
+            
+            <div class="form-row bottom-section">
+              <span class="form-label date-acq">Date Acq:</span>
+              <div class="form-line">${dateAcquired || ''}</div>
+              <span class="form-label amount">Amt:</span>
+              <div class="form-line"></div>
+            </div>
+            
+            <div class="form-row bottom-section">
+              <span class="form-label end-user">End User:</span>
+              <div class="form-line">${assignedPerson || ''}</div>
+            </div>
+          </div>
+          
+          <div class="signature-section">
+            <div class="signature-line"></div>
+            <div class="signature-label">Supply Officer</div>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+  
+  // Write the HTML to the print window
+  printWindow.document.write(printHTML);
+  printWindow.document.close();
+  
+  // Wait for images to load, then print
+  let imagesLoaded = 0;
+  const totalImages = 2; // BSU logo + QR code
+  
+  function checkImagesAndPrint() {
+    imagesLoaded++;
+    if (imagesLoaded >= totalImages || imagesLoaded >= 1) { // Print even if one image fails
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 1000);
+    }
+  }
+  
+  // Handle image loading
+  const bsuLogo = printWindow.document.querySelector('.logo img');
+  const qrCode = printWindow.document.querySelector('.qr-code');
+  
+  if (bsuLogo) {
+    bsuLogo.onload = checkImagesAndPrint;
+    bsuLogo.onerror = checkImagesAndPrint;
+  } else {
+    checkImagesAndPrint();
+  }
+  
+  if (qrCode) {
+    qrCode.onload = checkImagesAndPrint;
+    qrCode.onerror = checkImagesAndPrint;
+  } else {
+    checkImagesAndPrint();
+  }
 }
 
 // ✅ Real Delete
