@@ -1,19 +1,18 @@
 <?php
 require_once 'includes/session.php';
 require_once 'includes/db.php';
-require_once 'includes/logs.php'; // optional if you made addLog() in a separate file
+require_once 'includes/logs.php';
 
-// ✅ Check user login
+// ✅ Ensure user is logged in
 requireLogin();
 
-// ✅ Fetch counts
-$totalRequests = $conn->query("SELECT COUNT(*) AS count FROM system_requests")->fetch_assoc()['count'] ?? 0;
-$pendingRequests = $conn->query("SELECT COUNT(*) AS count FROM system_requests WHERE status='Pending'")->fetch_assoc()['count'] ?? 0;
-$completedRequests = $conn->query("SELECT COUNT(*) AS count FROM system_requests WHERE status='Completed'")->fetch_assoc()['count'] ?? 0;
+// ✅ Define stats safely
+$totalRequests = $conn->query("SELECT COUNT(*) AS count FROM report_requests")->fetch_assoc()['count'] ?? 0;
+$pendingRequests = $conn->query("SELECT COUNT(*) AS count FROM report_requests WHERE status='Pending'")->fetch_assoc()['count'] ?? 0;
+$completedRequests = $conn->query("SELECT COUNT(*) AS count FROM report_requests WHERE status='Completed'")->fetch_assoc()['count'] ?? 0;
 $activityLogs = $conn->query("SELECT COUNT(*) AS count FROM logs")->fetch_assoc()['count'] ?? 0;
 
-
-// ✅ Include your forms (modals)
+// ✅ Include your modal forms (without PDF generation)
 include 'PDFS/PreventiveMaintenancePlan/preventiveForm.php';
 include 'PDFS/PreventiveMaintendancePlanIndexCard/PreventiveMaintendancePlanIndexCard.php';
 include 'PDFS/AnnouncementGreetings/announcementForm.php';
@@ -30,7 +29,7 @@ include 'PDFS/PostingRequestForm/PostingRequestForm.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Department Dashboard - BSU Inventory Management System</title>
+    <title>Department Dashboard - BSU ICT Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -82,7 +81,7 @@ include 'PDFS/PostingRequestForm/PostingRequestForm.php';
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="depdashboard.php">
-            <img src="Ict logs.png" alt="Logo" style="height:40px;"> BSU Inventory System
+            <img src="Ict logs.png" alt="Logo" style="height:40px;"> BSU ICT System
         </a>
         <div class="navbar-nav ms-auto">
             <a href="dep_profile.php" class="btn btn-light me-2"><i class="fas fa-user-circle"></i> Profile</a>
@@ -146,52 +145,46 @@ include 'PDFS/PostingRequestForm/PostingRequestForm.php';
                     </div>
                 </div>
             </div>
-
-
         </div>
     </div>
 </div>
 
+<!-- Bootstrap and JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ✅ JS for Sending Requests -->
 <script>
-// System Request Form Date Enhancement
-document.addEventListener('DOMContentLoaded', function() {
-    const systemReqsModal = document.getElementById('systemReqsModal');
-    
-    if (systemReqsModal) {
-        systemReqsModal.addEventListener('shown.bs.modal', function() {
-            // Set today's date as default for ICT Services date field
-            const today = new Date();
-            const todayString = today.toISOString().split('T')[0];
-            
-            // Set default date for ICT Services
-            const ictDateInput = document.querySelector('input[name="ictDate"]');
-            if (ictDateInput && !ictDateInput.value) {
-                ictDateInput.value = todayString;
-            }
-            
-            // Set default date for Work Done By date if empty
-            const workDoneDateInput = document.querySelector('input[name="ictWorkByDate"]');
-            if (workDoneDateInput && !workDoneDateInput.value) {
-                workDoneDateInput.value = todayString;
-            }
-            
-            // Set default date for Conforme date if empty
-            const conformeDateInput = document.querySelector('input[name="ictConformeDate"]');
-            if (conformeDateInput && !conformeDateInput.value) {
-                conformeDateInput.value = todayString;
-            }
+document.addEventListener("DOMContentLoaded", function () {
+    const buttons = document.querySelectorAll(".sendRequestBtn");
+
+    buttons.forEach(btn => {
+        btn.addEventListener("click", function () {
+            const formType = this.getAttribute("data-form");
+
+            fetch("request.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `action=send_request&form_type=${encodeURIComponent(formType)}`
+            })
+            .then(response => response.text())
+            .then(text => {
+                alert(text);
+
+                // ✅ Close modal after request
+                const modal = this.closest(".modal");
+                if (modal) {
+                    const modalInstance = bootstrap.Modal.getInstance(modal);
+                    if (modalInstance) modalInstance.hide();
+                }
+            })
+            .catch(err => {
+                console.error("❌ Error:", err);
+                alert("An error occurred while sending the request.");
+            });
         });
-        
-        // Clear form when modal is hidden
-        systemReqsModal.addEventListener('hidden.bs.modal', function() {
-            const form = systemReqsModal.querySelector('form');
-            if (form) {
-                form.reset();
-            }
-        });
-    }
+    });
 });
 </script>
+
 </body>
 </html>

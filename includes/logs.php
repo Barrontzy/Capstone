@@ -4,10 +4,10 @@ require_once 'db.php'; // make sure db.php connects to your database
 /**
  * Log an action to the logs table.
  *
- * @param int $userId  The ID of the user performing the action
+ * @param string $username  The name or username of the user performing the action
  * @param string $action  Description of what happened
  */
-function logAction($userId, $action) {
+function logAction($username, $action) {
     global $conn;
 
     if (!$conn) {
@@ -15,8 +15,8 @@ function logAction($userId, $action) {
         return;
     }
 
-    $stmt = $conn->prepare("INSERT INTO logs (user_id, action, timestamp) VALUES (?, ?, NOW())");
-    $stmt->bind_param("is", $userId, $action);
+    $stmt = $conn->prepare("INSERT INTO logs (user, action, date) VALUES (?, ?, NOW())");
+    $stmt->bind_param("ss", $username, $action);
     $stmt->execute();
     $stmt->close();
 }

@@ -114,6 +114,7 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
                     <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
                     <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
                     <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                    <li class="nav-item"><a href="request.php" class="nav-link active"><i class="fas fa-envelope"></i> Requests</a></li>
                     <li class="nav-item"><a href="system_logs.php" class="nav-link"><i class="fas fa-clipboard-list"></i> System Logs</a></li>
                     <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
                     <li class="nav-item"><a href="admin_accounts.php" class="nav-link active"><i class="fas fa-user-shield"></i> Admin Accounts</a></li>

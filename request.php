@@ -1,20 +1,26 @@
 <?php
-require_once __DIR__ . "/includes/db.php"; // adjust path to your DB connection
+require_once 'includes/session.php';
+require_once 'includes/db.php';
+requireLogin();
 
-// Fetch logs
-$result = $conn->query("SELECT * FROM admin_logs ORDER BY created_at DESC");
-$logs = $result->fetch_all(MYSQLI_ASSOC);
+// Fetch all requests
+$query = "SELECT * FROM requests ORDER BY created_at DESC";
+$result = $conn->query($query);
+
+if (!$result) {
+    die("❌ Query Error: " . $conn->error);
+}
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Logs - BSU Inventory Management System</title>
+    <title>Requests - BSU Inventory Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+
     <style>
          :root { --primary-color: #dc3545; --secondary-color: #343a40; }
         .navbar { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); }
@@ -24,6 +30,7 @@ $logs = $result->fetch_all(MYSQLI_ASSOC);
         .main-content { padding: 20px; }
         .card { border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
     </style>
+</head>
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
@@ -50,77 +57,68 @@ $logs = $result->fetch_all(MYSQLI_ASSOC);
                     <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
                     <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
                     <li class="nav-item"><a href="request.php" class="nav-link active"><i class="fas fa-envelope"></i> Requests</a></li>
-                    <li class="nav-item"><a href="system_logs.php" class="nav-link active"><i class="fas fa-clipboard-list"></i> System Logs</a></li>
+                    <li class="nav-item"><a href="system_logs.php" class="nav-link"><i class="fas fa-clipboard-list"></i> System Logs</a></li>
                     <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
-                    <li class="nav-item"><a href="admin_accounts.php" class="nav-link "><i class="fas fa-user-shield"></i> Admin Accounts</a></li>
+                    <li class="nav-item"><a href="admin_accounts.php" class="nav-link"><i class="fas fa-user-shield"></i> Admin Accounts</a></li>
                 </ul>
             </div>
 
-
             <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 main-content">
-                <h2><i class="fas fa-clipboard-list"></i> System Logs</h2>
-
-                <div class="card">
-                    <div class="card-header bg-danger text-white">
-                        <i class="fas fa-list"></i> Logs
-                    </div>
-                    <div class="card-body">
-                        <table id="logsTable" class="table table-striped table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Action</th>
-                                    <th>Description</th>
-                                    <th>Date & Time</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($logs as $log): ?>
+            <div class="col-md-9 col-lg-10 p-4">
+                <h2><i class="fas fa-envelope"></i> Requests for Approval</h2>
+                <div class="card p-4 mt-3">
+                    <?php if ($result->num_rows > 0): ?>
+                        <div class="table-responsive">
+                            <table id="requestTable" class="table table-bordered table-striped text-center align-middle">
+                                <thead class="table-dark">
                                     <tr>
-                                        <td><?= htmlspecialchars($log['admin_name'] ?? 'Unknown'); ?></td>
-                                        <td><?= htmlspecialchars($log['action']); ?></td>
-                                        <td><?= htmlspecialchars($log['description']); ?></td>
-                                        <td><?= htmlspecialchars($log['created_at']); ?></td>
+                                        <th>#</th>
+                                        <th>User ID</th>
+                                        <th>Form Type</th>
+                                        <th>Status</th>
+                                        <th>Date Requested</th>
                                     </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    <?php while ($row = $result->fetch_assoc()): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($row['id']) ?></td>
+                                            <td><?= htmlspecialchars($row['user_id']) ?></td>
+                                            <td><?= htmlspecialchars($row['form_type']) ?></td>
+                                            <td>
+                                                <?php
+                                                $statusClass = match ($row['status']) {
+                                                    'Approved' => 'bg-success text-white',
+                                                    'Rejected' => 'bg-danger text-white',
+                                                    default => 'bg-warning text-dark'
+                                                };
+                                                ?>
+                                                <span class="badge <?= $statusClass ?>">
+                                                    <?= htmlspecialchars($row['status']) ?>
+                                                </span>
+                                            </td>
+                                            <td><?= htmlspecialchars($row['created_at']) ?></td>
+                                        </tr>
+                                    <?php endwhile; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert alert-info text-center">No requests found.</div>
+                    <?php endif; ?>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <!-- JS -->
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- ✅ DataTables + Export -->
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
-
-   <script>
-$(document).ready(function() {
-    $('#logsTable').DataTable({
-        dom: 'Bfrtip',
-        buttons: [
-            { extend: 'excelHtml5', className: 'btn btn-success', text: '<i class="fas fa-file-excel"></i> Excel' },
-            { extend: 'pdfHtml5', className: 'btn btn-danger', text: '<i class="fas fa-file-pdf"></i> PDF' },
-            { extend: 'print', className: 'btn btn-secondary', text: '<i class="fas fa-print"></i> Print' }
-        ],
-        order: [[3, 'desc']] // ✅ correct index for "Date & Time" column
-    });
-});
-</script>
-
+    <script>
+        $(document).ready(function() {
+            $('#requestTable').DataTable();
+        });
+    </script>
 </body>
 </html>
