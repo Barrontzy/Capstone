@@ -33,48 +33,74 @@ class PDF extends TemplatePDF {
 }
 
 $pdf = new PDF('P', 'mm', 'Legal');
-$pdf->setTitleText('REQUEST FOR POSTING OF ANNOUNCEMENTS / GREETINGS');
 $pdf->AddPage();
-$pdf->SetFont('Arial', '', 9);
+
+// Title aligned with table below
+$pdf->SetFont('Arial', 'B', 13);
+$pdf->SetXY(10, $pdf->GetY()); // Start at same X position as table
+$pdf->Cell(190, 12, 'REQUEST FOR POSTING OF ANNOUNCEMENTS / GREETINGS', 1, 1, 'C');
 
 // --- College/Office ---
-$pdf->Cell(30, 7, "College / Office:", 1, 0);
-$pdf->Cell(160, 7, $_POST['college_office'] ?? '', 1, 1);
+$pdf->SetFont('Arial', '', 9);
+$labelWidth = 50;
+$contentWidth = 140;
+$pdf->SetXY(10, $pdf->GetY());
+$pdf->Cell($labelWidth, 7, "College / Office:", 1, 0);
+$pdf->Cell($contentWidth, 7, $_POST['college_office'] ?? '', 1, 1);
 
 // --- Purpose ---
-$pdf->Cell(30, 20, "Purpose:", 1, 0);
-$pdf->MultiCell(160, 20, $_POST['purpose'] ?? '', 1);
+$pdf->SetXY(10, $pdf->GetY());
+$pdf->Cell($labelWidth, 20, "Purpose:", 1, 0);
+$pdf->MultiCell($contentWidth, 20, $_POST['purpose'] ?? '', 1);
 
 // --- Means of Posting ---
 $means = $_POST['means'] ?? [];
-$pdf->Cell(30, 40, "Means of Posting:", 1, 0);
+$labelWidth = 50;
+$contentWidth = 140;
+$pdf->SetXY(10, $pdf->GetY());
+$pdf->Cell($labelWidth, 40, "Means of Posting:", 1, 0);
 $x = $pdf->GetX();
 $y = $pdf->GetY();
-$pdf->Cell(160, 40, '', 1, 1); // container for checkboxes
+$pdf->Cell($contentWidth, 40, '', 1, 1); // container for checkboxes
 $pdf->SetXY($x, $y);
 
-$pdf->SetX(40);
+$pdf->SetX(60);
 $pdf->DrawCheckbox("Bulletin Board", in_array("Bulletin Board", $means));
-$pdf->SetX(40);
+$pdf->SetX(60);
 $pdf->DrawCheckbox("View Board", in_array("View Board", $means));
-$pdf->SetX(40);
+$pdf->SetX(60);
 $pdf->DrawCheckbox("LED Board", in_array("LED Board", $means));
-$pdf->SetX(40);
+$pdf->SetX(60);
 $pdf->DrawCheckbox("Social Media", in_array("Social Media", $means));
 
 $pdf->Ln(2);
-$pdf->SetX(40);
+$pdf->SetX(60);
 $pdf->Cell(0, 5, "Indicate Specific Location / Media Site: " . ($_POST['location'] ?? ''), 0, 1);
-$pdf->SetX(40);
-$pdf->MultiCell(150, 5, $_POST['media_notes'] ?? '', 0);
+$pdf->SetX(60);
+$pdf->MultiCell(140, 5, $_POST['media_notes'] ?? '', 0);
 
 // --- Brief Content ---
-$pdf->Cell(30, 40, "Brief Content and Layout:", 1, 0);
-$pdf->MultiCell(160, 40, $_POST['content'] ?? '', 1);
+// Use wider label cell to avoid overlap
+$labelWidth = 50;
+$contentWidth = 140;
+$startY = $pdf->GetY();
+$pdf->SetXY(10, $startY); // Ensure proper X position
+$pdf->Cell($labelWidth, 40, "Brief Content and Layout:", 1, 0);
+$x = $pdf->GetX();
+$y = $pdf->GetY();
+$pdf->Cell($contentWidth, 40, '', 1, 0); // Empty border
+$pdf->SetXY($x, $y);
+$pdf->MultiCell($contentWidth, 5, $_POST['content'] ?? '', 0);
+// Ensure we're at the bottom of the 40mm section
+$pdf->SetXY(10, $startY + 40);
 
 // --- Posting Period ---
-$pdf->Cell(30, 7, "Posting Period: (Maximum 30 days)", 1, 0);
-$pdf->Cell(160, 7, $_POST['period'] ?? '', 1, 1);
+$pdf->SetXY(10, $pdf->GetY());
+// Use a wider temporary label width to fit longer label text
+$tempLabelWidth = 70;
+$tempContentWidth = 120;
+$pdf->Cell($tempLabelWidth, 7, "Posting Period (Maximum 30 days):", 1, 0);
+$pdf->Cell($tempContentWidth, 7, $_POST['period'] ?? '', 1, 1);
 
 // --- Requested + Recommended (side by side) ---
 $h = 35;
