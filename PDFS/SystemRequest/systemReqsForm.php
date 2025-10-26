@@ -141,15 +141,11 @@
 
         <!-- Modal Footer -->
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-danger sendRequestBtn" data-form="Preventive Maintenance Plan">
-          <i class="fas fa-paper-plane"></i> Send Request
-        </button>
-
-
-
-
-
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Generate PDF</button>
+          <button type="button" class="btn btn-warning sendRequestBtn" data-form="System Request">
+            <i class="fas fa-paper-plane"></i> Send Request
+          </button>
         </div>
 
       </form>

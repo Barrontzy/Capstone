@@ -6,7 +6,7 @@ requireLogin();
 
 // ✅ Check admin
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-    die("Unauthorized access. Only administrators can approve requests.");
+    die("Unauthorized access. Only administrators can reject requests.");
 }
 
 $id = $_GET['id'] ?? 0;
@@ -61,19 +61,19 @@ if (!$request) {
 $currentUser = getCurrentUser();
 $adminName = $currentUser ? $currentUser['name'] : 'Admin';
 
-$stmt = $conn->prepare("UPDATE requests SET status = 'Approved' WHERE id = ?");
+$stmt = $conn->prepare("UPDATE requests SET status = 'Rejected' WHERE id = ?");
 $stmt->bind_param("i", $id);
 
 if ($stmt->execute()) {
     // Send notification to department admin
     if ($request['email']) {
-        notifyDeptAdminRequestStatus($id, $request['form_type'], 'Approved', $request['email'], $adminName);
+        notifyDeptAdminRequestStatus($id, $request['form_type'], 'Rejected', $request['email'], $adminName);
     }
     
     if (function_exists('addLog')) {
-        addLog($conn, $_SESSION['user_id'], "Admin approved request ID: $id");
+        addLog($conn, $_SESSION['user_id'], "Admin rejected request ID: $id");
     }
-    header("Location: request.php?msg=Request+Approved+Successfully");
+    header("Location: request.php?msg=Request+Rejected+Successfully");
     exit;
 } else {
     die("Database Error: " . $conn->error);

@@ -160,11 +160,22 @@ document.addEventListener("DOMContentLoaded", function () {
     buttons.forEach(btn => {
         btn.addEventListener("click", function () {
             const formType = this.getAttribute("data-form");
+            const form = this.closest("form");
+            
+            // Collect all form data
+            const formData = new FormData(form);
+            formData.append('form_type', formType);
+            
+            // Convert FormData to URL-encoded string
+            const params = new URLSearchParams();
+            for (let [key, value] of formData.entries()) {
+                params.append(key, value);
+            }
 
-            fetch("request.php", {
+            fetch("send_request.php", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: `action=send_request&form_type=${encodeURIComponent(formType)}`
+                body: params.toString()
             })
             .then(response => response.text())
             .then(text => {

@@ -3,8 +3,36 @@ require_once 'includes/session.php';
 require_once 'includes/db.php';
 requireLogin();
 
-// Fetch all requests
-$query = "SELECT * FROM requests ORDER BY created_at DESC";
+// First, ensure the requests table exists
+$createTableQuery = "CREATE TABLE IF NOT EXISTS `requests` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `user_id` int(11) NOT NULL,
+    `form_type` varchar(255) NOT NULL,
+    `form_data` longtext DEFAULT NULL,
+    `status` enum('Pending','Approved','Rejected') DEFAULT 'Pending',
+    `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+    `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+    PRIMARY KEY (`id`),
+    KEY `user_id` (`user_id`),
+    KEY `status` (`status`),
+    KEY `form_type` (`form_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+
+$conn->query($createTableQuery);
+
+// Check if form_data column exists, if not add it
+$checkColumnQuery = "SHOW COLUMNS FROM `requests` LIKE 'form_data'";
+$columnResult = $conn->query($checkColumnQuery);
+
+if ($columnResult->num_rows == 0) {
+    $addColumnQuery = "ALTER TABLE `requests` ADD COLUMN `form_data` longtext DEFAULT NULL AFTER `form_type`";
+    $conn->query($addColumnQuery);
+}
+
+// Fetch all requests with user information
+$query = "SELECT r.*, u.full_name FROM requests r 
+          LEFT JOIN users u ON r.user_id = u.id 
+          ORDER BY r.created_at DESC";
 $result = $conn->query($query);
 
 if (!$result) {
@@ -29,6 +57,10 @@ if (!$result) {
         .sidebar .nav-link:hover, .sidebar .nav-link.active { background: var(--primary-color); color: #fff; }
         .main-content { padding: 20px; }
         .card { border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        .btn-view { background-color: #ffc107; color: black; }
+        .btn-approve { background-color: #6c757d; color: white; }
+        .btn-reject { background-color: #dc3545; color: white; }
+        .btn-view:hover, .btn-approve:hover, .btn-reject:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -73,17 +105,18 @@ if (!$result) {
                                 <thead class="table-dark">
                                     <tr>
                                         <th>#</th>
-                                        <th>User ID</th>
+                                        <th>User Name</th>
                                         <th>Form Type</th>
                                         <th>Status</th>
                                         <th>Date Requested</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php while ($row = $result->fetch_assoc()): ?>
                                         <tr>
                                             <td><?= htmlspecialchars($row['id']) ?></td>
-                                            <td><?= htmlspecialchars($row['user_id']) ?></td>
+                                            <td><?= htmlspecialchars($row['full_name'] ?? 'Unknown User') ?></td>
                                             <td><?= htmlspecialchars($row['form_type']) ?></td>
                                             <td>
                                                 <?php
@@ -98,6 +131,27 @@ if (!$result) {
                                                 </span>
                                             </td>
                                             <td><?= htmlspecialchars($row['created_at']) ?></td>
+                                            <td>
+                                                <!-- View Button -->
+                                                <a href="view_request.php?id=<?= $row['id'] ?>" class="btn btn-view btn-sm">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+
+                                                <!-- Approve Button -->
+                                                <a href="approve_request.php?id=<?= $row['id'] ?>" class="btn btn-approve btn-sm" onclick="return confirm('Approve this request?');">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </a>
+
+                                                <!-- Reject Button -->
+                                                <a href="reject_request.php?id=<?= $row['id'] ?>" class="btn btn-reject btn-sm" onclick="return confirm('Reject this request?');">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </a>
+
+                                                <!-- Delete Button -->
+                                                <a href="delete_request.php?id=<?= $row['id'] ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to delete this request? This action cannot be undone.');">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </a>
+                                            </td>
                                         </tr>
                                     <?php endwhile; ?>
                                 </tbody>
