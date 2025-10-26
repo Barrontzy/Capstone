@@ -1,4 +1,7 @@
 <?php
+// Start output buffering to prevent any output before PDF
+ob_start();
+
 require_once __DIR__ . '/../../includes/pdf_template.php';
 
 require_once '../../includes/session.php';
@@ -34,7 +37,61 @@ function rateToNumber($rate) {
 
 $totalEarned = rateToNumber($uptime_rate) + rateToNumber($latency_rate) + rateToNumber($support_rate);
 
-class PDF extends TemplatePDF {}
+class PDF extends TemplatePDF {
+    private $customTitleText = '';
+    
+    public function __construct($orientation = 'P', $unit = 'mm', $size = 'Legal') {
+        parent::__construct($orientation, $unit, $size);
+    }
+    
+    public function Header() {
+        // Check for header image using possible locations
+        $possibleHeaderPaths = [
+            __DIR__ . '/../../assets/template/header.png',
+            __DIR__ . '/../../assets/template/Header.png',
+            __DIR__ . '/../../header.png',
+        ];
+        
+        $headerImagePath = null;
+        foreach ($possibleHeaderPaths as $path) {
+            if (file_exists($path)) {
+                $headerImagePath = $path;
+                break;
+            }
+        }
+        
+        // If a header image exists, render it
+        if ($headerImagePath && file_exists($headerImagePath)) {
+            $leftMargin = 10;
+            $rightMargin = 10;
+            $usableWidth = $this->GetPageWidth() - $leftMargin - $rightMargin;
+            $imgHeight = 0;
+            $imgInfo = @getimagesize($headerImagePath);
+            if ($imgInfo && isset($imgInfo[0]) && $imgInfo[0] > 0) {
+                $imgHeight = $usableWidth * ($imgInfo[1] / $imgInfo[0]);
+            } else {
+                $imgHeight = 28;
+            }
+            $this->Image($headerImagePath, $leftMargin, 10, $usableWidth);
+            $this->SetY(10 + $imgHeight + 4);
+        }
+
+        // Title bar matching table width (190mm) and centered
+        if ($this->customTitleText !== '') {
+            $this->SetFont('Arial', 'B', 13);
+            $titleWidth = 190;
+            $xPos = ($this->GetPageWidth() - $titleWidth) / 2;
+            $this->SetX($xPos);
+            $this->Cell($titleWidth, 12, $this->customTitleText, 1, 1, 'C');
+            $this->SetX($xPos);
+        }
+    }
+    
+    public function setTitleText($title) {
+        parent::setTitleText($title);
+        $this->customTitleText = (string)$title;
+    }
+}
 
 // --- USE LEGAL SIZE ---
 $pdf = new PDF('P','mm','Legal');  // ✅ change A4 → Legal
@@ -42,33 +99,43 @@ $pdf->setTitleText("EXISTING INTERNET SERVICE PROVIDER'S EVALUATION");
 $pdf->AddPage();
 $pdf->SetFont('Arial','',9);
 
+// --- Align all content to match title position (190mm centered) ---
+$titleWidth = 190;
+$tableXPos = ($pdf->GetPageWidth() - $titleWidth) / 2;
+$pdf->SetX($tableXPos);
+
 // --- Provider Info ---
-$pdf->Cell(40, 7, 'External Providers Name:', 1, 0);
-$pdf->Cell(150, 7, $provider, 1, 1);
+$pdf->Cell(40, 7, 'External Providers Name:', 1, 0, 'L');
+$pdf->Cell(150, 7, $provider, 1, 1, 'L');
 
-$pdf->Cell(40, 7, 'Address:', 1, 0);
-$pdf->Cell(80, 7, $address, 1, 0);
-$pdf->Cell(35, 7, 'Date of Evaluation:', 1, 0);
-$pdf->Cell(35, 7, $date_eval, 1, 1);
+$pdf->SetX($tableXPos);
+$pdf->Cell(40, 7, 'Address:', 1, 0, 'L');
+$pdf->Cell(70, 7, $address, 1, 0, 'L');
+$pdf->Cell(40, 7, 'Date of Evaluation:', 1, 0, 'L');
+$pdf->Cell(40, 7, $date_eval, 1, 1, 'L');
 
-$pdf->Cell(40, 7, 'Contact Person:', 1, 0);
-$pdf->Cell(80, 7, $contact, 1, 0);
-$pdf->Cell(35, 7, 'Period Covered:', 1, 0);
-$pdf->Cell(35, 7, $period, 1, 1);
+$pdf->SetX($tableXPos);
+$pdf->Cell(40, 7, 'Contact Person:', 1, 0, 'L');
+$pdf->Cell(70, 7, $contact, 1, 0, 'L');
+$pdf->Cell(40, 7, 'Period Covered:', 1, 0, 'L');
+$pdf->Cell(40, 7, $period, 1, 1, 'L');
 
-$pdf->Cell(40, 7, 'Position:', 1, 0);
-$pdf->Cell(80, 7, $position, 1, 0);
-$pdf->Cell(35, 7, 'Tel. No.:', 1, 0);
-$pdf->Cell(35, 7, $tel_no, 1, 1);
+$pdf->SetX($tableXPos);
+$pdf->Cell(40, 7, 'Position:', 1, 0, 'L');
+$pdf->Cell(70, 7, $position, 1, 0, 'L');
+$pdf->Cell(40, 7, 'Tel. No.:', 1, 0, 'L');
+$pdf->Cell(40, 7, $tel_no, 1, 1, 'L');
 
 // ================= CRITERIA ================= //
+$pdf->SetX($tableXPos);
 $pdf->SetFont('Arial','B',9);
-$pdf->Cell(95, 7, 'CRITERIA', 1, 0, 'C');
-$pdf->Cell(30, 7, 'Weight', 1, 0, 'C');
-$pdf->Cell(30, 7, 'Earned', 1, 0, 'C');
-$pdf->Cell(35, 7, 'Remarks', 1, 1, 'C');
+$pdf->Cell(65, 7, 'CRITERIA', 1, 0, 'C');
+$pdf->Cell(40, 7, 'Weight', 1, 0, 'C');
+$pdf->Cell(40, 7, 'Earned', 1, 0, 'C');
+$pdf->Cell(45, 7, 'Remarks', 1, 1, 'C');
 
 // --- UPTIME ---
+$pdf->SetX($tableXPos);
 $pdf->SetFont('Arial','B',9);
 $pdf->Cell(190, 7, '1. UPTIME COMMITMENT', 1, 1, 'L');
 
@@ -83,14 +150,16 @@ $uptime_options = [
 foreach ($uptime_options as $label => $weight) {
     $earned = ($uptime_rate == $weight) ? $uptime_rate : '';
     $remarks = ($uptime_rate == $weight) ? $uptime_remarks : '';
+    $pdf->SetX($tableXPos);
     $pdf->SetFont('Arial','',8);
-    $pdf->Cell(95, 7, $label, 1, 0);
-    $pdf->Cell(30, 7, $weight, 1, 0, 'C');
-    $pdf->Cell(30, 7, $earned, 1, 0, 'C');
-    $pdf->Cell(35, 7, $remarks, 1, 1, 'C');
+    $pdf->Cell(65, 7, $label, 1, 0, 'L');
+    $pdf->Cell(40, 7, $weight, 1, 0, 'C');
+    $pdf->Cell(40, 7, $earned, 1, 0, 'C');
+    $pdf->Cell(45, 7, $remarks, 1, 1, 'L');
 }
 
 // --- NETWORK LATENCY ---
+$pdf->SetX($tableXPos);
 $pdf->SetFont('Arial','B',9);
 $pdf->Cell(190, 7, '2. NETWORK LATENCY', 1, 1, 'L');
 
@@ -107,14 +176,16 @@ $latency_options = [
 foreach ($latency_options as $label => $weight) {
     $earned = ($latency_rate == $weight) ? $latency_rate : '';
     $remarks = ($latency_rate == $weight) ? $latency_remarks : '';
+    $pdf->SetX($tableXPos);
     $pdf->SetFont('Arial','',8);
-    $pdf->Cell(95, 7, $label, 1, 0);
-    $pdf->Cell(30, 7, $weight, 1, 0, 'C');
-    $pdf->Cell(30, 7, $earned, 1, 0, 'C');
-    $pdf->Cell(35, 7, $remarks, 1, 1, 'C');
+    $pdf->Cell(65, 7, $label, 1, 0, 'L');
+    $pdf->Cell(40, 7, $weight, 1, 0, 'C');
+    $pdf->Cell(40, 7, $earned, 1, 0, 'C');
+    $pdf->Cell(45, 7, $remarks, 1, 1, 'L');
 }
 
 // --- TECHNICAL SUPPORT ---
+$pdf->SetX($tableXPos);
 $pdf->SetFont('Arial','B',9);
 $pdf->Cell(190, 7, '3. TECHNICAL SUPPORT RESPONSE AND ACCESSIBILITY', 1, 1, 'L');
 
@@ -128,21 +199,25 @@ $support_options = [
 foreach ($support_options as $label => $weight) {
     $earned = ($support_rate == $weight) ? $support_rate : '';
     $remarks = ($support_rate == $weight) ? $support_remarks : '';
+    $pdf->SetX($tableXPos);
     $pdf->SetFont('Arial','',8);
-    $pdf->Cell(95, 7, $label, 1, 0);
-    $pdf->Cell(30, 7, $weight, 1, 0, 'C');
-    $pdf->Cell(30, 7, $earned, 1, 0, 'C');
-    $pdf->Cell(35, 7, $remarks, 1, 1, 'C');
+    $pdf->Cell(65, 7, $label, 1, 0, 'L');
+    $pdf->Cell(40, 7, $weight, 1, 0, 'C');
+    $pdf->Cell(40, 7, $earned, 1, 0, 'C');
+    $pdf->Cell(45, 7, $remarks, 1, 1, 'L');
 }
 
 // --- TOTAL ---
+$pdf->SetX($tableXPos);
 $pdf->SetFont('Arial','B',9);
-$pdf->Cell(95, 7, 'TOTAL', 1, 0, 'R');
-$pdf->Cell(30, 7, '100%', 1, 0, 'C');
-$pdf->Cell(65, 7, $totalEarned . "%", 1, 1, 'C');
+$pdf->Cell(65, 7, 'TOTAL', 1, 0, 'R');
+$pdf->Cell(40, 7, '100%', 1, 0, 'C');
+$pdf->Cell(40, 7, $totalEarned . "%", 1, 0, 'C');
+$pdf->Cell(45, 7, '', 1, 1, 'L');
 
 // --- Evaluators ---
 $pdf->Ln(3);
+$pdf->SetX($tableXPos);
 $pdf->SetFont('Arial','',9);
 $pdf->Cell(95, 10, "Evaluated by: $evaluator", 1, 0, 'L');
 $pdf->Cell(95, 10, "Reviewed & Approved: $supervisor", 1, 1, 'L');
@@ -151,15 +226,17 @@ $pdf->Cell(95, 10, "Reviewed & Approved: $supervisor", 1, 1, 'L');
 $pdf->Ln(4);
 
 // Header row
+$pdf->SetX($tableXPos);
 $pdf->SetFillColor(200,200,150);
 $pdf->SetFont('Arial','B',9);
-$pdf->Cell(70, 7, 'PERFORMANCE', 1, 0, 'C', true);
-$pdf->Cell(120, 7, 'Recommendations:', 1, 1, 'C', true);
+$pdf->Cell(95, 7, 'PERFORMANCE', 1, 0, 'C', true);
+$pdf->Cell(95, 7, 'Recommendations:', 1, 1, 'C', true);
 
 // Sub-header
+$pdf->SetX($tableXPos);
 $pdf->SetFont('Arial','B',8);
-$pdf->Cell(35, 7, 'Rating', 1, 0, 'C');
-$pdf->Cell(35, 7, 'Description', 1, 0, 'C');
+$pdf->Cell(47.5, 7, 'Rating', 1, 0, 'C');
+$pdf->Cell(47.5, 7, 'Description', 1, 0, 'C');
 
 // Recommendations text
 $recommendations = "1. Internet Service Provider with unsatisfactory ratings for two (2) consecutive or one (1) poor rating performance evaluations shall be notified for having poor service.\n\n2. Internet Service Provider with unsatisfactory ratings for three (3) consecutive or two (2) consecutive poor ratings performance evaluation shall be recommended for contract termination.";
@@ -167,10 +244,10 @@ $recommendations = "1. Internet Service Provider with unsatisfactory ratings for
 // Print recommendations box
 $pdf->SetFont('Arial','',8);
 $y_start = $pdf->GetY();
-$pdf->MultiCell(120, 7, $recommendations, 1, 'L');
+$pdf->MultiCell(95, 7, $recommendations, 1, 'L');
 
 // Go back for Performance rows
-$pdf->SetXY(10, $y_start + 7);
+$pdf->SetXY($tableXPos, $y_start + 7);
 
 // Performance table with highlighting
 $performance = [
@@ -193,16 +270,22 @@ foreach ($performance as $row) {
     elseif ($totalEarned >= 61 && $totalEarned <= 70 && strpos($range,'61–70%')!==false) $highlight = true;
     elseif ($totalEarned < 61 && strpos($range,'Below 61%')!==false) $highlight = true;
 
+    // Reset X position for each performance row
+    $pdf->SetX($tableXPos);
+    
     if ($highlight) {
         $pdf->SetFillColor(200,200,150);
         $pdf->SetFont('Arial','B',8);
-        $pdf->Cell(35, 7, $range, 1, 0, 'C', true);
-        $pdf->Cell(35, 7, $desc, 1, 1, 'C', true);
+        $pdf->Cell(47.5, 7, $range, 1, 0, 'C', true);
+        $pdf->Cell(47.5, 7, $desc, 1, 1, 'C', true);
     } else {
         $pdf->SetFont('Arial','',8);
-        $pdf->Cell(35, 7, $range, 1, 0, 'C');
-        $pdf->Cell(35, 7, $desc, 1, 1, 'C');
+        $pdf->Cell(47.5, 7, $range, 1, 0, 'C');
+        $pdf->Cell(47.5, 7, $desc, 1, 1, 'C');
     }
 }
+
+// Clean any output buffer before sending PDF
+ob_end_clean();
 
 $pdf->Output('I','ISP_Evaluation.pdf');

@@ -110,7 +110,7 @@ foreach ($options as $opt) {
 // --- Name of System (aligned fix) ---
 $pdf->SetX($leftMargin);
 $cellHeight = 8; // uniform height
-$pdf->Cell(50, $cellHeight, 'Name of Existing / Proposed System:', 1, 0, 'L');
+$pdf->Cell(50, $cellHeight, ' Proposed System:', 1, 0, 'L');
 $x = $pdf->GetX();
 $y = $pdf->GetY();
 $pdf->Rect($x, $y, $fullWidth - 50, $cellHeight);
