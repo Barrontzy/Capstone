@@ -238,8 +238,9 @@ $pdf->SetFont('Arial','B',8);
 $pdf->Cell(47.5, 7, 'Rating', 1, 0, 'C');
 $pdf->Cell(47.5, 7, 'Description', 1, 0, 'C');
 
+
 // Recommendations text
-$recommendations = "1. Internet Service Provider with unsatisfactory ratings for two (2) consecutive or one (1) poor rating performance evaluations shall be notified for having poor service.\n\n2. Internet Service Provider with unsatisfactory ratings for three (3) consecutive or two (2) consecutive poor ratings performance evaluation shall be recommended for contract termination.";
+$recommendations = "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               ";
 
 // Print recommendations box
 $pdf->SetFont('Arial','',8);
