@@ -79,46 +79,64 @@ $pdf->Cell(160, 7, $_POST['period'] ?? '', 1, 1);
 // --- Requested + Recommended (side by side) ---
 $h = 35;
 $y = $pdf->GetY();
-$pdf->Cell(95, $h, '', 1, 0);
-$pdf->Cell(95, $h, '', 1, 1);
+$startX = 10;
+$totalWidth = 190;
 
-// Requested By
-$pdf->SetXY(10, $y + 2);
-$pdf->SetFont('Arial', '', 9);
-$pdf->Cell(90, 5, "Requested by:", 0, 2, 'L');
-$pdf->SetFont('Arial', 'B', 9);
-$pdf->MultiCell(90, 5, ($_POST['requested_by'] ?? 'NAME OF HEAD OF OFFICE/UNIT') . "\n" . ($_POST['requested_designation'] ?? 'Position/Designation'), 0, 'C');
-$pdf->SetFont('Arial', '', 9);
-$pdf->Cell(90, 5, "Date Signed: ____________________", 0, 2, 'L');
+// Draw single outer border to avoid double lines
+$pdf->Rect($startX, $y, $totalWidth, $h);
 
-// Recommended Approval
-$pdf->SetXY(105, $y + 2);
+// Draw vertical separator line
+$pdf->Line($startX + 95, $y, $startX + 95, $y + $h);
+
+// Requested By (left cell)
+$pdf->SetXY($startX + 2, $y + 2);
 $pdf->SetFont('Arial', '', 9);
-$pdf->Cell(90, 5, "Recommending Approval:", 0, 2, 'L');
+$pdf->Cell(88, 5, "Requested by:", 0, 2, 'L');
 $pdf->SetFont('Arial', 'B', 9);
-$pdf->MultiCell(90, 5, ($_POST['recommended_by'] ?? 'Engr. JONNAH R. MELO') . "\n" . ($_POST['recommended_designation'] ?? 'Head, ICT Services'), 0, 'C');
+$pdf->MultiCell(88, 5, ($_POST['requested_by'] ?? 'NAME OF HEAD OF OFFICE/UNIT') . "\n" . ($_POST['requested_designation'] ?? 'Position/Designation'), 0, 'C');
 $pdf->SetFont('Arial', '', 9);
-$pdf->Cell(90, 5, "Date Signed: ____________________", 0, 2, 'L');
+$pdf->Cell(88, 5, "Date Signed: ____________________", 0, 2, 'L');
+
+// Recommended Approval (right cell)
+$pdf->SetXY($startX + 95 + 2, $y + 2);
+$pdf->SetFont('Arial', '', 9);
+$pdf->Cell(88, 5, "Recommending Approval:", 0, 2, 'L');
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->MultiCell(88, 5, ($_POST['recommended_by'] ?? 'Engr. JONNAH R. MELO') . "\n" . ($_POST['recommended_designation'] ?? 'Head, ICT Services'), 0, 'C');
+$pdf->SetFont('Arial', '', 9);
+$pdf->Cell(88, 5, "Date Signed: ____________________", 0, 2, 'L');
+
+// Move Y position to the bottom of the first section
+$pdf->SetY($y + $h);
 
 // --- Approved + Remarks (side by side) ---
 $y = $pdf->GetY();
-$pdf->Cell(95, $h, '', 1, 0);
-$pdf->Cell(95, $h, '', 1, 1);
+$startX = 10;
+$totalWidth = 190;
 
-// Approved By
-$pdf->SetXY(10, $y + 2);
+// Draw single outer border to avoid double lines
+$pdf->Rect($startX, $y, $totalWidth, $h);
+
+// Draw vertical separator line
+$pdf->Line($startX + 95, $y, $startX + 95, $y + $h);
+
+// Approved By (left cell)
+$pdf->SetXY($startX + 2, $y + 2);
 $pdf->SetFont('Arial', '', 9);
-$pdf->Cell(90, 27, "Approved by:", 0, 2, 'L');
+$pdf->Cell(88, 5, "Approved by:", 0, 2, 'L');
 $pdf->SetFont('Arial', 'B', 9);
-$pdf->MultiCell(90, 0, ($_POST['approved_by'] ?? 'Atty. ALVIN R. DE SILVA') . "\n" . ($_POST['approved_designation'] ?? 'Chancellor'), 0, 'C');
+$pdf->MultiCell(88, 5, ($_POST['approved_by'] ?? 'Atty. ALVIN R. DE SILVA') . "\n" . ($_POST['approved_designation'] ?? 'Chancellor'), 0, 'C');
 $pdf->SetFont('Arial', '', 9);
-$pdf->Cell(90, 7, "Date Signed: ____________________", 0, 2, 'L');
+$pdf->Cell(88, 5, "Date Signed: ____________________", 0, 2, 'L');
 
-// Remarks
-$pdf->SetXY(105, $y + 2);
+// Remarks (right cell)
+$pdf->SetXY($startX + 95 + 2, $y + 2);
 $pdf->SetFont('Arial', '', 9);
-$pdf->Cell(90, 5, "Remarks:", 0, 2, 'L');
-$pdf->MultiCell(90, 5, ($_POST['remarks'] ?? ''), 0, 'L');
+$pdf->Cell(88, 5, "Remarks:", 0, 2, 'L');
+$pdf->MultiCell(88, 5, ($_POST['remarks'] ?? ''), 0, 'L');
+
+// Move Y position to the bottom of the second section
+$pdf->SetY($y + $h);
 
 // --- Note + Tracking ---
 $pdf->SetFont('Arial', 'I', 7);
