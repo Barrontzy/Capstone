@@ -191,7 +191,10 @@ $telephone_where = buildWhere($search, $status, 'remarks');
     <div class="col-md-9 col-lg-10 main-content">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2><i class="fas fa-laptop"></i> Equipment</h2>
-        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addEquipmentModal"><i class="fas fa-plus"></i> Add Equipment</button>
+        <div>
+          <button class="btn btn-secondary me-2" onclick="printAllLabels()"><i class="fas fa-print"></i> Print All Labels</button>
+          <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addEquipmentModal"><i class="fas fa-plus"></i> Add Equipment</button>
+        </div>
       </div>
 
       <?php if (isset($_GET['added']) && $_GET['added'] == '1'): ?>
@@ -1409,6 +1412,192 @@ function deleteFromModal() {
     document.body.appendChild(form);
     form.submit();
   }
+}
+
+// ✅ Print All Labels
+function printAllLabels() {
+  // Get all visible equipment rows from the active tab
+  const activeTab = document.querySelector('.tab-pane.active');
+  const visibleRows = activeTab.querySelectorAll('.clickable-row');
+  
+  if (visibleRows.length === 0) {
+    alert('No equipment found to print.');
+    return;
+  }
+  
+  if (!confirm(`Print ${visibleRows.length} label(s)?`)) {
+    return;
+  }
+  
+  // Create HTML for all labels
+  let allLabelsHTML = '';
+  
+  visibleRows.forEach((row, index) => {
+    const assetTag = row.dataset.asset || '';
+    const assignedPerson = row.dataset.user || '';
+    const location = row.dataset.location || '';
+    const processor = row.dataset.processor || '';
+    const ram = row.dataset.ram || '';
+    const gpu = row.dataset.gpu || '';
+    const hardDrive = row.dataset.hdd || '';
+    const os = row.dataset.os || '';
+    const equipmentType = row.dataset.type || row.dataset.equipment || 'Equipment';
+    const specifications = row.dataset.specs || '';
+    const dateAcquired = row.dataset.date || '';
+    const inventoryItemNo = row.dataset.itemno || '';
+    const remarks = row.dataset.remarks || '';
+    
+    // Generate QR code URL using an online service
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(assetTag)}`;
+    
+    // Create the label HTML
+    const labelHTML = `
+      <div class="asset-label" style="
+          width: 100%;
+          max-width: 700px;
+          margin: 0 auto;
+          border: 4px solid #dc3545;
+          background: white;
+          padding: 25px;
+          box-sizing: border-box;
+          position: relative;
+        ">
+          <div style="
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 25px;
+            position: relative;
+          ">
+            <div style="
+              width: 70px;
+              height: 70px;
+              margin-right: 20px;
+              flex-shrink: 0;
+            ">
+              <img src="assets/logo/bsutneu.png" alt="BSU Logo" style="
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+              " onerror="this.style.display='none';">
+            </div>
+            <div style="
+              font-size: 20px;
+              font-weight: bold;
+              text-transform: uppercase;
+              color: #000;
+              letter-spacing: 1px;
+              flex: 1;
+              margin-right: 140px;
+            ">BATANGAS STATE UNIVERSITY</div>
+            <div style="
+              position: absolute;
+              top: 0;
+              right: 0;
+              width: 100px;
+              height: 100px;
+              z-index: 1;
+            ">
+              <img src="${qrCodeUrl}" alt="QR Code" style="
+                width: 100px;
+                height: 100px;
+                object-fit: contain;
+              " onerror="this.style.display='none';">
+            </div>
+            <div style="
+              position: absolute;
+              top: 105px;
+              right: 0;
+              text-align: center;
+              width: 100px;
+              font-size: 10px;
+              font-weight: bold;
+              color: #000;
+              line-height: 1;
+            ">${assetTag}</div>
+          </div>
+          
+          <div style="margin-top: 50px;">
+            <div style="display: flex; flex-direction: column; gap: 18px;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                <span style="font-size: 13px; font-weight: bold; color: #000; white-space: nowrap; min-width: 90px;">Property No:</span>
+                <div style="flex: 1; border-bottom: 2px solid #000; height: 18px; margin: 0 8px; min-width: 50px;"></div>
+              </div>
+              
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                <span style="font-size: 13px; font-weight: bold; color: #000; white-space: nowrap; min-width: 55px;">Article:</span>
+                <div style="flex: 1; border-bottom: 2px solid #000; height: 18px; margin: 0 8px; min-width: 50px;">${equipmentType}</div>
+              </div>
+              
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                <span style="font-size: 13px; font-weight: bold; color: #000; white-space: nowrap; min-width: 90px;">Specification:</span>
+                <div style="flex: 1; border-bottom: 2px solid #000; height: 18px; margin: 0 8px; min-width: 50px;">${processor || specifications || ''}</div>
+              </div>
+              
+              <div style="border-top: 1px solid #000; padding-top: 18px; margin-top: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                <span style="font-size: 13px; font-weight: bold; color: #000; white-space: nowrap; min-width: 65px;">Date Acq:</span>
+                <div style="flex: 1; border-bottom: 2px solid #000; height: 18px; margin: 0 8px;">${dateAcquired}</div>
+                <span style="font-size: 13px; font-weight: bold; color: #000; white-space: nowrap; min-width: 35px;">Amt:</span>
+                <div style="flex: 1; border-bottom: 2px solid #000; height: 18px; margin: 0 8px;"></div>
+              </div>
+              
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                <span style="font-size: 13px; font-weight: bold; color: #000; white-space: nowrap; min-width: 65px;">End User:</span>
+                <div style="flex: 1; border-bottom: 2px solid #000; height: 18px; margin: 0 8px; min-width: 50px;">${assignedPerson}</div>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 35px; padding-top: 15px;">
+              <div style="width: 180px; border-bottom: 2px solid #000; margin: 0 auto 8px; height: 18px;"></div>
+              <div style="font-size: 11px; font-weight: bold; color: #000;">Supply Officer</div>
+            </div>
+          </div>
+        </div>
+    `;
+    
+    // Wrap each label for proper page breaking
+    allLabelsHTML += '<div style="page-break-after: always;">' + labelHTML + '</div>';
+  });
+  
+  // Create complete HTML document
+  const printHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Print All BSU Asset Labels</title>
+      <style>
+        body { 
+          font-family: Arial, sans-serif; 
+          margin: 0; 
+          padding: 0; 
+          background: white;
+        }
+        @media print {
+          body { margin: 0; padding: 0; }
+          .asset-label { 
+            page-break-after: always; 
+            margin-bottom: 0 !important;
+          }
+          .asset-label:last-child {
+            page-break-after: auto;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      ${allLabelsHTML}
+    </body>
+    </html>
+  `;
+  
+  // Open print window
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(printHTML);
+  printWindow.document.close();
+  
+  // Wait a bit for content to render, then print
+  setTimeout(() => {
+    printWindow.print();
+  }, 500);
 }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
