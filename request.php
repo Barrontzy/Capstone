@@ -61,6 +61,7 @@ if (!$result) {
         .btn-approve { background-color: #6c757d; color: white; }
         .btn-reject { background-color: #dc3545; color: white; }
         .btn-view:hover, .btn-approve:hover, .btn-reject:hover { opacity: 0.9; }
+        .page-item.active .page-link { background-color: #dc3545 !important; border-color: #dc3545 !important; }
     </style>
 </head>
 <body>

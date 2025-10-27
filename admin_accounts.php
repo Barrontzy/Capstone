@@ -87,6 +87,7 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
         .sidebar .nav-link:hover, .sidebar .nav-link.active { background: var(--primary-color); color: #fff; }
         .main-content { padding: 20px; }
         .card { border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        .page-item.active .page-link { background-color: #dc3545 !important; border-color: #dc3545 !important; }
     </style>
 </head>
 <body>
