@@ -294,7 +294,7 @@ $users = $conn->query("SELECT id, full_name, role FROM users ORDER BY full_name"
                                 </select>
                             </div>
                             <div class="col-md-3 d-flex align-items-end">
-                                <button type="submit" class="btn btn-primary me-2">
+                                <button type="submit" class="btn btn-danger me-2">
                                     <i class="fas fa-search"></i> Filter
                                 </button>
                                 <a href="tasks.php" class="btn btn-outline-secondary">

@@ -7,14 +7,29 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// ✅ Ensure all admin roles exist in role enum
+$checkEnumQuery = "SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_SCHEMA = DATABASE() 
+                    AND TABLE_NAME = 'users' 
+                    AND COLUMN_NAME = 'role'";
+$result = $conn->query($checkEnumQuery);
+if ($result && $row = $result->fetch_assoc()) {
+    $enumStr = $row['COLUMN_TYPE'];
+    // Check if all roles exist
+    $hasAllRoles = strpos($enumStr, "'depadmin'") !== false || strpos($enumStr, "'department_admin'") !== false;
+    if (!$hasAllRoles || strpos($enumStr, "'admin'") === false) {
+        $conn->query("ALTER TABLE users MODIFY COLUMN role ENUM('admin','technician','department_admin','depadmin') NOT NULL DEFAULT 'technician'");
+    }
+}
+
 $error = '';
-$success = '';
+$success = isset($_GET['success']) ? $_GET['success'] : '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Delete admin
     if (isset($_POST['action']) && $_POST['action'] === 'delete' && isset($_POST['user_id'])) {
         $toDelete = (int)$_POST['user_id'];
-        $stmt = $conn->prepare("DELETE FROM users WHERE id = ? AND role = 'admin'");
+        $stmt = $conn->prepare("DELETE FROM users WHERE id = ? AND role IN ('admin', 'depadmin', 'department_admin')");
         $stmt->bind_param("i", $toDelete);
         if ($stmt->execute()) {
             include 'logger.php';
@@ -35,6 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if (empty($full_name) || empty($email) || empty($phone_number) || empty($password)) {
             $error = 'Please fill in all fields';
+        } elseif (!in_array($role, ['admin', 'depadmin', 'department_admin'])) {
+            $error = 'Invalid role selected';
         } elseif ($password !== $confirm_password) {
             $error = 'Passwords do not match';
         } elseif (strlen($password) < 6) {
@@ -47,7 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             if ($result->num_rows > 0) {
                 $error = 'Email address already exists';
+                $stmt->close();
             } else {
+                $stmt->close(); // Close the SELECT statement
+                
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                 $stmt = $conn->prepare("INSERT INTO users (full_name, email, role, phone_number, password) VALUES (?, ?, ?, ?, ?)");
                 $stmt->bind_param("sssss", $full_name, $email, $role, $phone_number, $hashed_password);
@@ -55,18 +75,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 if ($stmt->execute()) {
                     include 'logger.php';
                     logAdminAction($_SESSION['user_id'], $_SESSION['user_name'], 'Add Admin', 'Added admin ' . $email);
-                    $success = 'User account registered successfully!';
+                    $stmt->close();
+                    // Redirect to prevent form resubmission
+                    header('Location: admin_accounts.php?success=Account registered successfully!');
+                    exit();
                 } else {
-                    $error = 'Registration failed. Please try again.';
+                    $error = 'Registration failed: ' . $conn->error . '. Please try again.';
+                    $stmt->close();
                 }
             }
-            $stmt->close();
         }
     }
 }
 
 // Fetch admins
-$result = $conn->query("SELECT id, full_name, email, role, phone_number, created_at FROM users WHERE role = 'admin' ORDER BY created_at DESC");
+$result = $conn->query("SELECT id, full_name, email, role, phone_number, created_at FROM users WHERE role IN ('admin', 'depadmin', 'department_admin') ORDER BY created_at DESC");
 $admins = $result->fetch_all(MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -87,7 +110,6 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
         .sidebar .nav-link:hover, .sidebar .nav-link.active { background: var(--primary-color); color: #fff; }
         .main-content { padding: 20px; }
         .card { border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
-        .page-item.active .page-link { background-color: #dc3545 !important; border-color: #dc3545 !important; }
     </style>
 </head>
 <body>
@@ -125,6 +147,20 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 main-content">
                 <h2><i class="fas fa-user-shield"></i> Admin Accounts</h2>
+
+                <!-- Success/Error Messages -->
+                <?php if ($success): ?>
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle"></i> <?= htmlspecialchars($success); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <?php endif; ?>
+                <?php if ($error): ?>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($error); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <?php endif; ?>
 
                 <!-- Add Button -->
                 <div class="mb-3 text-end">
@@ -210,6 +246,7 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
                                 <label>Role</label>
                                 <select name="role" class="form-control" required>
                                     <option value="admin">Admin</option>
+                                    <option value="department_admin">Department Admin</option>
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -239,11 +276,16 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
     <script>
         $(document).ready(function() {
             $('#adminsTable').DataTable({
-                searching: true, // ✅ search only
+                searching: true,
                 paging: true,
                 info: false,
                 ordering: true
             });
+
+            // Auto-close modal if there's a success message
+            <?php if ($success): ?>
+                $('#addAdminModal').modal('hide');
+            <?php endif; ?>
         });
     </script>
 </body>
