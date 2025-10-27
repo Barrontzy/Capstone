@@ -358,7 +358,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <a href="depdashboard.php" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                     <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#preventiveModal"><i class="fas fa-calendar-check"></i> Preventive Maintenance Plan</a>
                     <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#PreventiveMaintendancePlanIndexCard"><i class="fas fa-clipboard-list"></i> Index Card</a>
-                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#ictServiceRequestModal"><i class="fas fa-laptop-code"></i> ICT Request Form</a>
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#ictServiceRequestModal"><i class="fas fa-desktop"></i> ICT Request Form</a>
                     <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#ispEvaluationModal"><i class="fas fa-wifi"></i> ISP Evaluation</a>
                     <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#announcementModal"><i class="fas fa-bullhorn"></i> Announcement Request</a>
                     <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#webPostingModal"><i class="fas fa-globe"></i> Website Posting</a>
