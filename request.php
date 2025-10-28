@@ -45,6 +45,7 @@ if (!$result) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Requests - BSU Inventory Management System</title>
+    <link rel="icon" href="assets/logo/bsutneu.png" type="image/png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
@@ -57,10 +58,14 @@ if (!$result) {
         .sidebar .nav-link:hover, .sidebar .nav-link.active { background: var(--primary-color); color: #fff; }
         .main-content { padding: 20px; }
         .card { border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
-        .btn-view { background-color: #ffc107; color: black; }
-        .btn-approve { background-color: #6c757d; color: white; }
-        .btn-reject { background-color: #dc3545; color: white; }
-        .btn-view:hover, .btn-approve:hover, .btn-reject:hover { opacity: 0.9; }
+        .btn-view { background-color: #ffc107; color: black; border: none; }
+        .btn-approve { background-color: #6c757d; color: white; border: none; }
+        .btn-reject { background-color: #dc3545; color: white; border: none; }
+        .btn-view:hover { background-color: #e0a800 !important; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .btn-approve:hover { background-color: #5a6268 !important; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .btn-reject:hover { background-color: #c82333 !important; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .btn-outline-danger:hover { background-color: #dc3545 !important; color: white !important; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .btn-action { transition: all 0.3s ease; }
         .page-item.active .page-link { background-color: #dc3545 !important; border-color: #dc3545 !important; }
     </style>
 </head>
@@ -134,22 +139,22 @@ if (!$result) {
                                             <td><?= htmlspecialchars($row['created_at']) ?></td>
                                             <td>
                                                 <!-- View Button -->
-                                                <a href="view_request.php?id=<?= $row['id'] ?>" class="btn btn-view btn-sm">
+                                                <a href="view_request.php?id=<?= $row['id'] ?>" class="btn btn-view btn-sm btn-action">
                                                     <i class="fas fa-eye"></i> View
                                                 </a>
 
                                                 <!-- Approve Button -->
-                                                <a href="approve_request.php?id=<?= $row['id'] ?>" class="btn btn-approve btn-sm" onclick="return confirm('Approve this request?');">
+                                                <a href="approve_request.php?id=<?= $row['id'] ?>" class="btn btn-approve btn-sm btn-action" onclick="return confirm('Approve this request?');">
                                                     <i class="fas fa-check"></i> Approve
                                                 </a>
 
                                                 <!-- Reject Button -->
-                                                <a href="reject_request.php?id=<?= $row['id'] ?>" class="btn btn-reject btn-sm" onclick="return confirm('Reject this request?');">
+                                                <a href="reject_request.php?id=<?= $row['id'] ?>" class="btn btn-reject btn-sm btn-action" onclick="return confirm('Reject this request?');">
                                                     <i class="fas fa-times"></i> Reject
                                                 </a>
 
                                                 <!-- Delete Button -->
-                                                <a href="delete_request.php?id=<?= $row['id'] ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to delete this request? This action cannot be undone.');">
+                                                <a href="delete_request.php?id=<?= $row['id'] ?>" class="btn btn-outline-danger btn-sm btn-action" onclick="return confirm('Are you sure you want to delete this request? This action cannot be undone.');">
                                                     <i class="fas fa-trash"></i> Delete
                                                 </a>
                                             </td>
@@ -174,6 +179,17 @@ if (!$result) {
         $(document).ready(function() {
             $('#requestTable').DataTable();
         });
+    </script>
+    <script>
+    // Logout confirmation
+    document.addEventListener('click', function(e) {
+        const logoutLink = e.target.closest('a[href="logout.php"]');
+        if (!logoutLink) return;
+        e.preventDefault();
+        if (confirm('Are you sure you want to log out?')) {
+            window.location.href = logoutLink.href;
+        }
+    });
     </script>
 </body>
 </html>

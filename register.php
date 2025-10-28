@@ -26,10 +26,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = 'Please enter a valid email address';
     } elseif (!preg_match('/@g\.batstate-u\.edu\.ph$/', $email)) {
         $error = 'Email must be from @g.batstate-u.edu.ph domain';
+    } elseif (!preg_match('/^09\d{9}$/', $phone_number)) {
+        $error = 'Phone number must be exactly 11 digits starting with 09';
     } elseif ($password !== $confirm_password) {
         $error = 'Passwords do not match';
-    } elseif (strlen($password) < 6) {
-        $error = 'Password must be at least 6 characters long';
+    } elseif (strlen($password) < 8) {
+        $error = 'Password must be at least 8 characters long';
+    } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]).{8,}$/', $password)) {
+        $error = 'Password must be at least 8 characters with one uppercase, one lowercase, one digit, and one special character';
     } else {
         // Check if email already exists
         $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
@@ -166,8 +170,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <label for="phone_number" class="form-label">Phone Number</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                            <input type="tel" class="form-control" id="phone_number" name="phone_number" required>
+                            <input type="tel" class="form-control" id="phone_number" name="phone_number" required maxlength="11" pattern="^09\d{9}$" placeholder="09123456789">
                         </div>
+                        <small class="text-muted">Must be exactly 11 digits starting with 09</small>
                     </div>
                 </div>
                 
@@ -188,15 +193,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <label for="password" class="form-label">Password</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                            <input type="password" class="form-control" id="password" name="password" required minlength="8">
                         </div>
+                        <small class="text-muted">Must be at least 8 characters with uppercase, lowercase, number, and special character</small>
                     </div>
                     
                     <div class="col-md-6 mb-3">
                         <label for="confirm_password" class="form-label">Confirm Password</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required minlength="8">
                         </div>
                     </div>
                 </div>

@@ -29,6 +29,7 @@ if (!empty($_SESSION['profile_image'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($page_title) ? $page_title . ' - ' : ''; ?>Technician Portal</title>
+    <link rel="icon" href="../assets/logo/bsutneu.png" type="image/png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -626,6 +627,26 @@ if (!empty($_SESSION['profile_image'])) {
     </div>
 </div>
     
+<!-- Logout Confirm Modal -->
+<div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-sign-out-alt"></i> Confirm Logout</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to log out?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger confirm-logout">Logout</button>
+            </div>
+        </div>
+    </div>
+    </div>
+<!-- End Logout Confirm Modal -->
+
     <script>
     function toggleDropdown() {
         const dropdown = document.getElementById('profileDropdown');
@@ -695,6 +716,23 @@ if (!empty($_SESSION['profile_image'])) {
     
     // Form validation
     document.addEventListener('DOMContentLoaded', function() {
+        // Intercept logout links and show confirm modal
+        document.addEventListener('click', function(e) {
+            const logoutLink = e.target.closest('a[href="logout.php"]');
+            if (!logoutLink) return;
+            e.preventDefault();
+            const modalEl = document.getElementById('logoutConfirmModal');
+            if (!modalEl || typeof bootstrap === 'undefined' || !bootstrap.Modal) {
+                window.location.href = logoutLink.href;
+                return;
+            }
+            const confirmBtn = modalEl.querySelector('.confirm-logout');
+            if (confirmBtn) {
+                confirmBtn.onclick = function() { window.location.href = logoutLink.href; };
+            }
+            new bootstrap.Modal(modalEl).show();
+        });
+
         // Email validation
         const emailInput = document.querySelector('input[name="email"]');
         if (emailInput) {

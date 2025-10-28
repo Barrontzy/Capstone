@@ -74,6 +74,11 @@ include 'PDFS/PostingRequestForm/PostingRequestForm.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Department Dashboard - BSU ICT Management System</title>
+    <link rel="icon" href="/favicon.ico?v=8" type="image/png">
+    <link rel="shortcut icon" href="/favicon.ico?v=8" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico?v=8">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico?v=8">
+    <link rel="apple-touch-icon" href="/favicon.ico?v=8">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -317,6 +322,57 @@ document.getElementById('requestChart').parentElement.innerHTML = `
         <i class="fas fa-info-circle me-2"></i>No request data available.
     </div>`;
 <?php endif; ?>
+</script>
+<script>
+// Logout confirmation
+document.addEventListener('click', function(e) {
+    const logoutLink = e.target.closest('a[href="logout.php"]');
+    if (!logoutLink) return;
+    e.preventDefault();
+    if (confirm('Are you sure you want to log out?')) {
+        window.location.href = logoutLink.href;
+    }
+});
+
+// Handle Send Request button for all forms
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.sendRequestBtn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const formType = this.getAttribute('data-form');
+            const form = this.closest('form');
+            const modal = this.closest('.modal');
+            
+            // Validate form
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Get all form data
+            const formData = new FormData(form);
+            formData.append('form_type', formType);
+            
+            // Send request via AJAX
+            fetch('send_request.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                if (data.includes('✅')) {
+                    // Close the modal and refresh if successful
+                    const modalInstance = bootstrap.Modal.getInstance(modal);
+                    if (modalInstance) modalInstance.hide();
+                    setTimeout(() => window.location.reload(), 500);
+                }
+            })
+            .catch(error => {
+                alert('❌ Error: ' + error);
+            });
+        });
+    });
+});
 </script>
 
 </body>

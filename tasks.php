@@ -188,6 +188,7 @@ $users = $conn->query("SELECT id, full_name, role FROM users ORDER BY full_name"
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Users - BSU Inventory Management System</title>
+    <link rel="icon" href="assets/logo/bsutneu.png" type="image/png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
@@ -225,7 +226,7 @@ $users = $conn->query("SELECT id, full_name, role FROM users ORDER BY full_name"
                     <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
                     <li class="nav-item"><a href="tasks.php" class="nav-link active"><i class="fas fa-tasks"></i> Tasks</a></li>
                     <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                    <li class="nav-item"><a href="request.php" class="nav-link active"><i class="fas fa-envelope"></i> Requests</a></li>
+                    <li class="nav-item"><a href="request.php" class="nav-link"><i class="fas fa-envelope"></i> Requests</a></li>
                     <li class="nav-item"><a href="system_logs.php" class="nav-link"><i class="fas fa-clipboard-list"></i> System Logs</a></li>
                     <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
                     <li class="nav-item"><a href="admin_accounts.php" class="nav-link "><i class="fas fa-user-shield"></i> Admin Accounts</a></li>
@@ -464,6 +465,17 @@ $users = $conn->query("SELECT id, full_name, role FROM users ORDER BY full_name"
                 form.submit();
             }
         }
+    </script>
+    <script>
+    // Logout confirmation
+    document.addEventListener('click', function(e) {
+        const logoutLink = e.target.closest('a[href="logout.php"]');
+        if (!logoutLink) return;
+        e.preventDefault();
+        if (confirm('Are you sure you want to log out?')) {
+            window.location.href = logoutLink.href;
+        }
+    });
     </script>
 </body>
 </html> 

@@ -41,6 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = 'Please fill in all required fields';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email address';
+    } elseif (!preg_match('/^09\d{9}$/', $phone_number)) {
+        $error = 'Phone number must be exactly 11 digits starting with 09';
     } else {
         // Check if email already exists for another user
         $stmt = $conn->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
@@ -62,6 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Password is being changed
                 if ($new_password !== $confirm_password) {
                     $error = 'Passwords do not match';
+                } elseif (strlen($new_password) < 8) {
+                    $error = 'Password must be at least 8 characters long';
+                } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]).{8,}$/', $new_password)) {
+                    $error = 'Password must be at least 8 characters with one uppercase, one lowercase, one digit, and one special character';
                 } else {
                     $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
                     $stmt = $conn->prepare("
@@ -293,7 +299,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Phone Number *</label>
-                                    <input type="text" class="form-control" name="phone_number" value="<?php echo htmlspecialchars($user['phone_number']); ?>" required>
+                                    <input type="text" class="form-control" name="phone_number" value="<?php echo htmlspecialchars($user['phone_number']); ?>" required maxlength="11" pattern="^09\d{9}$" placeholder="09123456789">
+                                    <small class="text-muted">Must be exactly 11 digits starting with 09</small>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Role *</label>
@@ -309,12 +316,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">New Password</label>
-                                    <input type="password" class="form-control" name="new_password" minlength="6">
-                                    <small class="text-muted">Leave blank to keep current password</small>
+                                    <input type="password" class="form-control" name="new_password" minlength="8">
+                                    <small class="text-muted">Leave blank to keep current password. Must be at least 8 characters with one uppercase, one lowercase, one digit, and one special character.</small>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Confirm New Password</label>
-                                    <input type="password" class="form-control" name="confirm_password" minlength="6">
+                                    <input type="password" class="form-control" name="confirm_password" minlength="8">
                                 </div>
                             </div>
                             

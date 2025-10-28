@@ -25,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please fill in all fields.';
     } else if (strlen($password) < 8) {
         $error = 'Password must be at least 8 characters long.';
+    } else if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]).{8,}$/', $password)) {
+        $error = 'Password must be at least 8 characters with one uppercase, one lowercase, one digit, and one special character.';
     } else if ($password !== $confirm_password) {
         $error = 'Passwords do not match.';
     } else {

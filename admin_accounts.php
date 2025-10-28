@@ -52,10 +52,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = 'Please fill in all fields';
         } elseif (!in_array($role, ['admin', 'depadmin', 'department_admin'])) {
             $error = 'Invalid role selected';
+        } elseif (!preg_match('/^09\d{9}$/', $phone_number)) {
+            $error = 'Phone number must be exactly 11 digits starting with 09';
         } elseif ($password !== $confirm_password) {
             $error = 'Passwords do not match';
-        } elseif (strlen($password) < 6) {
-            $error = 'Password must be at least 6 characters long';
+        } elseif (strlen($password) < 8) {
+            $error = 'Password must be at least 8 characters long';
+        } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]).{8,}$/', $password)) {
+            $error = 'Password must be at least 8 characters with one uppercase, one lowercase, one digit, and one special character';
         } else {
             $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
             $stmt->bind_param("s", $email);
@@ -137,7 +141,7 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
                     <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
                     <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
                     <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                    <li class="nav-item"><a href="request.php" class="nav-link active"><i class="fas fa-envelope"></i> Requests</a></li>
+                    <li class="nav-item"><a href="request.php" class="nav-link"><i class="fas fa-envelope"></i> Requests</a></li>
                     <li class="nav-item"><a href="system_logs.php" class="nav-link"><i class="fas fa-clipboard-list"></i> System Logs</a></li>
                     <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
                     <li class="nav-item"><a href="admin_accounts.php" class="nav-link active"><i class="fas fa-user-shield"></i> Admin Accounts</a></li>
@@ -240,7 +244,8 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Phone Number</label>
-                                <input type="text" name="phone_number" class="form-control" required>
+                                <input type="text" name="phone_number" class="form-control" required maxlength="11" pattern="^09\d{9}$" placeholder="09123456789">
+                                <small class="text-muted">Must be exactly 11 digits starting with 09</small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Role</label>
@@ -287,6 +292,17 @@ $admins = $result->fetch_all(MYSQLI_ASSOC);
                 $('#addAdminModal').modal('hide');
             <?php endif; ?>
         });
+    </script>
+    <script>
+    // Logout confirmation
+    document.addEventListener('click', function(e) {
+        const logoutLink = e.target.closest('a[href="logout.php"]');
+        if (!logoutLink) return;
+        e.preventDefault();
+        if (confirm('Are you sure you want to log out?')) {
+            window.location.href = logoutLink.href;
+        }
+    });
     </script>
 </body>
 </html>

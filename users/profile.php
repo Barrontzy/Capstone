@@ -34,6 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please fill in all required fields.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email address.';
+    } elseif (!preg_match('/^09\d{9}$/', $phone_number)) {
+        $error = 'Phone number must be exactly 11 digits starting with 09.';
     } else {
         // Check if email already exists for other users
         $email_check = $conn->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
@@ -68,8 +70,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Current password is incorrect.';
         } elseif ($new_password !== $confirm_password) {
             $error = 'New passwords do not match.';
-        } elseif (strlen($new_password) < 6) {
-            $error = 'New password must be at least 6 characters long.';
+        } elseif (strlen($new_password) < 8) {
+            $error = 'New password must be at least 8 characters long.';
+        } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]).{8,}$/', $new_password)) {
+            $error = 'Password must be at least 8 characters with one uppercase, one lowercase, one digit, and one special character.';
         } else {
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
             $password_stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
@@ -123,7 +127,8 @@ require_once 'header.php';
                 <div>
                     <label for="phone_number" style="display: block; margin-bottom: 5px; font-weight: 600;">Phone Number</label>
                     <input type="tel" id="phone_number" name="phone_number" value="<?php echo htmlspecialchars($user['phone_number']); ?>" 
-                           style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px;" required>
+                           style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px;" required maxlength="11" pattern="^09\d{9}$" placeholder="09123456789">
+                    <small style="color: #6c757d;">Must be exactly 11 digits starting with 09</small>
                 </div>
                 
                 <div>
@@ -157,13 +162,14 @@ require_once 'header.php';
                 <div>
                     <label for="new_password" style="display: block; margin-bottom: 5px; font-weight: 600;">New Password</label>
                     <input type="password" id="new_password" name="new_password" 
-                           style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px;" minlength="6">
+                           style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px;" minlength="8">
+                    <small style="color: #6c757d;">Must be at least 8 characters with uppercase, lowercase, number, and special character</small>
                 </div>
                 
                 <div>
                     <label for="confirm_password" style="display: block; margin-bottom: 5px; font-weight: 600;">Confirm New Password</label>
                     <input type="password" id="confirm_password" name="confirm_password" 
-                           style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px;" minlength="6">
+                           style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px;" minlength="8">
                 </div>
                 
                 <div style="display: flex; align-items: end;">

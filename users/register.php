@@ -19,10 +19,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please fill in all fields.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email address.';
+    } elseif (!preg_match('/^09\d{9}$/', $phone_number)) {
+        $error = 'Phone number must be exactly 11 digits starting with 09.';
     } elseif ($password !== $confirm_password) {
         $error = 'Passwords do not match.';
-    } elseif (strlen($password) < 6) {
-        $error = 'Password must be at least 6 characters long.';
+    } elseif (strlen($password) < 8) {
+        $error = 'Password must be at least 8 characters long.';
+    } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]).{8,}$/', $password)) {
+        $error = 'Password must be at least 8 characters with one uppercase, one lowercase, one digit, and one special character.';
     } elseif (!in_array($role, ['admin', 'technician'])) {
         $error = 'Please select a valid role.';
     } else {
@@ -198,20 +202,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-group">
                     <label for="phone_number" class="form-label">Phone Number</label>
                     <input type="tel" id="phone_number" name="phone_number" class="form-control" required 
+                           maxlength="11" pattern="^09\d{9}$" placeholder="09123456789"
                            value="<?php echo isset($_POST['phone_number']) ? htmlspecialchars($_POST['phone_number']) : ''; ?>">
+                    <small>Must be exactly 11 digits starting with 09</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="password" class="form-label">Password</label>
                     <input type="password" id="password" name="password" class="form-control" required 
-                           minlength="6">
-                    <small>Password must be at least 6 characters long.</small>
+                           minlength="8">
+                    <small>Password must be at least 8 characters with one uppercase, one lowercase, one digit, and one special character.</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="confirm_password" class="form-label">Confirm Password</label>
                     <input type="password" id="confirm_password" name="confirm_password" class="form-control" required 
-                           minlength="6">
+                           minlength="8">
                 </div>
                 
                 <div class="form-group">

@@ -80,32 +80,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Search and status filter setup
+// Search and filter setup
 $search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
-$status = isset($_GET['status']) ? $_GET['status'] : '';
+$user_filter = isset($_GET['user']) ? $conn->real_escape_string($_GET['user']) : '';
+$location_filter = isset($_GET['location']) ? $conn->real_escape_string($_GET['location']) : '';
 
-// Helper to return WHERE clause for search + status for a given table and remarks column (remarks exists)
-function buildWhere($search, $status, $remarksColumn = 'remarks') {
+// Fetch distinct users and locations from all equipment tables
+$all_users = [];
+$all_locations = [];
+
+// Get users and locations from desktop
+$result = $conn->query("SELECT DISTINCT assigned_person FROM desktop WHERE assigned_person IS NOT NULL AND assigned_person != ''");
+while ($row = $result->fetch_assoc()) {
+    if (!in_array($row['assigned_person'], $all_users)) {
+        $all_users[] = $row['assigned_person'];
+    }
+}
+$result = $conn->query("SELECT DISTINCT location FROM desktop WHERE location IS NOT NULL AND location != ''");
+while ($row = $result->fetch_assoc()) {
+    if (!in_array($row['location'], $all_locations)) {
+        $all_locations[] = $row['location'];
+    }
+}
+
+// Get from other tables (laptops, printers, etc.)
+$tables = ['laptops', 'printers', 'accesspoint', 'switch', 'telephone'];
+foreach ($tables as $table) {
+    $result = $conn->query("SELECT DISTINCT assigned_person FROM $table WHERE assigned_person IS NOT NULL AND assigned_person != ''");
+    while ($row = $result->fetch_assoc()) {
+        if (!in_array($row['assigned_person'], $all_users)) {
+            $all_users[] = $row['assigned_person'];
+        }
+    }
+    $result = $conn->query("SELECT DISTINCT location FROM $table WHERE location IS NOT NULL AND location != ''");
+    while ($row = $result->fetch_assoc()) {
+        if (!in_array($row['location'], $all_locations)) {
+            $all_locations[] = $row['location'];
+        }
+    }
+}
+
+sort($all_users);
+sort($all_locations);
+
+// Helper to return WHERE clause for search + user and location filters
+function buildWhere($search, $user_filter, $location_filter) {
     $clauses = [];
     if (!empty($search)) {
         $s = $search;
         $clauses[] = "(asset_tag LIKE '%$s%' OR assigned_person LIKE '%$s%' OR location LIKE '%$s%')";
     }
-    if ($status === 'working') {
-        $clauses[] = "$remarksColumn LIKE '%Working%'";
-    } elseif ($status === 'notworking') {
-        $clauses[] = "$remarksColumn NOT LIKE '%Working%'";
+    if (!empty($user_filter)) {
+        $clauses[] = "assigned_person = '$user_filter'";
+    }
+    if (!empty($location_filter)) {
+        $clauses[] = "location = '$location_filter'";
     }
     return (count($clauses) > 0) ? ' WHERE ' . implode(' AND ', $clauses) : '';
 }
 
 // We'll fetch each table's rows separately (for the tabs)
-$desktop_where = buildWhere($search, $status, 'remarks');
-$laptops_where = buildWhere($search, $status, 'remarks');
-$printers_where = buildWhere($search, $status, 'remarks');
-$accesspoint_where = buildWhere($search, $status, 'remarks');
-$switch_where = buildWhere($search, $status, 'remarks');
-$telephone_where = buildWhere($search, $status, 'remarks');
+$desktop_where = buildWhere($search, $user_filter, $location_filter);
+$laptops_where = buildWhere($search, $user_filter, $location_filter);
+$printers_where = buildWhere($search, $user_filter, $location_filter);
+$accesspoint_where = buildWhere($search, $user_filter, $location_filter);
+$switch_where = buildWhere($search, $user_filter, $location_filter);
+$telephone_where = buildWhere($search, $user_filter, $location_filter);
 
 ?>
 <!DOCTYPE html>
@@ -114,6 +154,7 @@ $telephone_where = buildWhere($search, $status, 'remarks');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Users - BSU Inventory Management System</title>
+    <link rel="icon" href="assets/logo/bsutneu.png" type="image/png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
@@ -179,7 +220,7 @@ $telephone_where = buildWhere($search, $status, 'remarks');
                     <li class="nav-item"><a href="maintenance.php" class="nav-link"><i class="fas fa-tools"></i> Maintenance</a></li>
                     <li class="nav-item"><a href="tasks.php" class="nav-link"><i class="fas fa-tasks"></i> Tasks</a></li>
                     <li class="nav-item"><a href="reports.php" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                    <li class="nav-item"><a href="request.php" class="nav-link active"><i class="fas fa-envelope"></i> Requests</a></li>
+                    <li class="nav-item"><a href="request.php" class="nav-link"><i class="fas fa-envelope"></i> Requests</a></li>
                     <li class="nav-item"><a href="system_logs.php" class="nav-link"><i class="fas fa-clipboard-list"></i> System Logs</a></li>
                     <li class="nav-item"><a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a></li>
                     <li class="nav-item"><a href="admin_accounts.php" class="nav-link "><i class="fas fa-user-shield"></i> Admin Accounts</a></li>
@@ -207,10 +248,21 @@ $telephone_where = buildWhere($search, $status, 'remarks');
       <!-- Search -->
       <form method="GET" class="mb-3 d-flex">
         <input type="text" name="search" class="form-control me-2" placeholder="Search asset tag, user or location..." value="<?php echo htmlspecialchars($search); ?>">
-        <select name="status" class="form-select me-2" style="max-width:200px;">
-          <option value="">All status</option>
-          <option value="working" <?php echo ($status=='working') ? 'selected':''; ?>>Working</option>
-          <option value="notworking" <?php echo ($status=='notworking') ? 'selected':''; ?>>Not Working</option>
+        <select name="user" class="form-select me-2" style="max-width:200px;">
+          <option value="">All users</option>
+          <?php foreach ($all_users as $user): ?>
+            <option value="<?php echo htmlspecialchars($user); ?>" <?php echo ($user_filter==$user) ? 'selected':''; ?>>
+              <?php echo htmlspecialchars($user); ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+        <select name="location" class="form-select me-2" style="max-width:200px;">
+          <option value="">All locations</option>
+          <?php foreach ($all_locations as $location): ?>
+            <option value="<?php echo htmlspecialchars($location); ?>" <?php echo ($location_filter==$location) ? 'selected':''; ?>>
+              <?php echo htmlspecialchars($location); ?>
+            </option>
+          <?php endforeach; ?>
         </select>
         <button type="submit" class="btn btn-danger"><i class="fas fa-search"></i></button>
       </form>
@@ -1603,6 +1655,30 @@ function printAllLabels() {
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // Intercept logout button and show confirm modal
+  document.addEventListener('click', function(e) {
+    const logoutLink = e.target.closest('a[href="logout.php"]');
+    if (!logoutLink) return;
+    e.preventDefault();
+    let modalEl = document.getElementById('logoutConfirmModal');
+    if (!modalEl) {
+      // Create modal lazily if not present
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = '\n<div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-hidden="true">\n  <div class="modal-dialog modal-dialog-centered">\n    <div class="modal-content">\n      <div class="modal-header">\n        <h5 class="modal-title"><i class="fas fa-sign-out-alt"></i> Confirm Logout</h5>\n        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>\n      </div>\n      <div class="modal-body">Are you sure you want to log out?</div>\n      <div class="modal-footer">\n        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>\n        <button type="button" class="btn btn-danger confirm-logout">Logout</button>\n      </div>\n    </div>\n  </div>\n</div>\n';
+      document.body.appendChild(wrapper.firstElementChild);
+      modalEl = document.getElementById('logoutConfirmModal');
+    }
+    if (typeof bootstrap === 'undefined' || !bootstrap.Modal) {
+      window.location.href = logoutLink.href;
+      return;
+    }
+    const confirmBtn = modalEl.querySelector('.confirm-logout');
+    if (confirmBtn) {
+      confirmBtn.onclick = function() { window.location.href = logoutLink.href; };
+    }
+    new bootstrap.Modal(modalEl).show();
+  });
+
   document.querySelectorAll('.clickable-row').forEach(function(row) {
     row.addEventListener('click', function() {
       currentAssetTag = row.dataset.asset;

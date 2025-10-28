@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 } elseif (!preg_match('/@g\.batstate-u\.edu\.ph$/', $email)) {
                     $error = 'Email must be from @g.batstate-u.edu.ph';
                 } elseif (!preg_match('/^09\d{9}$/', $phone_number)) {
-                    $error = 'Phone number must be exactly 11 digits long, starting with 09';
+                    $error = 'Phone number must be exactly 11 digits starting with 09';
                 } else {
                     // Check if email already exists
                     $stmt = $conn->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
@@ -137,10 +137,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $error = 'Current password is incorrect.';
                 } elseif ($new_password !== $confirm_password) {
                     $error = 'New passwords do not match.';
-                } elseif (strlen($new_password) < 6) {
-                    $error = 'Password must be at least 6 characters long.';
-                } elseif (!preg_match('/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]).{6,}$/', $new_password)) {
-                    $error = 'Password must contain at least one uppercase letter, one number, and one special character.';
+                } elseif (strlen($new_password) < 8) {
+                    $error = 'Password must be at least 8 characters long.';
+                } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]).{8,}$/', $new_password)) {
+                    $error = 'Password must be at least 8 characters with one uppercase, one lowercase, one digit, and one special character.';
                 } else {
                     $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
                     $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
@@ -352,7 +352,7 @@ require_once 'header.php';
                                 <label class="form-label">Phone Number</label>
                                 <input type="tel" class="form-control" name="phone_number" 
                                        value="<?php echo htmlspecialchars($user['phone_number']); ?>" 
-                                       placeholder="09123456789" maxlength="11" required>
+                                       placeholder="09123456789" maxlength="11" pattern="^09\d{9}$" required>
                                 <div class="form-text">Must be exactly 11 digits starting with 09</div>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -392,12 +392,12 @@ require_once 'header.php';
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">New Password</label>
-                            <input type="password" class="form-control" name="new_password" required minlength="6">
-                            <div class="form-text">Must contain uppercase, number, and special character</div>
+                            <input type="password" class="form-control" name="new_password" required minlength="8">
+                            <div class="form-text">Must be at least 8 characters with uppercase, lowercase, number, and special character</div>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Confirm New Password</label>
-                            <input type="password" class="form-control" name="confirm_password" required minlength="6">
+                            <input type="password" class="form-control" name="confirm_password" required minlength="8">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -585,10 +585,11 @@ document.addEventListener('DOMContentLoaded', function() {
         newPasswordInput.addEventListener('input', function() {
             const password = this.value;
             const hasUpper = /[A-Z]/.test(password);
+            const hasLower = /[a-z]/.test(password);
             const hasNumber = /\d/.test(password);
             const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
-            const isValid = password.length >= 6 && hasUpper && hasNumber && hasSpecial;
-            this.setCustomValidity(isValid ? '' : 'Password must contain at least one uppercase letter, one number, and one special character');
+            const isValid = password.length >= 8 && hasUpper && hasLower && hasNumber && hasSpecial;
+            this.setCustomValidity(isValid ? '' : 'Password must be at least 8 characters with one uppercase, one lowercase, one digit, and one special character');
         });
     }
     
@@ -604,10 +605,11 @@ document.addEventListener('DOMContentLoaded', function() {
             newPasswordInputModal.addEventListener('input', function() {
                 const password = this.value;
                 const hasUpper = /[A-Z]/.test(password);
+                const hasLower = /[a-z]/.test(password);
                 const hasNumber = /\d/.test(password);
                 const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
-                const isValid = password.length >= 6 && hasUpper && hasNumber && hasSpecial;
-                this.setCustomValidity(isValid ? '' : 'Password must contain at least one uppercase letter, one number, and one special character');
+                const isValid = password.length >= 8 && hasUpper && hasLower && hasNumber && hasSpecial;
+                this.setCustomValidity(isValid ? '' : 'Password must be at least 8 characters with one uppercase, one lowercase, one digit, and one special character');
             });
         }
         

@@ -8,6 +8,7 @@ $isLoggedIn = isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($page_title) ? $page_title . ' - BSU User System' : 'BSU User System'; ?></title>
+    <link rel="icon" href="../assets/logo/bsutneu.png" type="image/png">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -75,6 +76,39 @@ $isLoggedIn = isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
                 justify-content: center;
             }
         }
+        /* Simple modal styling for users header (no Bootstrap here) */
+        .simple-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1050;
+        }
+        .simple-modal {
+            background: #fff;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .simple-modal-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+        }
+        .simple-modal-body { padding: 18px; }
+        .simple-modal-footer {
+            padding: 12px 18px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .btn-outline { border: 1px solid #ced4da; background: #fff; color: #333; padding: 8px 14px; border-radius: 6px; }
+        .btn-danger { background: #dc3545; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; }
     </style>
 </head>
 <body>
@@ -112,3 +146,30 @@ $isLoggedIn = isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
             </div>
         </nav>
     </header> 
+    <!-- Logout Confirm Modal (simple) -->
+    <div class="simple-modal-backdrop" id="userLogoutBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="simple-modal" role="document">
+            <div class="simple-modal-header"><i class="fas fa-sign-out-alt"></i> Confirm Logout</div>
+            <div class="simple-modal-body">Are you sure you want to log out?</div>
+            <div class="simple-modal-footer">
+                <button type="button" class="btn-outline" id="userLogoutCancel">Cancel</button>
+                <button type="button" class="btn-danger" id="userLogoutConfirm">Logout</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function() {
+        document.addEventListener('click', function(e) {
+            const logoutLink = e.target.closest('a[href="logout.php"]');
+            if (!logoutLink) return;
+            e.preventDefault();
+            const backdrop = document.getElementById('userLogoutBackdrop');
+            if (!backdrop) { window.location.href = logoutLink.href; return; }
+            backdrop.style.display = 'flex';
+            function closeModal() { backdrop.style.display = 'none'; }
+            document.getElementById('userLogoutCancel')?.addEventListener('click', closeModal, { once: true });
+            backdrop.addEventListener('click', function(ev) { if (ev.target === backdrop) closeModal(); }, { once: true });
+            document.getElementById('userLogoutConfirm')?.addEventListener('click', function() { window.location.href = logoutLink.href; }, { once: true });
+        });
+    })();
+    </script>

@@ -97,6 +97,7 @@ $maintenance_alerts = array_slice($maintenance_alerts, 0, 5);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Users - BSU Inventory Management System</title>
+    <link rel="icon" href="assets/logo/bsutneu.png" type="image/png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
@@ -215,6 +216,17 @@ $maintenance_alerts = array_slice($maintenance_alerts, 0, 5);
       data: { labels: <?php echo json_encode(array_keys($acquisition_data)); ?>, datasets: [{ label: 'Units Acquired', data: <?php echo json_encode(array_values($acquisition_data)); ?>, backgroundColor: '#dc3545' }] },
       options: { responsive: true, scales: { y: { beginAtZero: true } } }
     });
+  </script>
+  <script>
+  // Logout confirmation
+  document.addEventListener('click', function(e) {
+      const logoutLink = e.target.closest('a[href="logout.php"]');
+      if (!logoutLink) return;
+      e.preventDefault();
+      if (confirm('Are you sure you want to log out?')) {
+          window.location.href = logoutLink.href;
+      }
+  });
   </script>
 </body>
 </html>

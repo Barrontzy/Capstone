@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } elseif (!preg_match('/@g\.batstate-u\.edu\.ph$/', $email)) {
         $error = 'Email must be from @g.batstate-u.edu.ph';
     } elseif (!preg_match('/^09\d{9}$/', $phone_number)) {
-        $error = 'Phone number must be exactly 11 digits long, starting with 09';
+        $error = 'Phone number must be exactly 11 digits starting with 09';
     } else {
         // Check if email already exists for another user
         $stmt = $conn->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
@@ -129,10 +129,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = 'Current password is incorrect';
         } elseif ($new_password !== $confirm_password) {
             $error = 'New passwords do not match';
-        } elseif (!preg_match('/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]).{6,}$/', $new_password)) {
-            $error = 'Password must contain at least one uppercase letter, one number, and one special character';
-        } elseif (strlen($new_password) < 6) {
-            $error = 'New password must be at least 6 characters long';
+        } elseif (strlen($new_password) < 8) {
+            $error = 'New password must be at least 8 characters long';
+        } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]).{8,}$/', $new_password)) {
+            $error = 'Password must be at least 8 characters with one uppercase, one lowercase, one digit, and one special character';
         } else {
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
             $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
@@ -154,6 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - BSU Inventory Management System</title>
+    <link rel="icon" href="assets/logo/bsutneu.png" type="image/png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -500,7 +501,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" name="phone_number" value="<?php echo htmlspecialchars($user['phone_number']); ?>" placeholder="09123456789" maxlength="11" required>
+                                <input type="tel" class="form-control" name="phone_number" value="<?php echo htmlspecialchars($user['phone_number']); ?>" placeholder="09123456789" maxlength="11" pattern="^09\d{9}$" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Role</label>
@@ -520,12 +521,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">New Password</label>
-                                <input type="password" class="form-control" name="new_password" placeholder="Enter strong password">
-                                <small class="text-muted">Must contain uppercase, number, and special character</small>
+                                <input type="password" class="form-control" name="new_password" placeholder="Enter strong password" minlength="8">
+                                <small class="text-muted">Must be at least 8 characters with uppercase, lowercase, number, and special character</small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Confirm New Password</label>
-                                <input type="password" class="form-control" name="confirm_password" placeholder="Confirm new password">
+                                <input type="password" class="form-control" name="confirm_password" placeholder="Confirm new password" minlength="8">
                             </div>
                         </div>
                     </form>
@@ -761,10 +762,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         function validatePassword(input) {
             const password = input.value;
-            const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]).{6,}$/;
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]).{8,}$/;
             
             if (password && !passwordRegex.test(password)) {
-                showFieldError(input, 'Password must contain at least one uppercase letter, one number, and one special character');
+                showFieldError(input, 'Password must be at least 8 characters with one uppercase, one lowercase, one digit, and one special character');
                 return false;
             } else {
                 clearError(input);
@@ -793,7 +794,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             let strengthText = '';
             let strengthColor = '';
             
-            if (password.length >= 6) strength++;
+            if (password.length >= 8) strength++;
+            if (/[a-z]/.test(password)) strength++;
             if (/[A-Z]/.test(password)) strength++;
             if (/\d/.test(password)) strength++;
             if (/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]/.test(password)) strength++;
@@ -929,6 +931,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
             });
         }
+    });
+    </script>
+    <script>
+    // Logout confirmation
+    document.addEventListener('click', function(e) {
+        const logoutLink = e.target.closest('a[href="logout.php"]');
+        if (!logoutLink) return;
+        e.preventDefault();
+        if (confirm('Are you sure you want to log out?')) {
+            window.location.href = logoutLink.href;
+        }
+    });
+    
+    // Handle Send Request button for all forms
+    document.querySelectorAll('.sendRequestBtn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const formType = this.getAttribute('data-form');
+            const form = this.closest('form');
+            const modal = this.closest('.modal');
+            
+            // Validate form
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Get all form data
+            const formData = new FormData(form);
+            formData.append('form_type', formType);
+            
+            // Send request via AJAX
+            fetch('send_request.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                if (data.includes('✅')) {
+                    // Close the modal and refresh if successful
+                    const modalInstance = bootstrap.Modal.getInstance(modal);
+                    if (modalInstance) modalInstance.hide();
+                    setTimeout(() => window.location.reload(), 500);
+                }
+            })
+            .catch(error => {
+                alert('❌ Error: ' + error);
+            });
+        });
     });
     </script>
         </div>
