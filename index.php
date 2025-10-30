@@ -241,7 +241,7 @@ if (isset($_SESSION["user_id"])) {
             .modal-body { padding: 24px 11px 22px 11px; font-size: 0.97em; }
         }
         @media (max-width: 480px) {
-            .logo-main img { width: 10px; }
+            .logo-main img { width: 410px; }
             .main-content {
                 padding: 10px;
             }
