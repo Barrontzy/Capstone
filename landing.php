@@ -27,37 +27,42 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } elseif (!preg_match('/@g\.batstate-u\.edu\.ph$/', $email)) {
         $error = 'Email must be from @g.batstate-u.edu.ph ';
     } else {
-        $stmt = $conn->prepare("SELECT id, full_name, email, role, password, profile_image FROM users WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        if ($result->num_rows == 1) {
-            $user = $result->fetch_assoc();
-            if (password_verify($password, $user['password'])) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['user_name'] = $user['full_name'];
-                $_SESSION['user_email'] = $user['email'];
-                $_SESSION['user_role'] = $user['role'];
-                $_SESSION['profile_image'] = $user['profile_image'];
-				include 'logger.php';
-                
-                if($user['role'] == 'admin'){
-                    logAdminAction($user['id'], $user['full_name'], "Login", "Admin logged in");
-                    header('Location: dashboard.php');
-                } elseif($user['role'] == 'technician'){
-                    header('Location: technician/indet.php');
-                } elseif($user['role'] == 'department_admin'){ 
-                    header('Location: depdashboard.php');
-                }
-                exit();
-            } else {
-                $error = 'Invalid password';
-            }
+        // Require captcha to be solved before attempting login
+        if (empty($_POST['g-recaptcha-response'])) {
+            $error = 'Please answer the captcha';
         } else {
-            $error = 'User not found';
+            $stmt = $conn->prepare("SELECT id, full_name, email, role, password, profile_image FROM users WHERE email = ?");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
+        
+            if ($result->num_rows == 1) {
+                $user = $result->fetch_assoc();
+                if (password_verify($password, $user['password'])) {
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['user_name'] = $user['full_name'];
+                    $_SESSION['user_email'] = $user['email'];
+                    $_SESSION['user_role'] = $user['role'];
+                    $_SESSION['profile_image'] = $user['profile_image'];
+                    include 'logger.php';
+                    
+                    if($user['role'] == 'admin'){
+                        logAdminAction($user['id'], $user['full_name'], "Login", "Admin logged in");
+                        header('Location: dashboard.php');
+                    } elseif($user['role'] == 'technician'){
+                        header('Location: technician/indet.php');
+                    } elseif($user['role'] == 'department_admin'){ 
+                        header('Location: depdashboard.php');
+                    }
+                    exit();
+                } else {
+                    $error = 'Invalid password';
+                }
+            } else {
+                $error = 'User not found';
+            }
+            $stmt->close();
         }
-        $stmt->close();
     }
 }
 ?>
