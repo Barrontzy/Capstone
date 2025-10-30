@@ -86,7 +86,7 @@ if (isset($_SESSION["user_id"])) {
             align-items: center;
         }
         .logo-main img {
-            width: 520px;
+            width: 120px;
             max-width: 90vw;
             height: auto;
             margin-bottom: 20px;
