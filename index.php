@@ -86,7 +86,7 @@ if (isset($_SESSION["user_id"])) {
             align-items: center;
         }
         .logo-main img {
-            width: 420px;
+            width: 520px;
             max-width: 90vw;
             height: auto;
             margin-bottom: 20px;
@@ -241,7 +241,7 @@ if (isset($_SESSION["user_id"])) {
             .modal-body { padding: 24px 11px 22px 11px; font-size: 0.97em; }
         }
         @media (max-width: 480px) {
-            .logo-main img { width: 210px; }
+            .logo-main img { width: 10px; }
             .main-content {
                 padding: 10px;
             }
