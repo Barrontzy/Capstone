@@ -15,6 +15,7 @@ if (isset($_SESSION['user_id'])) {
 }
 
 $error = '';
+$lockout_info = null;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = trim($_POST['email']);
@@ -31,37 +32,79 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (empty($_POST['g-recaptcha-response'])) {
             $error = 'Please answer the captcha';
         } else {
-            $stmt = $conn->prepare("SELECT id, full_name, email, role, password, profile_image FROM users WHERE email = ?");
-            $stmt->bind_param("s", $email);
-            $stmt->execute();
-            $result = $stmt->get_result();
-        
-            if ($result->num_rows == 1) {
-                $user = $result->fetch_assoc();
-                if (password_verify($password, $user['password'])) {
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['user_name'] = $user['full_name'];
-                    $_SESSION['user_email'] = $user['email'];
-                    $_SESSION['user_role'] = $user['role'];
-                    $_SESSION['profile_image'] = $user['profile_image'];
-                    include 'logger.php';
-                    
-                    if($user['role'] == 'admin'){
-                        logAdminAction($user['id'], $user['full_name'], "Login", "Admin logged in");
-                        header('Location: dashboard.php');
-                    } elseif($user['role'] == 'technician'){
-                        header('Location: technician/indet.php');
-                    } elseif($user['role'] == 'department_admin'){ 
-                        header('Location: depdashboard.php');
-                    }
-                    exit();
+            // Check if account is locked
+            $lockout_info = isAccountLocked($email);
+            
+            if ($lockout_info && isset($lockout_info['locked']) && $lockout_info['locked'] && isset($lockout_info['remaining_seconds'])) {
+                $remaining = $lockout_info['remaining_seconds'];
+                $minutes = floor($remaining / 60);
+                $seconds = $remaining % 60;
+                
+                if ($minutes > 0) {
+                    $error = "Account temporarily locked. Please try again in {$minutes} minute(s) and {$seconds} second(s).";
                 } else {
-                    $error = 'Invalid password';
+                    $error = "Account temporarily locked. Please try again in {$seconds} second(s).";
                 }
             } else {
-                $error = 'User not found';
+                $stmt = $conn->prepare("SELECT id, full_name, email, role, password FROM users WHERE email = ?");
+                if ($stmt === false) {
+                    $error = 'Database error: ' . $conn->error;
+                } else {
+                    $stmt->bind_param("s", $email);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+            
+                    if ($result->num_rows == 1) {
+                        $user = $result->fetch_assoc();
+                        if (password_verify($password, $user['password'])) {
+                            // Successful login - reset failed attempts
+                            resetLoginAttempts($email);
+                            
+                            $_SESSION['user_id'] = $user['id'];
+                            $_SESSION['user_name'] = $user['full_name'];
+                            $_SESSION['user_email'] = $user['email'];
+                            $_SESSION['user_role'] = $user['role'];
+                            include 'logger.php';
+                            
+                            if($user['role'] == 'admin'){
+                                logAdminAction($user['id'], $user['full_name'], "Login", "Admin logged in");
+                                header('Location: dashboard.php');
+                            } elseif($user['role'] == 'technician'){
+                                header('Location: technician/indet.php');
+                            } elseif($user['role'] == 'department_admin'){ 
+                                header('Location: depdashboard.php');
+                            }
+                            exit();
+                        } else {
+                            // Failed login - increment attempts
+                            $attempt_result = incrementLoginAttempts($email);
+                            if ($attempt_result !== null) {
+                                $attempts = $attempt_result['attempts'];
+                                
+                                if ($attempt_result['locked']) {
+                                    $lockout_info = $attempt_result;
+                                    $remaining = $attempt_result['lockout_duration'];
+                                    $minutes = floor($remaining / 60);
+                                    $seconds = $remaining % 60;
+                                    
+                                    if ($minutes > 0) {
+                                        $error = "Incorrect password. Too many failed attempts. Account locked for {$minutes} minute(s) and {$seconds} second(s).";
+                                    } else {
+                                        $error = "Incorrect password. Too many failed attempts. Account locked for {$seconds} second(s).";
+                                    }
+                                } else {
+                                    $error = "Invalid password. Failed attempts: {$attempts}";
+                                }
+                            } else {
+                                $error = "Invalid password.";
+                            }
+                        }
+                    } else {
+                        $error = 'User not found';
+                    }
+                    $stmt->close();
+                }
             }
-            $stmt->close();
         }
     }
 }
@@ -156,9 +199,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             transition: background 0.2s ease;
         }
         .btn-login:hover { background: #c82333; }
+        .btn-login:disabled { background: #9ca3af; cursor: not-allowed; opacity: 0.6; }
 
         .recaptcha-container { margin: 16px 0 18px 0; display: flex; justify-content: center; }
         .alert { background: #fde8e8; color: #b91c1c; border: 1px solid #fecaca; padding: 10px 12px; border-radius: 10px; margin-bottom: 14px; font-size: 14px; }
+        .lockout-message { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; padding: 12px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 14px; }
+        .lockout-timer { font-weight: 700; font-size: 16px; color: #dc2626; }
         .forgot-password { text-align: center; margin-top: 12px; }
         .forgot-password a { color: #374151; text-decoration: underline; font-size: 14px; }
         .forgot-password a:hover { color: #dc3545; }
@@ -171,6 +217,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             const passwordInput = document.getElementById('password');
             const emailInput = document.getElementById('email');
             const loginForm = document.querySelector('form');
+            const loginBtn = document.querySelector('.btn-login');
+            
+            // Check for lockout on page load
+            <?php if ($lockout_info && isset($lockout_info['locked']) && $lockout_info['locked'] && isset($lockout_info['remaining_seconds'])): ?>
+            let remainingSeconds = <?php echo $lockout_info['remaining_seconds']; ?>;
+            startLockoutTimer(remainingSeconds);
+            <?php endif; ?>
             
             // Password toggle functionality
             if (togglePassword && passwordInput) {
@@ -215,6 +268,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         return;
                     }
                 });
+            }
+            
+            function startLockoutTimer(seconds) {
+                // Disable form inputs
+                if (emailInput) emailInput.disabled = true;
+                if (passwordInput) passwordInput.disabled = true;
+                if (loginBtn) loginBtn.disabled = true;
+                
+                const lockoutDiv = document.querySelector('.lockout-message');
+                const timerSpan = lockoutDiv ? lockoutDiv.querySelector('.lockout-timer') : null;
+                
+                const interval = setInterval(function() {
+                    seconds--;
+                    
+                    if (seconds <= 0) {
+                        clearInterval(interval);
+                        
+                        // Re-enable form inputs
+                        if (emailInput) emailInput.disabled = false;
+                        if (passwordInput) passwordInput.disabled = false;
+                        if (loginBtn) loginBtn.disabled = false;
+                        
+                        // Remove lockout message
+                        if (lockoutDiv) {
+                            lockoutDiv.remove();
+                        }
+                    } else {
+                        // Update timer display
+                        if (timerSpan) {
+                            const minutes = Math.floor(seconds / 60);
+                            const secs = seconds % 60;
+                            if (minutes > 0) {
+                                timerSpan.textContent = minutes + ' minute(s) and ' + secs + ' second(s)';
+                            } else {
+                                timerSpan.textContent = secs + ' second(s)';
+                            }
+                        }
+                    }
+                }, 1000);
             }
             
             function validateEmail(input) {
@@ -265,9 +357,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <h2 class="auth-title">LOGIN</h2>
         </div>
         <div class="auth-body">
-            <?php if ($error): ?>
+            <?php if ($lockout_info && isset($lockout_info['locked']) && $lockout_info['locked'] && isset($lockout_info['remaining_seconds'])): ?>
+                <div class="lockout-message" role="alert">
+                    <i class="fas fa-lock"></i> Account temporarily locked due to too many failed login attempts.
+                    <div style="margin-top: 8px;">
+                        Please try again in <span class="lockout-timer"><?php 
+                            $remaining = $lockout_info['remaining_seconds'];
+                            $minutes = floor($remaining / 60);
+                            $seconds = $remaining % 60;
+                            if ($minutes > 0) {
+                                echo $minutes . ' minute(s) and ' . $seconds . ' second(s)';
+                            } else {
+                                echo $seconds . ' second(s)';
+                            }
+                        ?></span>
+                    </div>
+                </div>
+            <?php endif; ?>
+            
+            <?php if ($error && (!$lockout_info || !isset($lockout_info['locked']) || !$lockout_info['locked'])): ?>
                 <div class="alert" role="alert">
-                    <i class="fas fa-exclamation-triangle"></i> <?php echo $error; ?>
+                    <i class="fas fa-exclamation-triangle"></i> <?php echo htmlspecialchars($error); ?>
                 </div>
             <?php endif; ?>
 
@@ -290,7 +400,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
 
                 <div class="recaptcha-container">
-                    <div class="g-recaptcha" data-sitekey="6LeGTvwrAAAAAHP4_YhvsnBqH6iRyliAh0Ed_U8E"></div>
+                    <div class="g-recaptcha" data-sitekey="6LcfFscrAAAAAF_fa8-Wogo2eMJj026s_aeT89H8"></div>
                 </div>
 
                 <button type="submit" class="btn-login">
