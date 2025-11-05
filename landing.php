@@ -290,7 +290,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
 
                 <div class="recaptcha-container">
-                    <div class="g-recaptcha" data-sitekey="6LeGTvwrAAAAAHP4_YhvsnBqH6iRyliAh0Ed_U8E"></div>
+                    <div class="g-recaptcha" data-sitekey="6LfHZwMsAAAAAJTnl2A5sKGDmVTFmBKjEy3bh9q0"></div>
                 </div>
 
                 <button type="submit" class="btn-login">
