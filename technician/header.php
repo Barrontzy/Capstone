@@ -22,6 +22,10 @@ if (!empty($_SESSION['profile_image'])) {
         $profileImageUrl = '../uploads/profiles/' . $pi;
     }
 }
+
+$docRootPath = str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT']));
+$technicianDirPath = str_replace('\\', '/', realpath(__DIR__));
+$technicianWebPath = rtrim(str_replace($docRootPath, '', $technicianDirPath), '/') . '/';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -38,6 +42,22 @@ if (!empty($_SESSION['profile_image'])) {
             --secondary-color: #343a40;
             --gray-color: #6c757d;
             --blue-color: #007bff;
+        }
+
+        .global-alert-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: calc(100% - 40px);
+        }
+
+        .global-alert-container .alert {
+            min-width: 260px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
         
         body {
@@ -195,16 +215,24 @@ if (!empty($_SESSION['profile_image'])) {
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
         
-        .stat-card-blue i {
-            color: #007bff;
+        .stat-card-pending i {
+            color: #0d6efd;
         }
         
-        .stat-card-yellow i {
-            color: #ffc107;
+        .stat-card-progress i {
+            color: #6f42c1;
         }
         
-        .stat-card-green i {
+        .stat-card-completed i {
             color: #28a745;
+        }
+        
+        .stat-card-total i {
+            color: #fd7e14;
+        }
+        
+        .stat-card-month i {
+            color: #20c997;
         }
         
         .stat-card h3 {
@@ -597,7 +625,7 @@ if (!empty($_SESSION['profile_image'])) {
     <!-- Header Navigation -->
     <nav class="header-nav">
         <div class="header-container">
-            <a href="kanban.php" class="header-brand">
+            <a href="indet.php" class="header-brand">
                 <img src="../images/User icon.png" alt="ICT Service Portal Logo" style="width: 40px; height: 40px; margin-right: 12px;">
                 ICT Service Portal
             </a>
@@ -616,10 +644,6 @@ if (!empty($_SESSION['profile_image'])) {
                         <a href="mytasks.php" class="quick-action-item">
                             <i class="fas fa-tasks"></i>
                             <span>My Tasks</span>
-                        </a>
-                        <a href="inventory.php" class="quick-action-item">
-                            <i class="fas fa-boxes"></i>
-                            <span>Inventory</span>
                         </a>
                         <a href="qr.php" class="quick-action-item">
                             <i class="fas fa-qrcode"></i>
@@ -829,28 +853,35 @@ if (!empty($_SESSION['profile_image'])) {
             <div class="modal-body">
                 <div class="row text-center g-3">
                     <div class="col-6">
-                        <div class="stat-card stat-card-blue">
-                            <i class="fas fa-desktop fa-3x mb-3"></i>
-                            <h3 class="mb-2" id="stat-equipment">0</h3>
-                            <small class="text-muted">Equipment Assigned</small>
+                        <div class="stat-card stat-card-pending">
+                            <i class="fas fa-clock fa-3x mb-3"></i>
+                            <h3 class="mb-2" id="stat-pending">0</h3>
+                            <small class="text-muted">Pending Items</small>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="stat-card stat-card-blue">
-                            <i class="fas fa-clipboard-check fa-3x mb-3"></i>
-                            <h3 class="mb-2" id="stat-tasks">0</h3>
-                            <small class="text-muted">Tasks Assigned</small>
+                        <div class="stat-card stat-card-progress">
+                            <i class="fas fa-sync fa-3x mb-3"></i>
+                            <h3 class="mb-2" id="stat-progress">0</h3>
+                            <small class="text-muted">In Progress</small>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="stat-card stat-card-yellow">
-                            <i class="fas fa-tools fa-3x mb-3"></i>
-                            <h3 class="mb-2" id="stat-maintenance">0</h3>
-                            <small class="text-muted">Maintenance Records</small>
+                        <div class="stat-card stat-card-completed">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <h3 class="mb-2" id="stat-completed">0</h3>
+                            <small class="text-muted">Completed</small>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="stat-card stat-card-green">
+                        <div class="stat-card stat-card-total">
+                            <i class="fas fa-layer-group fa-3x mb-3"></i>
+                            <h3 class="mb-2" id="stat-total">0</h3>
+                            <small class="text-muted">Total Items</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-card stat-card-month">
                             <i class="fas fa-calendar fa-3x mb-3"></i>
                             <h3 class="mb-2" id="stat-month"><?php echo date('M Y'); ?></h3>
                             <small class="text-muted">Current Month</small>
@@ -864,6 +895,35 @@ if (!empty($_SESSION['profile_image'])) {
 <!-- End My Statistics Modal -->
 
     <script>
+    const TECHNICIAN_WEB_PATH = '<?php echo addslashes($technicianWebPath); ?>';
+
+    function showGlobalAlert(type, message) {
+        if (!message) return;
+        let container = document.querySelector('.global-alert-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'global-alert-container';
+            document.body.appendChild(container);
+        }
+
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.setAttribute('role', 'alert');
+        alert.innerHTML = `
+            <span>${message}</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        container.appendChild(alert);
+
+        setTimeout(() => {
+            if (alert.classList.contains('show')) {
+                alert.classList.remove('show');
+                alert.classList.add('fade');
+            }
+            setTimeout(() => alert.remove(), 300);
+        }, 4000);
+    }
+
     function toggleDropdown() {
         const dropdown = document.getElementById('profileDropdown');
         const quickActionsMenu = document.getElementById('quickActionsMenu');
@@ -893,26 +953,28 @@ if (!empty($_SESSION['profile_image'])) {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    document.getElementById('stat-equipment').textContent = data.equipment_count || 0;
-                    document.getElementById('stat-tasks').textContent = data.task_count || 0;
-                    document.getElementById('stat-maintenance').textContent = data.maintenance_count || 0;
+                    document.getElementById('stat-pending').textContent = data.pending_count || 0;
+                    document.getElementById('stat-progress').textContent = data.in_progress_count || 0;
+                    document.getElementById('stat-completed').textContent = data.completed_count || 0;
+                    document.getElementById('stat-total').textContent = data.total_items || 0;
                 } else {
-                    // Set defaults if fetch fails
-                    document.getElementById('stat-equipment').textContent = '0';
-                    document.getElementById('stat-tasks').textContent = '0';
-                    document.getElementById('stat-maintenance').textContent = '0';
+                    document.getElementById('stat-pending').textContent = '0';
+                    document.getElementById('stat-progress').textContent = '0';
+                    document.getElementById('stat-completed').textContent = '0';
+                    document.getElementById('stat-total').textContent = '0';
                 }
+                document.getElementById('stat-month').textContent = new Date().toLocaleString('en-US', { month: 'short', year: 'numeric' });
                 // Show modal
                 const modal = new bootstrap.Modal(document.getElementById('statisticsModal'));
                 modal.show();
             })
             .catch(err => {
                 console.error('Error fetching statistics:', err);
-                // Set defaults on error
-                document.getElementById('stat-equipment').textContent = '0';
-                document.getElementById('stat-tasks').textContent = '0';
-                document.getElementById('stat-maintenance').textContent = '0';
-                // Show modal anyway
+                document.getElementById('stat-pending').textContent = '0';
+                document.getElementById('stat-progress').textContent = '0';
+                document.getElementById('stat-completed').textContent = '0';
+                document.getElementById('stat-total').textContent = '0';
+                document.getElementById('stat-month').textContent = new Date().toLocaleString('en-US', { month: 'short', year: 'numeric' });
                 const modal = new bootstrap.Modal(document.getElementById('statisticsModal'));
                 modal.show();
             });
@@ -1054,6 +1116,63 @@ if (!empty($_SESSION['profile_image'])) {
                     this.setCustomValidity(isValid ? '' : 'Passwords do not match');
                 });
             }
+
+            changePasswordForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(changePasswordForm);
+                formData.append('ajax', '1');
+                fetch(TECHNICIAN_WEB_PATH + 'profile.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showGlobalAlert('success', data.message || 'Password updated successfully.');
+                        const modalEl = document.getElementById('changePasswordModal');
+                        if (modalEl) {
+                            const modal = bootstrap.Modal.getInstance(modalEl);
+                            if (modal) modal.hide();
+                        }
+                        changePasswordForm.reset();
+                    } else {
+                        showGlobalAlert('danger', data.message || 'Failed to change password.');
+                    }
+                })
+                .catch(() => {
+                    showGlobalAlert('danger', 'Unable to update password right now. Please try again.');
+                });
+            });
+        }
+
+        const editProfileForm = document.getElementById('editProfileForm');
+        if (editProfileForm) {
+            editProfileForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(editProfileForm);
+                formData.append('ajax', '1');
+                fetch(TECHNICIAN_WEB_PATH + 'profile.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showGlobalAlert('success', data.message || 'Profile updated successfully.');
+                        const modalEl = document.getElementById('editProfileModal');
+                        if (modalEl) {
+                            const modal = bootstrap.Modal.getInstance(modalEl);
+                            if (modal) modal.hide();
+                        }
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        showGlobalAlert('danger', data.message || 'Failed to update profile.');
+                    }
+                })
+                .catch(() => {
+                    showGlobalAlert('danger', 'Unable to update profile right now. Please try again.');
+                });
+            });
         }
     });
     </script> 

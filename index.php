@@ -15,7 +15,7 @@ if (isset($_SESSION["user_id"])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ICT Inventory System - BSU</title>
-    <link rel="icon" href="assets/logo/bsutneu.png" type="image/png">
+    <link rel="icon" href="images/bsutneu.png" type="image/png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -33,7 +33,7 @@ if (isset($_SESSION["user_id"])) {
             min-height: 100vh;
             font-family: 'Inknut Antiqua', serif;
             position: relative;
-            background: url('BSU.jpg') no-repeat center center fixed; 
+            background: url('images/BSU.jpg') no-repeat center center fixed; 
             background-size: cover;
         }
         .overlay {
@@ -259,7 +259,7 @@ if (isset($_SESSION["user_id"])) {
             <a href="#" id="btnFaq" class="top-btn">FAQS</a>
         </div>
         <div class="logo-main">
-            <img src="landing logo.png" alt="ICT Inventory Logo">
+            <img src="images/landing logo.png" alt="ICT Inventory Logo">
         </div>
         <div class="system-title">ICT INVENTORY SYSTEM</div>
         <div class="welcome-text">Log in and let's get started!</div>

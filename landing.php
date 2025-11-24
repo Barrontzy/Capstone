@@ -7,7 +7,7 @@ if (isset($_SESSION['user_id'])) {
 	if($_SESSION['user_role'] == 'admin'){
 		header('Location: admin/dashboard.php');
 	} elseif($_SESSION['user_role'] == 'technician'){
-		header('Location: technician/kanban.php');
+		header('Location: technician/indet.php');
 	} elseif($_SESSION['user_role'] == 'department_admin'){ 
 		header('Location: department/depdashboard.php');
 	}
@@ -285,11 +285,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
 
                 <div class="recaptcha-container">
-<<<<<<< HEAD
                     <div class="g-recaptcha" data-sitekey="6LcfFscrAAAAAF_fa8-Wogo2eMJj026s_aeT89H8"></div>
-=======
-                    <div class="g-recaptcha" data-sitekey="6LcTcgMsAAAAAPpwkQTLwC3gccAs--BgkWhaks8S"></div>
->>>>>>> 83dd38e9990004ca3153c8cb0645b615329dfcbc
                 </div>
 
                 <button type="submit" class="btn-login">
