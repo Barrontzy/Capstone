@@ -3,12 +3,14 @@ require_once '../includes/session.php';
 require_once '../includes/db.php';
 
 if (!isLoggedIn() || !isTechnician()) {
-    header('Location: login.php');
+    header('Location: ../landing.php');
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
 $equipment_info = null;
+$service_request_info = null;
+$maintenance_history = null;
 $error = '';
 $success = '';
 
@@ -65,12 +67,93 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
                 $decoded = json_decode($qr_data, true);
                 if (json_last_error() === JSON_ERROR_NONE && isset($decoded['asset_tag'])) {
                     $equipment_info = $decoded;
+                    $equipment_info['table_name'] = $decoded['table_name'] ?? '';
                     $success = '✅ Equipment loaded from QR code (JSON data)';
+                    
+                    // Fetch service request info (support level) for this equipment
+                    $asset_tag = $equipment_info['asset_tag'] ?? '';
+                    if ($asset_tag) {
+                        $srQuery = "SELECT sr.*, u.full_name as technician_name 
+                                   FROM service_requests sr 
+                                   LEFT JOIN users u ON sr.technician_id = u.id 
+                                   WHERE sr.equipment = ? OR sr.equipment LIKE ? 
+                                   ORDER BY sr.created_at DESC 
+                                   LIMIT 1";
+                        $srStmt = $conn->prepare($srQuery);
+                        $searchPattern = '%' . $asset_tag . '%';
+                        $srStmt->bind_param("ss", $asset_tag, $searchPattern);
+                        $srStmt->execute();
+                        $srResult = $srStmt->get_result();
+                        if ($srResult && $srResult->num_rows > 0) {
+                            $service_request_info = $srResult->fetch_assoc();
+                        }
+                        $srStmt->close();
+                    }
+                    
+                    // Fetch last maintenance record for this equipment
+                    $equipment_id = $equipment_info['id'] ?? null;
+                    $table_name = $equipment_info['table_name'] ?? '';
+                    if ($equipment_id && $table_name) {
+                        $maintQuery = "SELECT mr.*, u.full_name as technician_name 
+                                      FROM maintenance_records mr 
+                                      LEFT JOIN users u ON mr.technician_id = u.id 
+                                      WHERE mr.equipment_id = ? AND mr.equipment_type = ? 
+                                      ORDER BY mr.created_at DESC 
+                                      LIMIT 1";
+                        $maintStmt = $conn->prepare($maintQuery);
+                        $maintStmt->bind_param("is", $equipment_id, $table_name);
+                        $maintStmt->execute();
+                        $maintResult = $maintStmt->get_result();
+                        if ($maintResult && $maintResult->num_rows > 0) {
+                            $maintenance_history = $maintResult->fetch_assoc();
+                        }
+                        $maintStmt->close();
+                    }
                 } else {
                     // Otherwise, search across all tables
                     $equipment_info = findEquipment($conn, $qr_data);
                     if ($equipment_info) {
                         $success = '✅ Equipment found in ' . htmlspecialchars($equipment_info['table_name']) . ' table';
+                        
+                        // Fetch service request info (support level) for this equipment
+                        $asset_tag = $equipment_info['asset_tag'] ?? '';
+                        if ($asset_tag) {
+                            $srQuery = "SELECT sr.*, u.full_name as technician_name 
+                                       FROM service_requests sr 
+                                       LEFT JOIN users u ON sr.technician_id = u.id 
+                                       WHERE sr.equipment = ? OR sr.equipment LIKE ? 
+                                       ORDER BY sr.created_at DESC 
+                                       LIMIT 1";
+                            $srStmt = $conn->prepare($srQuery);
+                            $searchPattern = '%' . $asset_tag . '%';
+                            $srStmt->bind_param("ss", $asset_tag, $searchPattern);
+                            $srStmt->execute();
+                            $srResult = $srStmt->get_result();
+                            if ($srResult && $srResult->num_rows > 0) {
+                                $service_request_info = $srResult->fetch_assoc();
+                            }
+                            $srStmt->close();
+                        }
+                        
+                        // Fetch last maintenance record for this equipment
+                        $equipment_id = $equipment_info['id'] ?? null;
+                        $table_name = $equipment_info['table_name'] ?? '';
+                        if ($equipment_id && $table_name) {
+                            $maintQuery = "SELECT mr.*, u.full_name as technician_name 
+                                          FROM maintenance_records mr 
+                                          LEFT JOIN users u ON mr.technician_id = u.id 
+                                          WHERE mr.equipment_id = ? AND mr.equipment_type = ? 
+                                          ORDER BY mr.created_at DESC 
+                                          LIMIT 1";
+                            $maintStmt = $conn->prepare($maintQuery);
+                            $maintStmt->bind_param("is", $equipment_id, $table_name);
+                            $maintStmt->execute();
+                            $maintResult = $maintStmt->get_result();
+                            if ($maintResult && $maintResult->num_rows > 0) {
+                                $maintenance_history = $maintResult->fetch_assoc();
+                            }
+                            $maintStmt->close();
+                        }
                     } else {
                         $error = '❌ No equipment found with this QR code.';
                     }
@@ -80,31 +163,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             }
             break;
 
-        case 'upload_qr':
-            if (isset($_FILES['qr_file']) && $_FILES['qr_file']['error'] === 0) {
-                $file_content = file_get_contents($_FILES['qr_file']['tmp_name']);
-                $qr_data = trim($file_content);
-
-                if (!empty($qr_data)) {
-                    $decoded = json_decode($qr_data, true);
-                    if (json_last_error() === JSON_ERROR_NONE && isset($decoded['asset_tag'])) {
-                        $equipment_info = $decoded;
-                        $success = '✅ Equipment loaded from uploaded QR file (JSON data)';
-                    } else {
-                        $equipment_info = findEquipment($conn, $qr_data);
-                        if ($equipment_info) {
-                            $success = '✅ Equipment found in ' . htmlspecialchars($equipment_info['table_name']) . ' table';
-                        } else {
-                            $error = '❌ No equipment found with this QR code.';
-                        }
-                    }
-                } else {
-                    $error = '⚠️ Could not read QR code from file.';
-                }
-            } else {
-                $error = '⚠️ Please select a valid QR file.';
-            }
-            break;
     }
 }
 
@@ -115,7 +173,12 @@ require_once 'header.php';
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <h2><i class="fas fa-qrcode"></i> QR Code Scanner & Generator</h2>
+            <h2 class="mb-3" style="color: #212529; font-weight: 700;">
+                <i class="fas fa-qrcode text-danger"></i> QR Code Scanner & Generator
+            </h2>
+            <p class="text-muted mb-4">
+                <i class="fas fa-info-circle"></i> Scan QR codes to view equipment information, service history, and maintenance records
+            </p>
             
             <?php if ($error): ?>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -154,25 +217,6 @@ require_once 'header.php';
                         </div>
                     </div>
 
-                    <!-- Upload QR -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5><i class="fas fa-upload"></i> Upload QR File</h5>
-                        </div>
-                        <div class="card-body">
-                            <form method="POST" enctype="multipart/form-data">
-                                <input type="hidden" name="action" value="upload_qr">
-                                <div class="mb-3">
-                                    <label class="form-label">Select QR Code File</label>
-                                    <input type="file" class="form-control" name="qr_file" accept=".txt,.json,.xml">
-                                    <small class="text-muted">Supported formats: TXT, JSON, XML</small>
-                                </div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-upload"></i> Upload and Scan
-                                </button>
-                            </form>
-                        </div>
-                    </div>
 
                     <!-- Manual Entry -->
                     <div class="card">
@@ -233,6 +277,108 @@ require_once 'header.php';
                                         endforeach; 
                                         ?>
                                     </div>
+
+                                    <!-- Service Request Info (Support Level) -->
+                                    <?php if ($service_request_info): ?>
+                                    <div class="mt-4 p-3 bg-light rounded">
+                                        <h6 class="fw-bold mb-3"><i class="fas fa-tools text-primary"></i> Last Service Request</h6>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-2">
+                                                <small class="text-muted">Support Level:</small>
+                                                <div class="fw-bold">
+                                                    <?php 
+                                                    $level = $service_request_info['support_level'] ?? 'N/A';
+                                                    $badgeClass = '';
+                                                    if ($level === 'L1') $badgeClass = 'bg-info';
+                                                    elseif ($level === 'L2') $badgeClass = 'bg-primary';
+                                                    elseif ($level === 'L3') $badgeClass = 'bg-warning';
+                                                    elseif ($level === 'L4') $badgeClass = 'bg-danger';
+                                                    else $badgeClass = 'bg-secondary';
+                                                    ?>
+                                                    <span class="badge <?php echo $badgeClass; ?>"><?php echo htmlspecialchars($level); ?></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <small class="text-muted">Processing Time:</small>
+                                                <div class="fw-bold"><?php echo htmlspecialchars($service_request_info['processing_time'] ?? 'N/A'); ?></div>
+                                            </div>
+                                            <?php if ($service_request_info['technician_name']): ?>
+                                            <div class="col-md-6 mb-2">
+                                                <small class="text-muted">Technician:</small>
+                                                <div class="fw-bold"><?php echo htmlspecialchars($service_request_info['technician_name']); ?></div>
+                                            </div>
+                                            <?php endif; ?>
+                                            <?php if ($service_request_info['accomplishment']): ?>
+                                            <div class="col-12 mb-2">
+                                                <small class="text-muted">Work Done:</small>
+                                                <div class="small"><?php echo htmlspecialchars($service_request_info['accomplishment']); ?></div>
+                                            </div>
+                                            <?php endif; ?>
+                                            <?php if ($service_request_info['remarks']): ?>
+                                            <div class="col-12 mb-2">
+                                                <small class="text-muted">Remarks:</small>
+                                                <div class="small"><?php echo htmlspecialchars($service_request_info['remarks']); ?></div>
+                                            </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <?php endif; ?>
+
+                                    <!-- Maintenance History -->
+                                    <?php if ($maintenance_history): ?>
+                                    <div class="mt-4 p-3 bg-light rounded">
+                                        <h6 class="fw-bold mb-3"><i class="fas fa-wrench text-success"></i> Last Maintenance</h6>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-2">
+                                                <small class="text-muted">Type:</small>
+                                                <div class="fw-bold">
+                                                    <?php 
+                                                    $maintType = ucfirst($maintenance_history['maintenance_type'] ?? 'N/A');
+                                                    $maintBadge = '';
+                                                    if ($maintenance_history['maintenance_type'] === 'preventive') $maintBadge = 'bg-success';
+                                                    elseif ($maintenance_history['maintenance_type'] === 'corrective') $maintBadge = 'bg-warning';
+                                                    elseif ($maintenance_history['maintenance_type'] === 'upgrade') $maintBadge = 'bg-info';
+                                                    else $maintBadge = 'bg-secondary';
+                                                    ?>
+                                                    <span class="badge <?php echo $maintBadge; ?>"><?php echo htmlspecialchars($maintType); ?></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <small class="text-muted">Status:</small>
+                                                <div class="fw-bold">
+                                                    <?php 
+                                                    $status = ucfirst(str_replace('_', ' ', $maintenance_history['status'] ?? 'N/A'));
+                                                    ?>
+                                                    <span class="badge bg-secondary"><?php echo htmlspecialchars($status); ?></span>
+                                                </div>
+                                            </div>
+                                            <?php if ($maintenance_history['technician_name']): ?>
+                                            <div class="col-md-6 mb-2">
+                                                <small class="text-muted">Technician:</small>
+                                                <div class="fw-bold"><?php echo htmlspecialchars($maintenance_history['technician_name']); ?></div>
+                                            </div>
+                                            <?php endif; ?>
+                                            <?php if ($maintenance_history['description']): ?>
+                                            <div class="col-12 mb-2">
+                                                <small class="text-muted">Action Taken:</small>
+                                                <div class="small"><?php echo htmlspecialchars($maintenance_history['description']); ?></div>
+                                            </div>
+                                            <?php endif; ?>
+                                            <?php if ($maintenance_history['remarks']): ?>
+                                            <div class="col-12 mb-2">
+                                                <small class="text-muted">Remarks:</small>
+                                                <div class="small"><?php echo htmlspecialchars($maintenance_history['remarks']); ?></div>
+                                            </div>
+                                            <?php endif; ?>
+                                            <?php if ($maintenance_history['start_date']): ?>
+                                            <div class="col-md-6 mb-2">
+                                                <small class="text-muted">Date:</small>
+                                                <div class="small"><?php echo date('M d, Y', strtotime($maintenance_history['start_date'])); ?></div>
+                                            </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <?php endif; ?>
 
                                     <!-- Editable Remarks Section -->
                                     <div class="mt-4">
@@ -445,11 +591,16 @@ function showAlert(message, type) {
 
 <style>
 .equipment-details {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     border-radius: 12px;
-    padding: 20px;
-    border: 1px solid #dee2e6;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 25px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.equipment-details:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
 }
 
 .equipment-details p { 
@@ -462,16 +613,31 @@ function showAlert(message, type) {
 }
 
 .card {
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     border: none;
     border-radius: 12px;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
 }
 
 .card-header {
-    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    background: linear-gradient(135deg, #dc3545 0%, #343a40 100%);
     color: white;
     border-radius: 12px 12px 0 0 !important;
     border: none;
+    font-weight: 600;
+    padding: 15px 20px;
+}
+
+.card-header h5 {
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .btn {

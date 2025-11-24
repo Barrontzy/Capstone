@@ -14,6 +14,6 @@ if (session_status() === PHP_SESSION_ACTIVE) {
 	session_destroy();
 }
 
-header('Location: index.php');
+header('Location: landing.php');
 exit();
 ?>

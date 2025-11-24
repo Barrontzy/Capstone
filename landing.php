@@ -5,11 +5,11 @@ require_once 'includes/db.php';
 // Redirect if already logged in
 if (isset($_SESSION['user_id'])) {
 	if($_SESSION['user_role'] == 'admin'){
-		header('Location: dashboard.php');
+		header('Location: admin/dashboard.php');
 	} elseif($_SESSION['user_role'] == 'technician'){
-		header('Location: technician/indet.php');
+		header('Location: technician/kanban.php');
 	} elseif($_SESSION['user_role'] == 'department_admin'){ 
-		header('Location: depdashboard.php');
+		header('Location: department/depdashboard.php');
 	}
 	exit();
 }
@@ -27,42 +27,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } elseif (!preg_match('/@g\.batstate-u\.edu\.ph$/', $email)) {
         $error = 'Email must be from @g.batstate-u.edu.ph ';
     } else {
-        // Require captcha to be solved before attempting login
-        if (empty($_POST['g-recaptcha-response'])) {
-            $error = 'Please answer the captcha';
-        } else {
-            $stmt = $conn->prepare("SELECT id, full_name, email, role, password, profile_image FROM users WHERE email = ?");
-            $stmt->bind_param("s", $email);
-            $stmt->execute();
-            $result = $stmt->get_result();
+        $stmt = $conn->prepare("SELECT id, full_name, email, role, password, profile_image FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
         
-            if ($result->num_rows == 1) {
-                $user = $result->fetch_assoc();
-                if (password_verify($password, $user['password'])) {
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['user_name'] = $user['full_name'];
-                    $_SESSION['user_email'] = $user['email'];
-                    $_SESSION['user_role'] = $user['role'];
-                    $_SESSION['profile_image'] = $user['profile_image'];
-                    include 'logger.php';
-                    
-                    if($user['role'] == 'admin'){
-                        logAdminAction($user['id'], $user['full_name'], "Login", "Admin logged in");
-                        header('Location: dashboard.php');
-                    } elseif($user['role'] == 'technician'){
-                        header('Location: technician/indet.php');
-                    } elseif($user['role'] == 'department_admin'){ 
-                        header('Location: depdashboard.php');
-                    }
-                    exit();
-                } else {
-                    $error = 'Invalid password';
+        if ($result->num_rows == 1) {
+            $user = $result->fetch_assoc();
+            if (password_verify($password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['user_name'] = $user['full_name'];
+                $_SESSION['user_email'] = $user['email'];
+                $_SESSION['user_role'] = $user['role'];
+                $_SESSION['profile_image'] = $user['profile_image'];
+				include 'logger.php';
+                
+                if($user['role'] == 'admin'){
+                    logAdminAction($user['id'], $user['full_name'], "Login", "Admin logged in");
+                    header('Location: admin/dashboard.php');
+                } elseif($user['role'] == 'technician'){
+                    header('Location: technician/indet.php');
+                } elseif($user['role'] == 'department_admin'){ 
+                    header('Location: department/depdashboard.php');
                 }
+                exit();
             } else {
-                $error = 'User not found';
+                $error = 'Invalid password';
             }
-            $stmt->close();
+        } else {
+            $error = 'User not found';
         }
+        $stmt->close();
     }
 }
 ?>
@@ -73,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ICT Management System - Login</title>
-    <link rel="icon" href="assets/logo/bsutneu.png" type="image/png">
+    <link rel="icon" href="images/bsutneu.png" type="image/png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
@@ -83,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             align-items: center;
             justify-content: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('BSU.jpg') center/cover no-repeat fixed;
+            background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('images/BSU.jpg') center/cover no-repeat fixed;
         }
 
         .auth-modal {
@@ -290,7 +285,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
 
                 <div class="recaptcha-container">
-                    <div class="g-recaptcha" data-sitekey="6LeGTvwrAAAAAHP4_YhvsnBqH6iRyliAh0Ed_U8E"></div>
+                    <div class="g-recaptcha" data-sitekey="6LcfFscrAAAAAF_fa8-Wogo2eMJj026s_aeT89H8"></div>
                 </div>
 
                 <button type="submit" class="btn-login">

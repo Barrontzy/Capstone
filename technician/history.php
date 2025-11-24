@@ -3,7 +3,7 @@ require_once '../includes/session.php';
 require_once '../includes/db.php';
 
 if (!isLoggedIn() || !isTechnician()) {
-    header('Location: login.php');
+    header('Location: ../landing.php');
     exit();
 }
 

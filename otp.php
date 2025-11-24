@@ -9,7 +9,7 @@ use PHPMailer\PHPMailer\Exception;
 
 // If already logged in, go to dashboard
 if (isset($_SESSION['user_id'])) {
-    header('Location: dashboard.php');
+    header('Location: admin/dashboard.php');
     exit();
 }
 
@@ -128,6 +128,7 @@ if (isset($_POST['resend_otp'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Account - BSU Inventory Management System</title>
+    <link rel="icon" href="images/bsutneu.png" type="image/png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
@@ -137,7 +138,7 @@ if (isset($_POST['resend_otp'])) {
             align-items: center;
             justify-content: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('BSU.jpg') center/cover no-repeat fixed;
+            background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('images/BSU.jpg') center/cover no-repeat fixed;
         }
 
          .auth-modal {

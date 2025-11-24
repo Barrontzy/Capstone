@@ -5,10 +5,10 @@ require_once '../includes/db.php';
 // Check if user is already logged in
 if (isLoggedIn()) {
     if(isAdmin()){
-        header('Location: ../dashboard.php');
+        header('Location: ../admin/dashboard.php');
         exit();
     } elseif(isTechnician()){
-        header('Location: indet.php');
+        header('Location: kanban.php');
         exit();
     }
 }
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $ip_address = $_SERVER['REMOTE_ADDR'];
                 $user_agent = $_SERVER['HTTP_USER_AGENT'];
              
-              header('Location: indet.php');
+              header('Location: kanban.php');
                exit();
             } else {
                 $error = 'Invalid password.';
@@ -67,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Technician Login - BSU</title>
+    <link rel="icon" href="../images/bsutneu.png" type="image/png">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -207,9 +208,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="login-container">
         <div class="login-header">
             <div class="logo">
-                <img src="User icon.png" alt="Technician Portal Logo" style="width: 48px; height: 48px;">
+                <img src="User icon.png" alt="ICT Service Portal Logo" style="width: 48px; height: 48px;">
             </div>
-            <h2>Technician Portal</h2>
+            <h2>ICT Service Portal</h2>
             <p>BSU Equipment Management System</p>
         </div>
 

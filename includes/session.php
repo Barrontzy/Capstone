@@ -11,6 +11,30 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Function to get an absolute path to landing.php regardless of current directory depth
+function getLandingPagePath() {
+    // Resolve the absolute path of the project root (one level above /includes)
+    $project_root = realpath(__DIR__ . '/..');
+    $document_root = isset($_SERVER['DOCUMENT_ROOT'])
+        ? realpath($_SERVER['DOCUMENT_ROOT'])
+        : null;
+
+    if ($project_root && $document_root) {
+        $project_root = str_replace('\\', '/', $project_root);
+        $document_root = str_replace('\\', '/', $document_root);
+
+        // If the project lives under the document root, compute the URL base path
+        if (strpos($project_root, $document_root) === 0) {
+            $base_path = substr($project_root, strlen($document_root));
+            $base_path = '/' . ltrim($base_path, '/');
+            return rtrim($base_path, '/') . '/landing.php';
+        }
+    }
+
+    // Fallback to root-level landing.php
+    return '/landing.php';
+}
+
 // Set session timeout (30 minutes)
 $session_timeout = 1800; // 30 minutes in seconds
 
@@ -20,6 +44,11 @@ if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 
     session_unset();
     session_destroy();
     session_start();
+    
+    // Redirect to landing page when session expires
+    $landing_path = getLandingPagePath();
+    header('Location: ' . $landing_path);
+    exit();
 }
 
 // Update last activity time
@@ -43,7 +72,8 @@ function isTechnician() {
 // Function to require login
 function requireLogin() {
     if (!isLoggedIn()) {
-        header('Location: landing.php');
+        $landing_path = getLandingPagePath();
+        header('Location: ' . $landing_path);
         exit();
     }
 }
@@ -52,7 +82,9 @@ function requireLogin() {
 function requireAdmin() {
     requireLogin();
     if (!isAdmin()) {
-        header('Location: dashboard.php');
+        // Redirect non-admins to landing page
+        $landing_path = getLandingPagePath();
+        header('Location: ' . $landing_path);
         exit();
     }
 }

@@ -4,9 +4,9 @@ date_default_timezone_set('Asia/Manila');
 
 // Database connection settings
 $host = 'localhost';
-$user = 'u529803437_Ict';
-$password = 'Ict_1234';
-$dbname = 'u529803437_bsuict';
+$user = 'root';
+$password = '';
+$dbname = 'bss';
 
 // Try to connect directly to the target database first
 $mysqli = @new mysqli($host, $user, $password, $dbname);
